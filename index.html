@@ -336,6 +336,39 @@ var C=[
 {n:'Shogun’s Decree',k:'t',s:'Counter',g:'令',x:2,t:'Saat efek kartu atau monster diaktifkan: bayar 1000 LP; negate aktivasi itu dan hancurkan kartunya. Hanya bisa diaktifkan jika kamu mengontrol Warrior.'},
 {n:'Kitsune Scale Adept',k:'m',s:'Pendulum',sc:2,at:'DARK',r:'Spellcaster',l:3,p:1300,d:900,g:'狐',x:1,t:'[Pendulum] Skala 2. Level 3. Jika di-Summon: tambahkan 1 kartu Pendulum dari Deck ke tangan.'},
 {n:'Thunder Shogun Vanguard',k:'m',s:'Pendulum',sc:7,at:'LIGHT',r:'Warrior',l:6,p:2200,d:1600,g:'雷',x:1,t:'[Pendulum] Skala 7. Level 6. Jika di-Pendulum Summon: monster ini mendapat 500 ATK sampai End Phase.'}
+,
+{"n":"Goblin Recruit","k":"m","s":"Effect","at":"DARK","r":"Fiend","l":3,"p":1000,"d":1000,"g":"👺","x":0,"t":"Jika di-Normal atau Special Summon: tambahkan 1 monster Goblin dari Deck ke tangan, kecuali dirinya sendiri."},
+{"n":"Goblin Spear Raider","k":"m","s":"Effect","at":"EARTH","r":"Fiend","l":4,"p":1800,"d":1000,"g":"⚔","x":0,"t":"Jika kamu mengontrol Goblin lain, Special Summon kartu ini dari tangan."},
+{"n":"Goblin Tinker Tuner","k":"m","s":"Effect","at":"DARK","r":"Fiend","l":2,"p":500,"d":1200,"g":"🔧","x":0,"t":"Tuner. Jika di-Normal Summon: Special Summon 1 Goblin Level 4 atau lebih rendah dari tangan.","tu":1},
+{"n":"Goblin Banner Captain","k":"m","s":"Effect","at":"EARTH","r":"Fiend","l":4,"p":1600,"d":1400,"g":"🚩","x":0,"t":"Saat di-Summon, Goblin lain yang kamu kontrol mendapat 300 ATK sampai akhir giliran."},
+{"n":"Goblin Scrap Bomber","k":"m","s":"Effect","at":"FIRE","r":"Fiend","l":4,"p":1700,"d":800,"g":"💣","x":0,"t":"Material Fusion Goblin yang meledakkan barisan belakang lawan."},
+{"n":"Goblin Cave Scout","k":"m","s":"Effect","at":"DARK","r":"Fiend","l":3,"p":1200,"d":800,"g":"🗡","x":0,"t":"Scout licik yang membantu combo Goblin."},
+{"n":"Goblin Warlord","k":"m","s":"Effect","at":"EARTH","r":"Fiend","l":6,"p":2200,"d":1800,"g":"🪓","x":0,"t":"Panglima Goblin, material utama Fusion King Goblin."},
+{"n":"Goblin Fusion Adept","k":"m","s":"Effect","at":"DARK","r":"Fiend","l":4,"p":1400,"d":1200,"g":"🧪","x":0,"t":"Ahli Fusion kerajaan Goblin."},
+{"n":"Goblin Drum Tuner","k":"m","s":"Effect","at":"EARTH","r":"Fiend","l":3,"p":800,"d":1500,"g":"🥁","x":0,"t":"Tuner untuk combo Synchro Goblin.","tu":1},
+{"n":"Goblin Rally","k":"s","s":"Spell","l":0,"p":0,"d":0,"g":"📯","x":0,"t":"Special Summon 1 Goblin dari tangan."},
+{"n":"Scrap for Glory","k":"s","s":"Spell","l":0,"p":0,"d":0,"g":"♻","x":0,"t":"Tambahkan 1 Goblin dari GY ke tangan."},
+{"n":"Royal Foundry","k":"s","s":"Spell","l":0,"p":0,"d":0,"g":"🔥","x":0,"t":"Goblin yang kamu kontrol mendapat 300 ATK sampai akhir giliran."},
+{"n":"Kingdom Fusion","k":"s","s":"Spell","l":0,"p":0,"d":0,"g":"🜲","x":0,"t":"Fusion Summon 1 Goblin Fusion Monster menggunakan material yang cocok di field."},
+{"n":"Goblin Supply Cart","k":"s","s":"Spell","l":0,"p":0,"d":0,"g":"🛒","x":0,"t":"Tambahkan 1 Goblin dari Deck ke tangan."},
+{"n":"Ambush from Below","k":"t","s":"Trap","l":0,"p":0,"d":0,"g":"🕳","x":0,"t":"Perangkap penyergapan kerajaan."},
+{"n":"Rotten Barricade","k":"t","s":"Trap","l":0,"p":0,"d":0,"g":"🪵","x":0,"t":"Pertahanan licik untuk melindungi kerajaan."},
+{"n":"King’s Last Order","k":"t","s":"Trap","l":0,"p":0,"d":0,"g":"👑","x":0,"t":"Perintah terakhir raja untuk melindungi Goblin."},
+{"n":"King Goblin","k":"m","s":"Fusion","at":"DARK","r":"Fiend","l":8,"p":3000,"d":2500,"g":"👑","x":0,"t":"Boss utama: “Goblin Warlord” + “Goblin Fusion Adept”. Saat Fusion Summon, Special Summon 1 Goblin dari GY; Goblin yang kamu kontrol mendapat 300 ATK.","fm":["Goblin Warlord","Goblin Fusion Adept"],"e":1,"b":1},
+{"n":"Goblin Siege Brute","k":"m","s":"Fusion","at":"FIRE","r":"Fiend","l":6,"p":2500,"d":1800,"g":"🛡","x":0,"t":"“Goblin Spear Raider” + “Goblin Scrap Bomber”. Boss pengepungan.","fm":["Goblin Spear Raider","Goblin Scrap Bomber"],"e":1},
+{"n":"Goblin Scrap Chimera","k":"m","s":"Fusion","at":"DARK","r":"Fiend","l":6,"p":2400,"d":1600,"g":"🧟","x":0,"t":"“Goblin Scrap Bomber” + “Goblin Cave Scout”.","fm":["Goblin Scrap Bomber","Goblin Cave Scout"],"e":1},
+{"n":"Goblin Iron Tusk","k":"m","s":"Fusion","at":"EARTH","r":"Fiend","l":7,"p":2700,"d":2100,"g":"🐗","x":0,"t":"“Goblin Banner Captain” + “Goblin Spear Raider”.","fm":["Goblin Banner Captain","Goblin Spear Raider"],"e":1},
+{"n":"Goblin Furnace Golem","k":"m","s":"Fusion","at":"FIRE","r":"Fiend","l":8,"p":2900,"d":2300,"g":"🔥","x":0,"t":"“Goblin Warlord” + “Goblin Scrap Bomber”.","fm":["Goblin Warlord","Goblin Scrap Bomber"],"e":1},
+{"n":"Goblin War Chariot","k":"m","s":"Fusion","at":"EARTH","r":"Fiend","l":6,"p":2300,"d":2000,"g":"🏰","x":0,"t":"“Goblin Spear Raider” + “Goblin Cave Scout”.","fm":["Goblin Spear Raider","Goblin Cave Scout"],"e":1},
+{"n":"Goblin Crown Destroyer","k":"m","s":"Fusion","at":"DARK","r":"Fiend","l":8,"p":2800,"d":2400,"g":"💀","x":0,"t":"“Goblin Warlord” + “Goblin Banner Captain”.","fm":["Goblin Warlord","Goblin Banner Captain"],"e":1},
+{"n":"Goblin Horde Hydra","k":"m","s":"Fusion","at":"DARK","r":"Fiend","l":7,"p":2600,"d":1900,"g":"🐉","x":0,"t":"“Goblin Fusion Adept” + “Goblin Cave Scout”.","fm":["Goblin Fusion Adept","Goblin Cave Scout"],"e":1},
+{"n":"Goblin Drum Captain","k":"m","s":"Synchro","at":"EARTH","r":"Fiend","l":5,"p":1900,"d":1600,"g":"🥁","x":0,"t":"1 Tuner + 1+ monster non-Tuner. Boss Synchro awal.","e":1},
+{"n":"Goblin War Drummer","k":"m","s":"Synchro","at":"DARK","r":"Fiend","l":6,"p":2200,"d":1800,"g":"🎼","x":0,"t":"1 Tuner + 1+ monster non-Tuner.","e":1},
+{"n":"Goblin Siege Commander","k":"m","s":"Synchro","at":"FIRE","r":"Fiend","l":7,"p":2500,"d":2000,"g":"⚔","x":0,"t":"1 Tuner + 1+ monster non-Tuner.","e":1},
+{"n":"Goblin Forge Colossus","k":"m","s":"Synchro","at":"EARTH","r":"Fiend","l":8,"p":2800,"d":2400,"g":"⚒","x":0,"t":"1 Tuner + 1+ monster non-Tuner. Goblin lain mendapat 300 ATK.","e":1},
+{"n":"Goblin Tyrant Marshal","k":"m","s":"Synchro","at":"DARK","r":"Fiend","l":9,"p":3000,"d":2500,"g":"☠","x":0,"t":"1 Tuner + 1+ monster non-Tuner.","e":1},
+{"n":"Goblin Thunder Cavalry","k":"m","s":"Synchro","at":"LIGHT","r":"Fiend","l":6,"p":2300,"d":1700,"g":"⚡","x":0,"t":"1 Tuner + 1+ monster non-Tuner.","e":1},
+{"n":"Goblin Kingdom Emperor","k":"m","s":"Synchro","at":"DARK","r":"Fiend","l":7,"p":2700,"d":2200,"g":"👑","x":0,"t":"1 Tuner + 1+ monster non-Tuner. Boss Synchro kerajaan.","e":1}
 ];
 C.forEach(function(c,i){c.id=i});
 var FR={Normal:['#d9b44a','#1a1304'],Effect:['#c98a3a','#1a1304'],Ritual:['#3a6fd1','#fff'],Fusion:['#7a45c9','#fff'],Synchro:['#e8e8f0','#14141f'],Xyz:['#16162a','#fff'],Pendulum:['linear-gradient(#c98a3a 50%,#1f9a86 50%)','#fff'],Link:['#2f7fe0','#fff'],Spell:['#1f9a86','#fff'],Trap:['#b0306e','#fff']};
@@ -377,7 +410,7 @@ function rows(list){
 }
 function sum(l){return l.reduce(function(a,c){return a+c.x},0)}
 function drawDeck(){
-  var m=C.filter(function(c){return !c.e}),e=C.filter(function(c){return c.e});
+  var m=C.filter(function(c){return !c.e&&c.x>0}),e=C.filter(function(c){return c.e&&c.x>0});
   var mon=m.filter(function(c){return c.k=='m'}),sp=m.filter(function(c){return c.k=='s'}),tr=m.filter(function(c){return c.k=='t'});
   var boss=C.filter(function(c){return c.b})[0];
   document.getElementById('p-deck').innerHTML=
@@ -411,9 +444,11 @@ window.DM={C:C,FR:FR,fk:fk};
 (function(){
 var DM=window.DM,C=DM.C,K='dm_decks',D,$=function(i){return document.getElementById(i)};
 function std(){var m={};C.forEach(function(c){m[c.id]=c.x});return{n:'Shogun',m:m}}
+function goblinStd(){var m={};C.forEach(function(c){m[c.id]=0});var q={'Goblin Recruit':3,'Goblin Spear Raider':3,'Goblin Tinker Tuner':3,'Goblin Banner Captain':3,'Goblin Scrap Bomber':3,'Goblin Cave Scout':3,'Goblin Warlord':2,'Goblin Fusion Adept':2,'Goblin Drum Tuner':2,'Goblin Rally':2,'Scrap for Glory':2,'Royal Foundry':2,'Kingdom Fusion':2,'Goblin Supply Cart':2,'Ambush from Below':2,'Rotten Barricade':2,'King’s Last Order':2};C.forEach(function(c){if(q[c.n]!=null)m[c.id]=q[c.n]});return{n:'Goblin Kingdom',m:m}}
 try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D||!D.d||!D.d[D.a])D={d:[std()],a:0};
 function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}}
+if(!D.d.some(function(d){return d.n==='Goblin Kingdom'})){D.d.push(goblinStd());save()}
 function st(dk){var m=0,e=0;C.forEach(function(c){var n=dk.m[c.id]||0;if(c.e)e+=n;else m+=n});return{m:m,e:e,ok:m>=40&&m<=60&&e<=15}}
 DM.counts=function(){var dk=D.d[D.a];return st(dk).ok?dk.m:std().m};
 function render(){var dk=D.d[D.a],t=st(dk),h='<div class="dbar"><select id="ds" aria-label="Pilih deck">'+D.d.map(function(d,i){return'<option value="'+i+'"'+(i==D.a?' selected':'')+'>'+d.n+'</option>'}).join('')+'</select><button data-d="new">Deck baru</button><button data-d="del">Hapus</button><button data-d="rst">Isi ulang Shogun</button></div><input id="dn" value="'+dk.n+'" aria-label="Nama deck">'+
