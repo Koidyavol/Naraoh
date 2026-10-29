@@ -599,35 +599,35 @@ function kill(s,i,eff){var x=S[s].mz[i];if(!x)return;
 function killST(s,i){var P=S[s],x=P.st[i];if(!x)return;P.st[i]=null;if(x.c.s=='Pendulum')P.pendEx.push(x.c);else P.gy.push(x.c);if(x.eqTarget)x.eqTarget.eq=Math.max(0,(x.eqTarget.eq||0)-1);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
 function killField(s){var P=S[s],x=P.fz;if(!x)return;P.fz=null;P.gy.push(x.c);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
 function trig(s,c,h){var summ=h=='ns'||h=='ss'||h=='ps';if(c.n=='Fallen Angel Azazel'&&summ)chain(s,c.n,function(){addHand(s,function(k){return k.n.indexOf('Fallen Angel')===0&&k.k!='m'||k.n=='Black Halo Invocation'||k.n=='Abyssal Synchro'},'deck')});
- if(c.n=='Fallen Angel Acolyte'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0&&k.l<=4&&k.n!='Fallen Angel Acolyte'},'hand',0)});
- if(c.n=='Black Halo Seraph'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.n=='Abyssal Wing Tuner'||k.n=='Fallen Angel Harbinger'},'gy',0)});
+ if(c.n=='Fallen Angel Acolyte'&&summ)chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0&&k.l<=4&&k.n!='Fallen Angel Acolyte'},'hand',0)});
+ if(c.n=='Black Halo Seraph'&&summ)chain(s,c.n,function(){ssp(s,function(k){return k.n=='Abyssal Wing Tuner'||k.n=='Fallen Angel Harbinger'},'gy',0)});
  if(c.n=='Fallen Angel Griefwing'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return k.k=='s'&&(k.n=='Fallen Angel\'s Descent'||k.n=='Black Halo Invocation'||k.n=='Wings of Rebellion'||k.n=='Abyssal Synchro'||k.n=='Throne of the Fallen')},'deck')});
  if(c.n=='Fallen Angel Morningstar'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0&&k.n!='Fallen Angel Morningstar'},'gy',0)});
  if(c.n=='Fallen Angel Seraphim'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0&&k.l<=4},'gy',0)});
  if(c.n=='Azazel, Fallen Archangel'&&h=='sy'){chain(s,c.n,function(){var o=opp(s),i=S[o].mz.findIndex(Boolean);if(i>=0)kill(o,i,1);else{var j=S[o].st.findIndex(Boolean);if(j>=0)killST(o,j)}});S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Fallen Angel')===0)m.bo=(m.bo||0)+500})}
  if(c.n=='Fallen Angel Dominion'&&h=='sy')S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Fallen Angel')===0)m.bo=(m.bo||0)+300});
  if(c.n=='Fallen Angel Ruin Seraph'&&h=='sy'){var o=opp(s),j=S[o].st.findIndex(Boolean);if(j>=0)killST(o,j)}
- if(c.n=='Fallen Angel Vassal'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){var P=S[s],i=P.deck.findIndex(function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0});if(i>=0)P.gy.push(P.deck.splice(i,1)[0])});
+ if(c.n=='Fallen Angel Vassal'&&summ)chain(s,c.n,function(){var P=S[s],i=P.deck.findIndex(function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0});if(i>=0)P.gy.push(P.deck.splice(i,1)[0])});
  if(c.n=='Ruined Cherub'&&h=='synmat')chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.n.indexOf('Fallen Angel')===0&&k.n!='Ruined Cherub'},'gy')});
  if(c.n=='Ronin Blademaster'&&h=='ns')chain(s,c.n,function(){addHand(s,bu,'deck')});
- if(c.n=='Goblin Recruit'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.n!='Goblin Recruit'},'deck')});
+ if(c.n=='Goblin Recruit'&&summ)chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.n!='Goblin Recruit'},'deck')});
  if(c.n=='Goblin Tinker Tuner'&&h=='ns')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.l<=4},'hand',0)});
  if(c.n=='King Goblin'&&h=='fu')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy',0)});
  if(c.n=='Goblin Drum Captain'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy')});
  if(c.n=='Goblin War Drummer'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.l<=3},'hand',0)});
  if(c.n=='Goblin Tyrant Marshal'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy',0)});
- if(c.n=='Spearline Captain'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,w4,'deck',1)});
- if(c.n=='Torii Gate Guardian'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Warrior'&&k.l<=3},'hand',0)});
- if(c.n=='Kitsune Scale Adept'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.s=='Pendulum'},'deck')});
+ if(c.n=='Spearline Captain'&&summ)chain(s,c.n,function(){ssp(s,w4,'deck',1)});
+ if(c.n=='Torii Gate Guardian'&&summ)chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Warrior'&&k.l<=3},'hand',0)});
+ if(c.n=='Kitsune Scale Adept'&&summ)chain(s,c.n,function(){addHand(s,function(k){return k.s=='Pendulum'},'deck')});
  if(c.n=='Thunder Shogun Vanguard'&&h=='ps')S[s].mz.forEach(function(x){if(x&&x.c==c)x.bo=(x.bo||0)+500});
  if(c.n=='Dojo Master Takeda'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return bu(k)&&k.k=='s'},'gy')});
  if(c.n=='Torii Gate Warden'&&h=='ln')lg('Torii Gate Warden di-Link Summon; perlindungan Warrior di zona bersebelahan aktif.')
- if(c.n=='Goblin Banner Captain'&&(h=='ns'||h=='ss'))S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Goblin')===0&&m.c!=c)m.bo=(m.bo||0)+300});
+ if(c.n=='Goblin Banner Captain'&&summ)S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Goblin')===0&&m.c!=c)m.bo=(m.bo||0)+300});
  if(c.n=='Goblin Scrap Bomber'&&h=='fu')chain(s,c.n,function(){var o=opp(s);for(var i=S[o].st.length-1;i>=0;i--)if(S[o].st[i])killST(o,i)});
  if(c.n=='Goblin Forge Colossus'&&h=='sy')lg('Goblin Forge Colossus: Goblin lain mendapat 300 ATK selama monster ini face-up.');
- if(c.n=='Gravebound Scout'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Scout'},'deck')});
- if(c.n=='Bone Herald'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k!='m'&&['Grave Call','Ossuary Pact','Necrotic Surge','Eternal Burial','Tomb Gate'].indexOf(k.n)>=0},'gy')});
- if(c.n=='Gravebound Reclaimer'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Reclaimer'},'gy',0)});
+ if(c.n=='Gravebound Scout'&&summ)chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Scout'},'deck')});
+ if(c.n=='Bone Herald'&&summ)chain(s,c.n,function(){addHand(s,function(k){return k.k!='m'&&['Grave Call','Ossuary Pact','Necrotic Surge','Eternal Burial','Tomb Gate'].indexOf(k.n)>=0},'gy')});
+ if(c.n=='Gravebound Reclaimer'&&summ)chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Reclaimer'},'gy',0)});
  if(c.n=='Gravebound Overlord'&&h=='fu')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Overlord'},'gy',0)});
  if(c.n=='Gravebound Overlord'&&h=='fu')lg('Gravebound Overlord: Gravebound lain mendapat 300 ATK selama monster ini face-up.');
 
