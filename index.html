@@ -512,6 +512,12 @@ function kill(s,i,eff){var x=S[s].mz[i];if(!x)return;
 function killST(s,i){var P=S[s],x=P.st[i];if(!x)return;P.st[i]=null;P.gy.push(x.c);if(x.eqTarget)x.eqTarget.eq=Math.max(0,(x.eqTarget.eq||0)-1);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
 function killField(s){var P=S[s],x=P.fz;if(!x)return;P.fz=null;P.gy.push(x.c);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
 function trig(s,c,h){if(c.n=='Ronin Blademaster'&&h=='ns')chain(s,c.n,function(){addHand(s,bu,'deck')});
+ if(c.n=='Goblin Recruit'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.n!='Goblin Recruit'},'deck')});
+ if(c.n=='Goblin Tinker Tuner'&&h=='ns')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.l<=4},'hand',0)});
+ if(c.n=='King Goblin'&&h=='fu')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy',0)});
+ if(c.n=='Goblin Drum Captain'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy')});
+ if(c.n=='Goblin War Drummer'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0&&k.l<=3},'hand',0)});
+ if(c.n=='Goblin Tyrant Marshal'&&h=='sy')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Fiend'&&k.n.indexOf('Goblin')===0},'gy',0)});
  if(c.n=='Spearline Captain'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,w4,'deck',1)});
  if(c.n=='Torii Gate Guardian'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Warrior'&&k.l<=3},'hand',0)});
  if(c.n=='Kitsune Scale Adept'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.s=='Pendulum'},'deck')});
