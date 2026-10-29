@@ -247,7 +247,7 @@ function uniqueJapaneseName(){
  while(used.has(full)||full==='Koi')full='Haru Yamato '+(++suffix);
  return full;
 }
-const personalities=['Brave','Cautious','Greedy','Ambitious','Curious','Competitive','Independent','Kind'];
+
 const state={day:1,minute:480,speed:1,paused:false,tab:'overview',tick:0,characters:[],guilds:[],events:[],dead:[],economy:[{gold:0},{gold:0},{gold:0},{gold:0}],nextLog:0,filter:'',kingdomFilter:'all'};
 function log(msg,kind){state.events.unshift({day:state.day,time:clock(),msg:msg,kind:kind||'info'});if(state.events.length>300)state.events.length=300;}
 function clock(){let m=state.minute%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
