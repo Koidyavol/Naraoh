@@ -420,6 +420,32 @@ function ensureBrain(c){
  if(!Number.isFinite(c.brain.goodFights))c.brain.goodFights=0;
  return c.brain;
 }
+
+function assessBrainPlan(c){
+ const b=ensureBrain(c),hp=c.hp/Math.max(1,c.stats.HP),mp=c.mp/Math.max(1,c.stats.MP);
+ const names=kingdoms[c.kingdom]?.monsters||['Slime','Goblin'];
+ const target=chooseBrainMonster(c,names);
+ const m=monster(target,Math.max(1,Math.floor((c.stats.ATK+c.stats.MAG)/22)));
+ const danger=(m.atk+Math.max(0,m.mag-c.stats.MDEF)*.45)/Math.max(1,c.stats.HP);
+ const gear=Object.values(c.equipment||{}).filter(Boolean).length;
+ let next='explore',reason='Kondisi cukup untuk mencari pengalaman';
+ if(hp<.68||mp<.24||c.stamina<28){next='recover';reason='Pulihkan sumber daya sebelum mengambil risiko';}
+ else if(b.retreats>=2&&c.training<Math.floor(b.retreats/2)+2){next='train';reason='Perkuat kemampuan setelah beberapa kemunduran';}
+ else if(c.gold>=55&&gear===0&&c.kills>=1){next='equip';reason='Perlengkapan masih minim dibanding pengalaman';}
+ else if(danger>.22&&c.stats.DEF<c.stats.HP*.1&&c.training<3){next='train';reason='Pertahanan perlu diperkuat sebelum menghadapi ancaman';}
+ else if(c.goal==='Menguasai skill'&&c.training%3!==2&&c.stamina>=18){next='train';reason='Prioritaskan latihan untuk membuka skill';}
+ b.plans=[{day:state.day,action:next,target:target,reason:reason}];
+ return b.plans[0];
+}
+function executeBrainPlan(c,plan){
+ if(!plan||plan.action!=='train'||c.stamina<12)return false;
+ c.location='academy';c.stamina=Math.max(0,c.stamina-8);
+ const keys=c.class==='Mage'?['MAG','WIS','MDEF']:c.class==='Warrior'?['DEF','END','ATK']:c.class==='Archer'?['ACC','SPD','PER']:['SPD','DEF','CRIT'];
+ const stat=pick(keys);gainStat(c,stat,1);c.training++;progressSkillTree(c,'training');
+ if(c.training%3===0){const known=new Set(c.skills),available=(classes[c.class].skills||[]).filter(name=>!known.has(name));if(available.length){const learned=pick(available);c.skills.push(learned);log(c.name+' mempelajari skill class '+learned+'.','training');}}
+ action(c,'Mengikuti rencana: latihan '+stat);log(c.name+' memilih latihan terencana. Alasan: '+plan.reason+'.','training');return true;
+}
+
 function chooseBrainMonster(c,names){
  const b=ensureBrain(c),hpRatio=c.hp/Math.max(1,c.stats.HP),mpRatio=c.mp/Math.max(1,c.stats.MP);
  return names.map(name=>{
@@ -453,8 +479,9 @@ if(!c.alive)return;
 if(c.hp<c.stats.HP*.42&&c.location==='dungeon'){c.location='town';c.injured=true;c.escapes++;c.stamina=Math.max(0,c.stamina-3);action(c,'Mundur dari dungeon untuk menyelamatkan diri');log(c.name+' memilih mundur dari dungeon sebelum HP terlalu rendah.','warning');return;}
 if(c.hp<c.stats.HP*.45||c.stamina<20||c.mp<c.stats.MP*.18){if(c.location==='dungeon'&&c.hp>c.stats.HP*.28&&Math.random()<.3){return;}c.location='town';c.hp=Math.min(c.stats.HP,c.hp+Math.max(5,Math.round(c.stats.HP*.16)));c.mp=Math.min(c.stats.MP,c.mp+Math.max(4,Math.round(c.stats.MP*.22)));c.stamina=Math.min(100,c.stamina+rand(18,34));c.injured=false;action(c,'Beristirahat dan memulihkan kondisi');return;}
 const brain=ensureBrain(c),r=Math.random(),brave=c.personality==='Brave'||c.personality==='Ambitious',cautious=c.personality==='Cautious';
-// Learn from repeated setbacks: recover or train before taking another high-risk trip.
-if(brain.retreats>=2&&c.training<Math.floor(brain.retreats/2)+2&&c.stamina>=12&&Math.random()<.55){c.location='academy';c.stamina=Math.max(0,c.stamina-8);const stat=c.class==='Mage'?pick(['MAG','WIS','MDEF']):c.class==='Warrior'?pick(['DEF','END','ATK']):c.class==='Archer'?pick(['ACC','SPD','PER']):pick(['SPD','DEF','CRIT']);gainStat(c,stat,1);c.training++;progressSkillTree(c,'training');action(c,'Berlatih setelah mengevaluasi kekalahan');log(c.name+' belajar dari pengalaman buruk dan berlatih '+stat+' sebelum mengambil risiko lagi.','training');return;}
+const plan=assessBrainPlan(c);
+// Execute a planned training step before another expedition when the assessment finds a clear weakness.
+if(executeBrainPlan(c,plan))return;
 if(c.location==='travel'){
 c.travelTicks--;if(c.travelTicks<=0){c.kingdom=c.travelTo;c.location='town';action(c,'Tiba di '+kingdoms[c.kingdom].name);log(c.name+' tiba di '+kingdoms[c.kingdom].name+'.','travel');}return;
 }
@@ -508,6 +535,14 @@ while(c.hp>0&&m.hp>0&&turns<9){
  if(affordable.length&&Math.random()<.82){
   const ranked=affordable.map(x=>{
    const sk=x.sk;let score=1+Math.max(0,sk.power||0)*2;
+   const estimatedEnemyHit=Math.max(1,Math.round(m.atk*.8-c.stats.DEF*.45));
+   const enemyDanger=c.hp<=estimatedEnemyHit*2?1.7:c.hp<=estimatedEnemyHit*3?1.25:.7;
+   const skillDamage=Math.max(1,Math.round((sk.type==='magic'?mag():atk())*(sk.power||1)-m.def*(sk.type==='pierce'?.22:.62)));
+   if(sk.type==='heal')score+=c.hp<c.stats.HP*.3?16:c.hp<c.stats.HP*.5?11:c.hp<c.stats.HP*.7?6:-4;
+   if(['guard','barrier','evasion','counter'].includes(sk.type))score+=enemyDanger*(c.hp<c.stats.HP*.6?5:1);
+   if(skillDamage>=m.hp&&['phys','magic','pierce','multi','poison'].includes(sk.type))score+=4;
+   if(sk.cost>0&&c.mp/Math.max(1,c.stats.MP)<.25)score-=sk.cost*.7;
+   if(sk.cost>0&&m.hp<Math.max(8,c.stats.HP*.08))score-=sk.cost*.3;
    if(sk.type==='heal')score+=c.hp<c.stats.HP*.3?13:c.hp<c.stats.HP*.5?9:c.hp<c.stats.HP*.7?5:c.hp<c.stats.HP*.85?1:-5;
    if(sk.type==='barrier')score+=c.hp<c.stats.HP*.3?10:c.hp<c.stats.HP*.55?7:c.hp<c.stats.HP*.75?4:-1;
    if(['guard','evasion','counter'].includes(sk.type))score+=c.hp<c.stats.HP*.3?8:c.hp<c.stats.HP*.5?5:c.hp<c.stats.HP*.7?2:0;
