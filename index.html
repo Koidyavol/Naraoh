@@ -537,7 +537,7 @@ function panel(){var h='Ketuk kartu untuk melihat dan memakainya.',sl=S.sel,pd=S
  b=function(a,t,v,g,d){return'<button class="btn'+(g?' g':'')+'" data-act="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+(d?' disabled':'')+'>'+t+'</button>'};
  if(S.over)return'<b>'+S.over+'</b><br>'+b('new','Duel baru');
  if(S.rq){var rq=S.rq;return'Lawan memicu '+(rq.kind=='atk'?'serangan':rq.L[0].n)+'. Respon?<br>'+rq.o.map(function(i){return b('rq','Aktifkan '+S.p.st[i].c.n,i)}).join('')+b('rq','Lewati',-1,1)}
- if(pd)return(pd.t=='trib'?'Pilih '+(pd.need-pd.pk.length)+' monstermu sebagai Tribute.':pd.t=='atk'?'Pilih monster lawan yang diserang.':'Pilih kartu lawan untuk dihancurkan.')+'<br>'+b('can','Batal',null,1);
+ if(pd)return(pd.t=='trib'?'Pilih '+(pd.need-pd.pk.length)+' monstermu sebagai Tribute.':pd.t=='atk'?'Pilih monster lawan yang diserang.':(S.p.mz[pd.i]&&S.p.mz[pd.i].c.b?'Pilih kartu lawan untuk dihancurkan.':'Pilih monster lawan untuk efek.'))+'<br>'+b('can','Batal',null,1);
  if(sl){var s=sl.s,P=S[s],c=null,x=null;h='';
   if(sl.k=='m'){x=P.mz[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Monster Set (tertutup).'}
   else if(sl.k=='s'){x=P.st[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Kartu Set (tertutup).'}
@@ -571,7 +571,7 @@ function render(){
 }
 function zc(s,k,i){var pd=S.pend;if(pd&&pd.t=='tg'){if(s=='p'&&k=='m'&&S.p.mz[i]){spell('p',pd.hi,i);S.pend=null;S.sel=null}return render()}
  if(pd&&pd.t=='trib'){if(s=='p'&&k=='m'&&S.p.mz[i]&&pd.pk.indexOf(i)<0){pd.pk.push(i);if(pd.pk.length>=pd.need){normal('p',pd.hi,pd.set,pd.pk);S.pend=null;S.sel=null}}return render()}
- if(pd&&s=='o'&&((k=='m'&&S.o.mz[i])||(pd.t=='eff'&&k=='s'&&S.o.st[i])||(pd.t=='eff'&&k=='f'&&S.o.fz))){if(pd.t=='atk'&&k=='m')attack('p',pd.i,i);else if(pd.t=='eff'){var x=S.p.mz[pd.i];if(!x||!x.m.length)return render();x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else if(k=='m')kill('o',i,1);else if(k=='s')killST('o',i);else if(k=='f')killField('o')})}S.pend=null;S.sel=null;return render()}
+ if(pd&&s=='o'&&((k=='m'&&S.o.mz[i])||(pd.t=='eff'&&S.p.mz[pd.i]&&S.p.mz[pd.i].c.b&&k=='s'&&S.o.st[i])||(pd.t=='eff'&&S.p.mz[pd.i]&&S.p.mz[pd.i].c.b&&k=='f'&&S.o.fz))){if(pd.t=='atk'&&k=='m')attack('p',pd.i,i);else if(pd.t=='eff'){var x=S.p.mz[pd.i];if(!x||!x.m.length)return render();x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else if(k=='m')kill('o',i,1);else if(k=='s')killST('o',i);else if(k=='f')killField('o')})}S.pend=null;S.sel=null;return render()}
  S.pend=null;S.sel={s:s,k:k,i:i};render()}
 function pendok(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});return sc.length>=2&&P.hand.some(function(c){return c.k=='m'&&c.s=='Pendulum'&&c.l>Math.min.apply(null,sc)&&c.l<Math.max.apply(null,sc)})&&P.mz.indexOf(null)>=0}
  function psummon(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});if(!pendok())return lg('Skala Pendulum atau monster yang cocok belum tersedia.');var lo=Math.min.apply(null,sc),hi=Math.max.apply(null,sc),n=0;for(var i=P.hand.length-1;i>=0&&P.mz.indexOf(null)>=0;i--){var c=P.hand[i];if(c.k=='m'&&c.s=='Pendulum'&&c.l>lo&&c.l<hi){P.hand.splice(i,1);P.mz[P.mz.indexOf(null)]=inst(c,'atk',false);n++;trig('p',c,'ps')}}lg('Pendulum Summon: '+n+' monster.')}
