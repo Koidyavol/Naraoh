@@ -451,6 +451,8 @@ function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}}
 var gd=D.d.filter(function(d){return d.n==='Goblin Kingdom'})[0];if(!gd){D.d.push(goblinStd());save()}else{var ge=0;C.forEach(function(c){if(c.e)ge+=gd.m[c.id]||0});if(ge===0){C.forEach(function(c){if(c.e&&c.n.indexOf('Goblin')===0)gd.m[c.id]=1});save()}}
 function st(dk){var m=0,e=0;C.forEach(function(c){var n=dk.m[c.id]||0;if(c.e)e+=n;else m+=n});return{m:m,e:e,ok:m>=40&&m<=60&&e<=15}}
 DM.counts=function(){var dk=D.d[D.a];return st(dk).ok?dk.m:std().m};
+DM.deckList=function(){return D.d.map(function(d,i){var z=st(d);return{i:i,n:d.n,m:z.m,e:z.e,ok:z.ok}})};
+DM.selectDeck=function(i){if(!D.d[i]||!st(D.d[i]).ok)return false;D.a=i;save();render();return true};
 function render(){var dk=D.d[D.a],t=st(dk),h='<div class="dbar"><select id="ds" aria-label="Pilih deck">'+D.d.map(function(d,i){return'<option value="'+i+'"'+(i==D.a?' selected':'')+'>'+d.n+'</option>'}).join('')+'</select><button data-d="new">Deck baru</button><button data-d="del">Hapus</button><button data-d="rst">Isi ulang Shogun</button></div><input id="dn" value="'+dk.n+'" aria-label="Nama deck">'+
  '<p>Main Deck <b>'+t.m+'</b> (40 sampai 60), Extra Deck <b>'+t.e+'</b> (maks 15)</p><p class="'+(t.ok?'ok':'bad')+'">'+(t.ok?'Deck valid dan dipakai di Duel.':'Deck belum valid. Duel memakai Shogun bawaan.')+'</p>';
  [0,1].forEach(function(ex){h+='<h4 class="dh">'+(ex?'Extra Deck':'Main Deck')+'</h4>';C.filter(function(c){return !!c.e==!!ex}).forEach(function(c){h+='<div class="dr"><span>'+c.n+' <small>'+(c.k=='m'?c.s:c.s+(c.k=='s'?' Spell':' Trap'))+'</small></span><button data-d="-" data-i="'+c.id+'" aria-label="Kurangi">-</button><b>'+(dk.m[c.id]||0)+'</b><button data-d="+" data-i="'+c.id+'" aria-label="Tambah">+</button></div>'})});
@@ -630,11 +632,14 @@ function pendok(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(f
  else if(a=='eff')S.pend={t:'eff',i:sl.i};
  else if(a=='xyz'){exs('p',+v);S.sel=null}
  render()}
-function start(){S={t:'p',n:0,ph:'',lp:{p:8000,o:8000},p:mk('p'),o:mk(),ns:0,sel:null,pend:null,log:[],over:null};for(var i=0;i<5;i++){draw('p');draw('o')}begin('p');render()}
+function launch(){S={t:'p',n:0,ph:'',lp:{p:8000,o:8000},p:mk('p'),o:mk(),ns:0,sel:null,pend:null,log:[],over:null};for(var i=0;i<5;i++){draw('p');draw('o')}begin('p');render()}
+function start(){showPicker()}
+function showPicker(){var list=DM.deckList(),h='<div class="panel" style="max-width:620px;margin:12px auto;padding:18px"><h3>Pilih Deck untuk Duel</h3><p>Pilih deck yang ingin kamu gunakan melawan komputer.</p>';list.forEach(function(d){h+='<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px;margin:8px 0;border:1px solid var(--line);border-radius:10px"><div><b>'+d.n.replace(/[<>]/g,'')+'</b><div><small>Main '+d.m+'/40–60 · Extra '+d.e+'/15 · '+(d.ok?'Deck valid':'Deck tidak valid')+'</small></div></div><button class="btn g" data-pick="'+d.i+'" '+(d.ok?'':'disabled')+'>Pilih</button></div>'});h+='<p><button class="back" data-go="home">Kembali ke beranda</button> <button class="btn" data-go="deck">Edit Deck</button></p></div>';$('bd').innerHTML=h}
 $('duel').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ if(b.dataset.pick!=null){if(DM.selectDeck(+b.dataset.pick)){launch()}else showPicker();return}
  if(b.dataset.act)return act(b.dataset.act,b.dataset.v);
  if(b.dataset.s&&!S.over&&!(S.t=='o'&&S.pend))zc(b.dataset.s,b.dataset.k,+b.dataset.i)});
-start();
+showPicker();
 })();
 </script>
 </body>
