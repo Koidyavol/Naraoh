@@ -234,8 +234,19 @@ function classCatalogView(){
  return '<section class="panel"><h2>Class & Evolusi</h2><p class="muted">24 class dasar dan 16 class lanjutan. Class lanjutan diperoleh melalui perkembangan karakter, bukan dipilih saat dunia baru dibuat. Semua class tempur bisa bertarung solo; class profesi punya aktivitas ekonomi atau riset khusus.</p>'+groups.map(role=>'<h3>'+esc(role)+'</h3><div class="two">'+Object.keys(classes).filter(n=>classes[n].role===role).map(n=>'<article class="kingdom"><div class="row"><h3>'+esc(n)+'</h3><span class="tag">'+esc(classes[n].tier||'Dasar')+'</span></div><p>'+esc(classes[n].description||n)+'</p><small class="muted">Skill: '+classes[n].skills.map(esc).join(' · ')+'</small>'+(classes[n].tier==='Lanjutan'?'<p class="muted">Evolusi dari: '+esc(classes[n].parent||'class terkait')+'</p>':'')+'</article>').join('')+'</div>').join('')+'</section>';
 }
 
-const names=['Arlen','Mira','Kael','Liora','Darian','Selene','Riven','Astra','Mika','Noct','Elara','Theron','Lyra','Cassian','Nyx','Rowan','Seraph','Veyra','Orin','Amara','Fenris','Iris','Kieran','Evelyn','Zephyr','Neris','Alaric','Sora','Rhea','Lucien','Talia','Bram','Isolde','Ren','Aurelia','Dax'];
-const surnames=['Vale','Ashford','Moonfall','Duskborn','Silverwind','Embercrest','Ravenwood','Frostmere','Thorn','Starweaver','Blackthorn','Dawnveil'];
+const japaneseGivenNames=['Haruto','Yuto','Sota','Ren','Minato','Riku','Aoi','Itsuki','Akira','Haru','Kaito','Takumi','Daiki','Hinata','Shota','Yuma','Kazuki','Tsubasa','Naoki','Ryota','Sakura','Hina','Yui','Aoi','Rin','Mei','Akari','Yuna','Mio','Hana','Saki','Koharu','Nanami','Ayaka','Misaki','Kaori','Reina','Emi','Natsuki','Shiori','Mizuki','Asuka','Chihiro','Hotaru','Sayuri','Tomoe','Kiyomi','Yuzuki','Kanna','Riko'];
+const japaneseFamilyNames=['Sato','Suzuki','Takahashi','Tanaka','Watanabe','Ito','Yamamoto','Nakamura','Kobayashi','Kato','Yoshida','Yamada','Sasaki','Yamaguchi','Matsumoto','Inoue','Kimura','Hayashi','Shimizu','Mori','Abe','Ikeda','Hashimoto','Ishikawa','Yamashita','Ogawa','Ishii','Hasegawa','Goto','Okada','Fujita','Maeda','Endo','Aoki','Sakamoto','Murakami','Ota','Kaneko','Fujii','Fukuda','Nishimura','Nakajima','Harada','Ono','Miyazaki','Ueda','Takeuchi','Kojima','Kondo','Shibata'];
+const personalities=['Brave','Cautious','Greedy','Ambitious','Curious','Competitive','Independent','Kind'];
+function uniqueJapaneseName(){
+ const used=new Set((state.characters||[]).map(c=>String(c.name||'')));
+ for(let i=0;i<2000;i++){
+  const full=pick(japaneseGivenNames)+' '+pick(japaneseFamilyNames);
+  if(full!=='Koi'&&!used.has(full))return full;
+ }
+ let suffix=1,full='Haru Yamato';
+ while(used.has(full)||full==='Koi')full='Haru Yamato '+(++suffix);
+ return full;
+}
 const personalities=['Brave','Cautious','Greedy','Ambitious','Curious','Competitive','Independent','Kind'];
 const state={day:1,minute:480,speed:1,paused:false,tab:'overview',tick:0,characters:[],guilds:[],events:[],dead:[],economy:[{gold:0},{gold:0},{gold:0},{gold:0}],nextLog:0,filter:'',kingdomFilter:'all'};
 function log(msg,kind){state.events.unshift({day:state.day,time:clock(),msg:msg,kind:kind||'info'});if(state.events.length>300)state.events.length=300;}
@@ -243,15 +254,41 @@ function clock(){let m=state.minute%1440;return String(Math.floor(m/60)).padStar
 function makeCharacter(i){
 const cls=pick(baseClassNames),race=pick(races),king=rand(0,3),gender=Math.random()<.5?'Laki-laki':'Perempuan',base=Object.assign({},classes[cls].base);
 Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
-const c={name:pick(names)+' '+pick(surnames),gender:gender,age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:pick(personalities),kingdom:king,location:'town',activity:'Menjelajahi kota',goal:pick(['Meningkatkan kekuatan','Mencari uang','Menjelajahi dungeon','Menguasai skill','Mencari equipment']),stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice().sort(()=>Math.random()-.5).slice(0,rand(3,4)),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+const c={name:uniqueJapaneseName(),gender:gender,age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:pick(personalities),kingdom:king,location:'town',activity:'Menjelajahi kota',goal:pick(['Meningkatkan kekuatan','Mencari uang','Menjelajahi dungeon','Menguasai skill','Mencari equipment']),stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice().sort(()=>Math.random()-.5).slice(0,rand(3,4)),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
 c.hp=c.stats.HP;c.mp=c.stats.MP;return c;
+}
+function makeKoiCharacter(i){
+ const cls='Samurai',race=races.find(r=>r.name==='Human'),base=Object.assign({},classes[cls].base);
+ Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
+ const c={name:'Koi',gender:Math.random()<.5?'Laki-laki':'Perempuan',age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:'Independent',kingdom:0,location:'town',activity:'Menjelajahi kota',goal:'Menguasai skill',stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice(),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+ return c;
+}
+function ensureCharacterRoster(){
+ if(!Array.isArray(state.characters))state.characters=[];
+ let koi=state.characters.find(c=>c.name==='Koi');
+ state.characters.forEach(c=>{
+  if(c!==koi)c.name=uniqueJapaneseName();
+ });
+ if(!koi){
+  koi=makeKoiCharacter(state.characters.length);
+  state.characters.push(koi);
+ }else{
+  if(koi.class!=='Samurai'||koi.race!=='Human'){
+   const human=races.find(r=>r.name==='Human'),base=Object.assign({},classes.Samurai.base);
+   Object.keys(human.bonus).forEach(k=>{if(base[k]!=null)base[k]+=human.bonus[k];});
+   koi.stats=base;koi.hp=base.HP;koi.mp=base.MP;
+  }
+  koi.class='Samurai';koi.race='Human';koi.skills=classes.Samurai.skills.slice();
+  koi.trait=races.find(r=>r.name==='Human').trait;koi.weak=races.find(r=>r.name==='Human').weak;
+ }
 }
 function freshWorld(){
 state.day=1;state.minute=480;state.tick=0;state.events=[];state.dead=[];state.guilds=[];state.characters=[];
 for(let i=0;i<30;i++)state.characters.push(makeCharacter(i));
+state.characters.push(makeKoiCharacter(30));
 state.characters.forEach((c,i)=>{c.kingdom=i%4;c.location=Math.random()<.75?'town':'academy';});
-log('Dunia baru terbentuk. 30 petualang mulai menjalani jalan mereka masing-masing.','world');
-log('Empat kerajaan membuka gerbang kota, akademi, dan dungeon.','world');
+log('Dunia baru terbentuk. 31 petualang dengan nama Jepang yang unik mulai menjalani jalan mereka masing-masing.','world');
+log('Koi tiba sebagai Samurai dari ras Human. Empat kerajaan membuka gerbang kota, akademi, dan dungeon.','world');
 }
 function alive(){return state.characters.filter(c=>c.alive);}
 function locName(c){const k=kingdoms[c.kingdom];return c.location==='town'?k.town:c.location==='academy'?k.academy:c.location==='dungeon'?k.dungeon:'Perjalanan';}
@@ -442,7 +479,7 @@ function importSave(e){const f=e.target.files&&e.target.files[0];if(!f)return;co
 window.resetWorld=()=>{if(!confirm('Reset seluruh dunia dan mengganti save saat ini?'))return;freshWorld();window.save(false);state.tab='overview';render();};
 const backtop=$('#backtop');window.addEventListener('scroll',()=>backtop.classList.toggle('show',window.scrollY>260),{passive:true});backtop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});$('#closeModal').onclick=()=>$('#modalback').classList.remove('show');$('#modalback').onclick=e=>{if(e.target===$('#modalback'))$('#modalback').classList.remove('show');};
 $('#pauseBtn').onclick=()=>{state.paused=!state.paused;render();};document.querySelectorAll('.speed').forEach(b=>b.onclick=()=>{state.speed=+b.dataset.speed;render();});
-function load(){try{const raw=localStorage.getItem('hahaWorldSave');if(raw){const d=JSON.parse(raw);if(Array.isArray(d.characters)&&Array.isArray(d.events)){Object.assign(state,d);state.paused=true;return;}}}catch(e){}freshWorld();}
+function load(){try{const raw=localStorage.getItem('hahaWorldSave');if(raw){const d=JSON.parse(raw);if(Array.isArray(d.characters)&&Array.isArray(d.events)){Object.assign(state,d);ensureCharacterRoster();state.paused=true;return;}}}catch(e){}freshWorld();}
 load();render();setInterval(()=>{if(!state.paused){for(let i=0;i<state.speed;i++)tick();}},1200);
 })();
 </script>
