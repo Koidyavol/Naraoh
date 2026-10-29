@@ -444,11 +444,11 @@ window.DM={C:C,FR:FR,fk:fk};
 (function(){
 var DM=window.DM,C=DM.C,K='dm_decks',D,$=function(i){return document.getElementById(i)};
 function std(){var m={};C.forEach(function(c){m[c.id]=c.x});return{n:'Shogun',m:m}}
-function goblinStd(){var m={};C.forEach(function(c){m[c.id]=0});var q={'Goblin Recruit':3,'Goblin Spear Raider':3,'Goblin Tinker Tuner':3,'Goblin Banner Captain':3,'Goblin Scrap Bomber':3,'Goblin Cave Scout':3,'Goblin Warlord':2,'Goblin Fusion Adept':2,'Goblin Drum Tuner':2,'Goblin Rally':2,'Scrap for Glory':2,'Royal Foundry':2,'Kingdom Fusion':2,'Goblin Supply Cart':2,'Ambush from Below':2,'Rotten Barricade':2,'King’s Last Order':2};C.forEach(function(c){if(q[c.n]!=null)m[c.id]=q[c.n]});return{n:'Goblin Kingdom',m:m}}
+function goblinStd(){var m={};C.forEach(function(c){m[c.id]=0});var q={'Goblin Recruit':3,'Goblin Spear Raider':3,'Goblin Tinker Tuner':3,'Goblin Banner Captain':3,'Goblin Scrap Bomber':3,'Goblin Cave Scout':3,'Goblin Warlord':2,'Goblin Fusion Adept':2,'Goblin Drum Tuner':2,'Goblin Rally':2,'Scrap for Glory':2,'Royal Foundry':2,'Kingdom Fusion':2,'Goblin Supply Cart':2,'Ambush from Below':2,'Rotten Barricade':2,'King’s Last Order':2,'King Goblin':1,'Goblin Siege Brute':1,'Goblin Scrap Chimera':1,'Goblin Iron Tusk':1,'Goblin Furnace Golem':1,'Goblin War Chariot':1,'Goblin Crown Destroyer':1,'Goblin Horde Hydra':1,'Goblin Drum Captain':1,'Goblin War Drummer':1,'Goblin Siege Commander':1,'Goblin Forge Colossus':1,'Goblin Tyrant Marshal':1,'Goblin Thunder Cavalry':1,'Goblin Kingdom Emperor':1};C.forEach(function(c){if(q[c.n]!=null)m[c.id]=q[c.n]});return{n:'Goblin Kingdom',m:m}}
 try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D||!D.d||!D.d[D.a])D={d:[std()],a:0};
 function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}}
-if(!D.d.some(function(d){return d.n==='Goblin Kingdom'})){D.d.push(goblinStd());save()}
+var gd=D.d.filter(function(d){return d.n==='Goblin Kingdom'})[0];if(!gd){D.d.push(goblinStd());save()}else{var ge=0;C.forEach(function(c){if(c.e)ge+=gd.m[c.id]||0});if(ge===0){C.forEach(function(c){if(c.e&&c.n.indexOf('Goblin')===0)gd.m[c.id]=1});save()}}
 function st(dk){var m=0,e=0;C.forEach(function(c){var n=dk.m[c.id]||0;if(c.e)e+=n;else m+=n});return{m:m,e:e,ok:m>=40&&m<=60&&e<=15}}
 DM.counts=function(){var dk=D.d[D.a];return st(dk).ok?dk.m:std().m};
 function render(){var dk=D.d[D.a],t=st(dk),h='<div class="dbar"><select id="ds" aria-label="Pilih deck">'+D.d.map(function(d,i){return'<option value="'+i+'"'+(i==D.a?' selected':'')+'>'+d.n+'</option>'}).join('')+'</select><button data-d="new">Deck baru</button><button data-d="del">Hapus</button><button data-d="rst">Isi ulang Shogun</button></div><input id="dn" value="'+dk.n+'" aria-label="Nama deck">'+
