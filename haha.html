@@ -265,9 +265,15 @@ function makeKoiCharacter(i){
 }
 function ensureCharacterRoster(){
  if(!Array.isArray(state.characters))state.characters=[];
+ if(!Array.isArray(state.dead))state.dead=[];
  let koi=state.characters.find(c=>c.name==='Koi');
+ const used=new Set();
  state.characters.forEach(c=>{
-  if(c!==koi)c.name=uniqueJapaneseName();
+  if(c===koi)return;
+  const parts=String(c.name||'').split(' ');
+  const valid=parts.length===2&&japaneseGivenNames.includes(parts[0])&&japaneseFamilyNames.includes(parts[1])&&!used.has(c.name);
+  if(!valid)c.name=uniqueJapaneseName();
+  used.add(c.name);
  });
  if(!koi){
   koi=makeKoiCharacter(state.characters.length);
@@ -281,6 +287,11 @@ function ensureCharacterRoster(){
   koi.class='Samurai';koi.race='Human';koi.skills=classes.Samurai.skills.slice();
   koi.trait=races.find(r=>r.name==='Human').trait;koi.weak=races.find(r=>r.name==='Human').weak;
  }
+ state.dead.forEach(d=>{
+  const original=state.characters.find(c=>c.created===d.created);
+  if(original)d.name=original.name;
+  else if(d.name!=='Koi')d.name=uniqueJapaneseName();
+ });
 }
 function freshWorld(){
 state.day=1;state.minute=480;state.tick=0;state.events=[];state.dead=[];state.guilds=[];state.characters=[];
