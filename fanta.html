@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#11101b">
+<title>Fanta — Autonomous Fantasy World</title>
+<style>
+:root{--bg:#0d0c14;--panel:#171622;--panel2:#211f30;--line:#38344b;--text:#f3efff;--muted:#a7a0ba;--gold:#e5bd70;--violet:#a78bfa;--cyan:#67d6e8;--red:#f07886;--green:#83d7a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#201a35 0,#0d0c14 55%);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{border:1px solid var(--line);background:#28243a;color:var(--text);border-radius:10px;padding:9px 12px;cursor:pointer}button:hover{border-color:var(--gold);filter:brightness(1.1)}button:disabled{opacity:.4}button.primary{background:linear-gradient(120deg,#7c5cc4,#4b76a9);border-color:#8d78c6}button.danger{color:#ffb5bd}.app{max-width:1400px;margin:auto;padding:14px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.brand{display:flex;gap:10px;align-items:center}.sigil{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#4d376d,#24223b);border:1px solid #77639a;font-size:23px}.brand h1{margin:0;font-size:20px;letter-spacing:.08em}.brand small{color:var(--muted)}.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted)}.pill strong{color:var(--gold)}.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px;scrollbar-width:thin}.tabs button{white-space:nowrap}.tabs button.active{background:#4a3a67;border-color:var(--gold)}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:12px}.metric,.panel,.card{background:linear-gradient(145deg,rgba(30,28,44,.96),rgba(20,19,30,.98));border:1px solid var(--line);border-radius:14px}.metric{padding:12px}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{font-size:22px;color:var(--gold)}.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.8fr);gap:12px}.panel{padding:14px;min-width:0}.panel h2{font-size:16px;margin:0 0 10px}.panel h3{font-size:14px;margin:12px 0 7px;color:var(--gold)}.muted{color:var(--muted)}.small{font-size:12px}.list{display:flex;flex-direction:column;gap:7px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border:1px solid #302d40;background:#191824;border-radius:10px;min-width:0}.item .info{min-width:0}.item strong{display:block}.item small{color:var(--muted)}.item button{flex-shrink:0}.tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;background:#302a46;color:#d5c5ff;margin:2px 3px 2px 0}.tag.gold{background:#45351f;color:#f2d397}.tag.red{background:#482630;color:#ffb4bd}.bar{height:6px;background:#373246;border-radius:99px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#8b72db,#6dd6dc)}.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.statbox{background:#201e2d;border:1px solid #353147;border-radius:9px;padding:8px}.statbox span{display:block;color:var(--muted);font-size:11px}.statbox b{font-size:16px}.log{height:280px;overflow:auto;display:flex;flex-direction:column;gap:7px}.logline{border-left:2px solid #68558e;padding:4px 8px;color:#d7d1e6;font-size:12px}.logline time{color:var(--gold);margin-right:6px}.kingdom{padding:12px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(130deg,#252039,#171622);margin-bottom:9px}.kingdom h3{margin:0 0 5px;color:var(--gold)}.kingdom p{margin:0 0 8px;color:var(--muted);font-size:12px}.field{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.field input,.field select{background:#12111b;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px;min-width:0;flex:1}.empty{padding:22px;text-align:center;color:var(--muted)}.footer{color:var(--muted);font-size:11px;text-align:center;padding:18px}html{scroll-behavior:smooth;scroll-padding-top:76px}.tabs{position:sticky;top:0;z-index:8;background:rgba(13,12,20,.96);backdrop-filter:blur(12px);border-bottom:1px solid #302b40;padding:8px 0 10px;margin:0 0 10px}.panel{padding:12px}.item{padding:8px;gap:7px}.metric{padding:9px}.kingdom{padding:10px;margin-bottom:7px}.backtop{position:fixed;right:14px;bottom:16px;z-index:9;border-radius:999px;width:44px;height:44px;padding:0;font-size:20px;box-shadow:0 4px 18px #0008;background:#4a3a67;border-color:#8d78c6;display:none}.backtop.show{display:block}.modalback{position:fixed;inset:0;background:#000b;z-index:10;display:none;align-items:center;justify-content:center;padding:12px}.modalback.show{display:flex}.modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:#171622;border:1px solid #615477;border-radius:16px;padding:16px}.modalhead{display:flex;justify-content:space-between;gap:10px;align-items:center}.modalhead h2{margin:0}.notice{border:1px solid #55466f;background:#211c30;color:#d8c9fa;padding:10px;border-radius:10px;margin-bottom:10px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.app{padding:10px}.brand h1{font-size:17px}.log{height:180px}.tabs{margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}.panel{padding:10px}}@media(max-width:380px){.statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.metric strong{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="sigil">✦</div><div><h1>FANTA <span style="color:var(--gold)">WORLD</span></h1><small>Autonomous Fantasy Simulator · Observer Mode</small></div></div><div class="controls"><span class="pill">Hari <strong id="day">1</strong></span><span class="pill">Waktu <strong id="clock">08:00</strong></span><button id="pauseBtn">Ⅱ Pause</button><button data-speed="1" class="speed active">1×</button><button data-speed="2" class="speed">2×</button><button data-speed="5" class="speed">5×</button><button data-speed="10" class="speed">10×</button></div></header>
+<nav class="tabs" id="tabs"></nav>
+<section class="stats" id="metrics"></section>
+<main id="view"></main>
+<div class="footer">FANTA WORLD · Dunia simulasi tersimpan di browser perangkat ini. Tidak ada level karakter dan tidak ada sistem romance.</div>
+</div>
+<button class="backtop" id="backtop" aria-label="Kembali ke atas" title="Kembali ke atas">↑</button>
+<div class="modalback" id="modalback"><section class="modal"><div class="modalhead"><h2 id="modalTitle">Detail</h2><button id="closeModal">Tutup ✕</button></div><div id="modalBody"></div></section></div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const kingdoms=[
+{name:'Amanomiya',kanji:'天ノ宮',theme:'Kerajaan manusia, pemerintahan & perdagangan',town:'Miyako no Machi',academy:'Tenkuu Mahou Gakuin',dungeon:'Kokuen no Kyuuden',desc:'Pusat pemerintahan dan perdagangan dengan jalan ramai, ksatria kerajaan, serta reruntuhan bawah tanah.',color:'#d6b06a',monsters:['Slime','Goblin','Skeleton','Wraith'],places:[{name:'Istana Tenno',type:'Istana Kerajaan',desc:'Tempat raja, dewan kerajaan, dan keputusan politik.'},{name:'Guild Petualang Hikari',type:'Guild Petualang',desc:'Pusat pendaftaran petualang, kontrak, dan laporan misi.'},{name:'Pasar Nishiki',type:'Pasar Utama',desc:'Tempat jual beli bahan, makanan, senjata, dan barang langka.'},{name:'Klinik Sakura',type:'Klinik',desc:'Tempat pemulihan dan perawatan petualang yang terluka.'},{name:'Tenkuu Mahou Gakuin',type:'Akademi Sihir',desc:'Akademi untuk mempelajari sihir dasar dan teori mana.'},{name:'Kokuen no Kyuuden',type:'Dungeon Kerajaan',desc:'Reruntuhan bawah tanah yang menyimpan undead dan harta lama.'}]},
+{name:'Sakuramori',kanji:'桜森',theme:'Kerajaan elf, hutan sakura & sihir alam',town:'Hanamori no Sato',academy:'Seirei no Mori Gakuin',dungeon:'Midori no Meikyuu',desc:'Wilayah hutan suci, roh alam, mata air pemulihan, dan pepohonan sakura kuno.',color:'#83d7a5',monsters:['Dire Wolf','Treant','Goblin','Slime'],places:[{name:'Kuil Seirei',type:'Kuil Roh Alam',desc:'Tempat para penjaga hutan berdoa dan merawat keseimbangan alam.'},{name:'Pohon Sakura Abadi',type:'Tempat Suci',desc:'Pohon kuno yang menjadi lambang dan sumber legenda kerajaan.'},{name:'Pasar Hanakago',type:'Pasar Hutan',desc:'Perdagangan herbal, ramuan, bahan alkimia, dan hasil hutan.'},{name:'Mata Air Tsukimi',type:'Mata Air Pemulihan',desc:'Tempat beristirahat dan memulihkan tenaga di tengah hutan.'},{name:'Seirei no Mori Gakuin',type:'Akademi Sihir Alam',desc:'Tempat mempelajari sihir alam, roh, dan alkimia.'},{name:'Midori no Meikyuu',type:'Dungeon Kerajaan',desc:'Labirin hidup yang dihuni monster tumbuhan dan penjaga kuno.'}]},
+{name:'Ryugaku',kanji:'龍岳',theme:'Kerajaan naga, pegunungan, tambang & pandai besi',town:'Kurogane no Sato',academy:'Ryuuen Koubou',dungeon:'Karyuu no Doukutsu',desc:'Benteng pegunungan dengan tambang mineral, bengkel senjata, dan jalur naga kuno.',color:'#f09b78',monsters:['Golem','Orc','Drake','Skeleton'],places:[{name:'Benteng Ryujin',type:'Benteng Kerajaan',desc:'Pertahanan utama kerajaan dan markas pasukan penjaga gunung.'},{name:'Tambang Kurogane',type:'Tambang Mineral',desc:'Sumber bijih besi, mithril, dan batu berharga.'},{name:'Bengkel Homura',type:'Pandai Besi',desc:'Tempat menempa senjata, zirah, dan perlengkapan petualang.'},{name:'Aula Naga',type:'Aula Leluhur',desc:'Tempat menyimpan catatan dan peninggalan klan naga.'},{name:'Ryuuen Koubou',type:'Akademi Tempaan',desc:'Tempat mempelajari teknik tempaan dan penguatan perlengkapan.'},{name:'Karyuu no Doukutsu',type:'Dungeon Kerajaan',desc:'Gua naga dengan golem, drake, dan mineral langka.'}]},
+{name:'Kagezuki',kanji:'影月',theme:'Kerajaan bayangan, malam & sihir terlarang',town:'Yoru no Miyako',academy:'Kurotsuki Mahouin',dungeon:'Shikkoku no Meiro',desc:'Kerajaan malam dengan perpustakaan terlarang, pasar rahasia, dan artefak dari zaman lama.',color:'#b8a0ff',monsters:['Demon','Wraith','Skeleton','Drake'],places:[{name:'Istana Kurotsuki',type:'Istana Malam',desc:'Kediaman penguasa dan pusat pengawasan wilayah bayangan.'},{name:'Perpustakaan Yami',type:'Perpustakaan Terlarang',desc:'Menyimpan manuskrip kuno dan catatan sihir yang disegel.'},{name:'Pasar Bayangan',type:'Pasar Rahasia',desc:'Tempat transaksi informasi, artefak, dan barang sulit ditemukan.'},{name:'Kuil Getsumei',type:'Kuil Bulan',desc:'Tempat ritual penjagaan segel dan pengamatan fenomena malam.'},{name:'Kurotsuki Mahouin',type:'Akademi Sihir Gelap',desc:'Tempat penelitian sihir bayangan dengan pengawasan ketat.'},{name:'Shikkoku no Meiro',type:'Dungeon Kerajaan',desc:'Labirin gelap berisi monster abyss dan peninggalan terkutuk.'}]}
+];
+const races=[
+{name:'Human',bonus:{ATK:1,DEF:1,ACC:1},trait:'Adaptif',weak:'Tidak memiliki spesialisasi ekstrem'},
+{name:'High Elf',bonus:{MAG:4,WIS:3,PER:2},trait:'Affinity sihir',weak:'HP dan DEF awal lebih rendah'},
+{name:'Dark Elf',bonus:{SPD:3,ACC:3,CRIT:2},trait:'Presisi bayangan',weak:'Pertahanan sihir moderat'},
+{name:'Demonkin',bonus:{ATK:3,MAG:2,RES:2},trait:'Darah abyss',weak:'Biaya stamina sedikit lebih tinggi'},
+{name:'Dragonkin',bonus:{HP:18,DEF:3,RES:3},trait:'Kulit bersisik',weak:'Latihan SPD lebih lambat'},
+{name:'Beastkin',bonus:{SPD:3,EVA:3,PER:3},trait:'Naluri pemburu',weak:'MDEF awal lebih rendah'},
+{name:'Dwarf',bonus:{DEF:4,END:3,CRAFT:4},trait:'Ahli pandai besi',weak:'SPD awal lebih rendah'},
+{name:'Vampire',bonus:{CRIT:2,SPD:2,MAG:2},trait:'Pemulihan saat menyerang',weak:'Efek pemulihan bergantung kondisi'},
+{name:'Spiritborn',bonus:{MAG:3,MDEF:3,WIS:3},trait:'Tubuh spiritual',weak:'ATK fisik lebih rendah'},
+{name:'Celestial',bonus:{MDEF:3,RES:4,WIS:2},trait:'Aegis',weak:'CRIT awal lebih rendah'}
+];
+const classes={
+Warrior:{base:{HP:125,MP:28,ATK:15,DEF:13,MAG:4,MDEF:8,SPD:7,ACC:9,EVA:4,CRIT:5,'CRIT DMG':150,LUK:5,END:14,WIS:5,RES:8,PER:6,CHA:6,CRAFT:4},skills:['Heavy Strike','Shield Guard','Counter Stance','Cleave','War Cry']},
+Mage:{base:{HP:78,MP:100,ATK:5,DEF:5,MAG:17,MDEF:13,SPD:7,ACC:9,EVA:5,CRIT:6,'CRIT DMG':150,LUK:7,END:6,WIS:15,RES:9,PER:9,CHA:7,CRAFT:4},skills:['Fire Bolt','Ice Lance','Lightning Arc','Mana Barrier','Arcane Burst']},
+Archer:{base:{HP:92,MP:38,ATK:12,DEF:7,MAG:5,MDEF:7,SPD:12,ACC:15,EVA:10,CRIT:12,'CRIT DMG':165,LUK:9,END:9,WIS:7,RES:7,PER:14,CHA:7,CRAFT:5},skills:['Precision Shot','Multi Shot','Poison Arrow','Trap Setup','Piercing Arrow']},
+Assassin:{base:{HP:85,MP:35,ATK:14,DEF:6,MAG:5,MDEF:6,SPD:16,ACC:12,EVA:14,CRIT:17,'CRIT DMG':180,LUK:11,END:8,WIS:6,RES:7,PER:12,CHA:6,CRAFT:4},skills:['Shadow Strike','Quickstep','Venom Cut','Backstab','Evasion Stance']}
+};
+const skillData={
+'Heavy Strike':{cost:4,power:1.65,type:'phys',desc:'Pukulan berat dengan damage tinggi.'},'Shield Guard':{cost:3,power:.35,type:'guard',desc:'Mengurangi damage yang diterima.'},'Counter Stance':{cost:4,power:1.1,type:'counter',desc:'Bersiap membalas serangan.'},Cleave:{cost:7,power:1.3,type:'phys',desc:'Serangan fisik menyapu.'},'War Cry':{cost:5,power:0,type:'buff',desc:'Meningkatkan ATK sementara.'},
+'Fire Bolt':{cost:7,power:1.6,type:'magic',desc:'Proyektil api.'},'Ice Lance':{cost:8,power:1.5,type:'magic',status:'freeze',desc:'Tombak es dengan peluang freeze.'},'Lightning Arc':{cost:10,power:1.8,type:'magic',status:'stun',desc:'Petir yang dapat membuat target stun.'},'Mana Barrier':{cost:9,power:0,type:'barrier',desc:'Perisai magis sementara.'},'Arcane Burst':{cost:15,power:2.35,type:'magic',desc:'Ledakan energi arcane.'},
+'Precision Shot':{cost:4,power:1.55,type:'phys',desc:'Tembakan akurat.'},'Multi Shot':{cost:8,power:1.0,type:'multi',desc:'Serangan beruntun.'},'Poison Arrow':{cost:6,power:1.0,type:'poison',desc:'Panah beracun.'},'Trap Setup':{cost:5,power:.8,type:'phys',desc:'Memasang perangkap saat bertarung.'},'Piercing Arrow':{cost:7,power:1.65,type:'pierce',desc:'Panah yang mengabaikan sebagian DEF.'},
+'Shadow Strike':{cost:5,power:1.7,type:'phys',desc:'Serangan dari bayangan.'},Quickstep:{cost:4,power:0,type:'evasion',desc:'Meningkatkan peluang menghindar.'},'Venom Cut':{cost:6,power:1.05,type:'poison',desc:'Sayatan beracun.'},Backstab:{cost:8,power:2.0,type:'phys',desc:'Serangan kritis terarah.'},'Evasion Stance':{cost:5,power:0,type:'evasion',desc:'Sikap menghindar.'}
+};
+
+/* Expanded class system: 24 base classes and 16 advanced classes. */
+const classSpecs=[
+['Knight','Dasar','Petarung','Warrior',{HP:18,DEF:4,ATK:1},['Shield Bash','Iron Wall','Guardian Counter','Challenge']],
+['Berserker','Dasar','Petarung','Warrior',{HP:12,ATK:5,DEF:-2,CRIT:4},['Rage Strike','Blood Rush','Reckless Swing','Frenzy']],
+['Lancer','Dasar','Petarung','Warrior',{HP:4,ATK:3,SPD:3,ACC:2},['Spear Thrust','Vaulting Pierce','Spear Sweep','Formation Break']],
+['Samurai','Dasar','Petarung','Warrior',{ATK:4,SPD:3,ACC:2,CRIT:3},['Iaijutsu','Crescent Slash','Focus Stance','Blade Dance']],
+['Monk','Dasar','Petarung','Warrior',{HP:8,ATK:2,SPD:3,END:3},['Palm Strike','Inner Breath','Rising Kick','Iron Body']],
+['Elementalist','Dasar','Sihir','Mage',{MP:15,MAG:3,WIS:2},['Flame Wave','Tidal Spear','Gale Burst','Stone Ward']],
+['Summoner','Dasar','Sihir','Mage',{MP:12,MAG:2,WIS:3},['Spirit Bolt','Call Familiar','Astral Bind','Summon Burst']],
+['Necromancer','Dasar','Sihir','Mage',{MP:12,MAG:3,RES:2},['Grave Bolt','Bone Ward','Soul Drain','Wraith Pulse']],
+['Spellblade','Dasar','Sihir','Warrior',{MP:12,ATK:2,MAG:3,SPD:1},['Arcane Edge','Runic Guard','Mana Slash','Spellstep']],
+['Enchanter','Dasar','Sihir','Mage',{MP:10,MAG:2,WIS:3,MDEF:2},['Weapon Enchant','Mystic Guard','Hex Mark','Arcane Pulse']],
+['Rogue','Dasar','Kelincahan','Assassin',{SPD:2,ACC:2,LUK:2},['Cheap Shot','Smoke Veil','Dirty Trick','Twin Cut']],
+['Ranger','Dasar','Kelincahan','Archer',{HP:5,ACC:2,PER:3,SPD:1},['Mark Target','Wild Arrow','Snare Trap','Eagle Focus']],
+['Cleric','Dasar','Support','Mage',{HP:8,MP:12,MAG:2,MDEF:3},['Holy Bolt','Mend Wounds','Sanctuary','Radiant Strike']],
+['Bard','Dasar','Support','Archer',{MP:10,CHA:4,WIS:2},['Battle Hymn','Resonant Note','Discordant Chord','Encore']],
+['Oracle','Dasar','Support','Mage',{MP:12,WIS:4,LUK:2},['Foresight','Fate Pulse','Omen Bolt','Fortune Veil']],
+['Alchemist','Dasar','Support','Mage',{MP:8,CRAFT:4,WIS:2},['Acid Flask','Vital Tonic','Flash Bomb','Catalyst Burst']],
+['Blacksmith','Dasar','Profesi','Warrior',{HP:8,DEF:2,CRAFT:6},['Hammer Strike','Reinforce Gear','Forge Guard','Metal Burst']],
+['Merchant','Dasar','Profesi','Archer',{CHA:5,LUK:4,CRAFT:2},['Bargain Tactics','Coin Toss','Appraise','Quick Deal']],
+['Herbalist','Dasar','Profesi','Mage',{MP:8,WIS:3,PER:3,CRAFT:3},['Herbal Poultice','Thorn Dart','Pollen Veil','Wild Remedy']],
+['Scholar','Dasar','Profesi','Mage',{MP:12,WIS:5,PER:3},['Arcane Analysis','Study Weakness','Knowledge Bolt','Research Focus']],
+['Paladin','Lanjutan','Petarung','Knight',{HP:18,DEF:4,ATK:3,MDEF:3},['Judgment Strike','Holy Aegis','Sanctified Cleave','Divine Resolve']],
+['Saint Knight','Lanjutan','Petarung','Paladin',{HP:22,DEF:5,MDEF:5,RES:4},['Radiant Judgment','Sacred Fortress','Purify','Heavenfall']],
+['Kensei','Lanjutan','Petarung','Samurai',{ATK:5,SPD:4,CRIT:4},['Perfect Iaijutsu','Thousand Petals','Zen Focus','Moon-Cut']],
+['Dread Berserker','Lanjutan','Petarung','Berserker',{HP:18,ATK:7,DEF:1,CRIT:5},['Dread Rampage','Ruinous Blow','Last Stand','Bloodstorm']],
+['Archmage','Lanjutan','Sihir','Mage',{MP:20,MAG:6,WIS:5,MDEF:3},['Meteor Sigil','Prismatic Nova','Arcane Dominion','Mana Singularity']],
+['Abyss Summoner','Lanjutan','Sihir','Summoner',{MP:20,MAG:5,RES:4,WIS:3},['Abyssal Avatar','Void Pact','Rift Collapse','Eldritch Swarm']],
+['Lich Lord','Lanjutan','Sihir','Necromancer',{MP:18,MAG:5,RES:5,MDEF:3},['Soul Harvest','Crypt Army','Death Mantle','Eternal Grave']],
+['Chronomancer','Lanjutan','Sihir','Oracle',{MP:18,MAG:4,WIS:5,SPD:3},['Time Fracture','Rewind Pulse','Temporal Lock','Accelerate']],
+['Shadow Stalker','Lanjutan','Kelincahan','Assassin',{ATK:4,SPD:5,EVA:4,CRIT:5},['Umbral Execution','Phantom Step','Night Venom','Silent Finish']],
+['Master Ranger','Lanjutan','Kelincahan','Ranger',{HP:8,ACC:5,PER:5,ATK:3},['Deadeye Volley','Predator Mark','Storm of Arrows','Hunter Instinct']],
+['High Priest','Lanjutan','Support','Cleric',{HP:14,MP:18,MAG:4,MDEF:5,WIS:4},['Greater Benediction','Holy Nova','Aegis of Dawn','Restoration Wave']],
+['Fate Weaver','Lanjutan','Support','Oracle',{MP:18,WIS:6,LUK:4,MAG:3},['Rewrite Fate','Prophetic Ruin','Fortune Reversal','Threads of Destiny']],
+['Master Smith','Lanjutan','Profesi','Blacksmith',{HP:12,DEF:3,CRAFT:8,END:3},['Mythril Forge','Masterwork Repair','Relic Temper','Legendary Alloy']],
+['Grand Alchemist','Lanjutan','Profesi','Alchemist',{MP:12,CRAFT:7,WIS:4,MAG:3},['Philosopher Elixir','Transmute Field','Grand Catalyst','Perfect Antidote']],
+['Trade Magnate','Lanjutan','Profesi','Merchant',{CHA:7,LUK:6,CRAFT:4},['Market Network','Golden Contract','Supply Empire','Master Negotiation']],
+['Grand Arcanist Researcher','Lanjutan','Profesi','Scholar',{MP:18,WIS:7,PER:5,MAG:4},['Forbidden Thesis','Analyze Artifact','Arcane Discovery','Master Research']]
+];
+const classDescriptions={
+Warrior:'Petarung garis depan dengan kemampuan fisik seimbang.',Mage:'Penyihir serbaguna dengan serangan sihir kuat.',Archer:'Pemanah akurat untuk serangan jarak jauh.',Assassin:'Petarung lincah yang unggul dalam serangan kritis.',
+Knight:'Pelindung dengan pertahanan tinggi.',Berserker:'Penyerang agresif yang mengorbankan pertahanan demi damage.',Lancer:'Spesialis tombak dengan jangkauan dan tusukan kuat.',Samurai:'Ahli pedang yang mengandalkan presisi dan combo.',Monk:'Petarung tangan kosong dengan stamina dan daya tahan.',
+Elementalist:'Mengendalikan berbagai elemen untuk menyerang dan bertahan.',Summoner:'Memanggil roh atau makhluk untuk membantu pertarungan.',Necromancer:'Menggunakan sihir kematian dan energi jiwa.',Spellblade:'Menggabungkan serangan senjata dengan sihir.',Enchanter:'Memperkuat perlengkapan dan mengendalikan efek sihir.',
+Rogue:'Petarung licik yang ahli menghindar dan menyerang celah.',Ranger:'Pemburu dan penjelajah dengan kemampuan pelacakan.',Cleric:'Support mandiri yang bisa menyembuhkan diri dan menyerang dengan kekuatan suci.',Bard:'Memakai musik untuk memperkuat diri dan mengganggu musuh.',Oracle:'Membaca kemungkinan masa depan dan mengubah peluang.',Alchemist:'Menggunakan ramuan, racun, dan bom; efektif saat solo.',
+Blacksmith:'Profesi pembuat dan perawat perlengkapan; tetap mampu membela diri.',Merchant:'Pedagang yang fokus pada keuntungan, negosiasi, dan jaringan usaha.',Herbalist:'Mengumpulkan bahan alami dan meracik obat.',Scholar:'Peneliti yang mempelajari sihir, monster, dan artefak.',
+Paladin:'Ksatria suci yang seimbang antara pertahanan dan serangan.','Saint Knight':'Pelindung suci tingkat tinggi dengan barrier dan pemurnian.',Kensei:'Master pedang dengan serangan presisi tingkat tinggi.', 'Dread Berserker':'Berserker veteran dengan serangan dahsyat dan daya tahan tinggi.',Archmage:'Penyihir tingkat tinggi dengan mantra area.', 'Abyss Summoner':'Pemanggil entitas abyss yang kuat dengan biaya mana besar.', 'Lich Lord':'Penguasa undead dan sihir kematian.',Chronomancer:'Mengendalikan tempo pertarungan dan efek waktu.', 'Shadow Stalker':'Pemburu bayangan yang ahli menyergap target.', 'Master Ranger':'Pemanah elit dengan akurasi dan pelacakan unggul.', 'High Priest':'Penyembuh suci tingkat tinggi yang tetap efektif dalam solo.', 'Fate Weaver':'Mengubah peluang dan membaca jalur hasil pertarungan.', 'Master Smith':'Ahli tempa yang membuat perlengkapan tingkat tinggi.', 'Grand Alchemist':'Peracik tingkat tinggi untuk ramuan dan bahan langka.', 'Trade Magnate':'Pengusaha besar dengan kemampuan negosiasi dan jaringan pasar.', 'Grand Arcanist Researcher':'Peneliti tingkat tinggi yang membuka pengetahuan dan resep langka.'
+};
+classSpecs.forEach(([name,tier,role,parent,bonus,skills])=>{
+ const template=classes[parent]||classes.Warrior;
+ const base=Object.assign({},template.base);
+ Object.entries(bonus).forEach(([key,val])=>{base[key]=(base[key]||0)+val;});
+ classes[name]={base,skills, tier, role, parent, description:classDescriptions[name]||name+' memiliki gaya bertarung dan keahlian khusus.'};
+ const magical=['Sihir','Support'].includes(role);
+ skills.forEach((skill,index)=>{
+  const type=index===1?(role==='Support'?'barrier':role==='Profesi'?'buff':'guard'):index===2?(role==='Sihir'?'magic':role==='Kelincahan'?'poison':'pierce'):index===3?(role==='Sihir'?'magic':'multi'):(magical?'magic':'phys');
+  const costs=[5,6,7,9][index],powers=[1.25,0,1.35,1.55][index];
+  skillData[skill]={cost:costs,power:powers,type,desc:classDescriptions[name]+' Skill '+skill+'.'};
+ });
+});
+/* Skill dasar unik untuk setiap class. Efek memakai tipe yang sudah didukung sistem combat. */
+const basicSkillProfiles={
+ Warrior:{type:'phys',cost:4,power:1.65,desc:'Heavy Strike: menghantam target dengan damage fisik kuat.'},
+ Mage:{type:'magic',cost:5,power:1.55,desc:'Fire Bolt: meluncurkan proyektil api berbasis MAG.'},
+ Archer:{type:'pierce',cost:4,power:1.45,desc:'Precision Shot: tembakan akurat yang menembus sebagian DEF.'},
+ Assassin:{type:'phys',cost:4,power:1.7,desc:'Shadow Strike: serangan cepat dari bayangan.'},
+ Knight:{type:'phys',cost:4,power:1.3,desc:'Shield Bash: menghantam lawan dengan perisai.'},
+ Berserker:{type:'phys',cost:5,power:1.9,desc:'Rage Strike: serangan brutal dengan damage tinggi.'},
+ Lancer:{type:'pierce',cost:4,power:1.55,desc:'Spear Thrust: tusukan tombak yang menembus pertahanan.'},
+ Samurai:{type:'phys',cost:4,power:1.65,desc:'Iaijutsu: tebasan cepat dengan peluang critical dari stat CRIT.'},
+ Monk:{type:'phys',cost:3,power:1.35,desc:'Palm Strike: pukulan telapak yang efisien dan hemat MP.'},
+ Elementalist:{type:'magic',cost:6,power:1.65,desc:'Flame Wave: gelombang elemen api berbasis MAG.'},
+ Summoner:{type:'magic',cost:6,power:1.4,desc:'Spirit Bolt: memanggil energi roh untuk menyerang.'},
+ Necromancer:{type:'magic',cost:6,power:1.6,desc:'Grave Bolt: proyektil energi kematian.'},
+ Spellblade:{type:'phys',cost:5,power:1.45,desc:'Arcane Edge: tebasan senjata yang diperkuat sihir.'},
+ Enchanter:{type:'buff',cost:4,power:0,desc:'Weapon Enchant: meningkatkan ATK sementara untuk serangan berikutnya.'},
+ Rogue:{type:'phys',cost:4,power:1.5,desc:'Cheap Shot: serangan licik dengan biaya rendah.'},
+ Ranger:{type:'pierce',cost:4,power:1.5,desc:'Mark Target: serangan terarah yang mengabaikan sebagian DEF.'},
+ Cleric:{type:'barrier',cost:5,power:0,desc:'Mend Wounds: memulihkan sebagian HP dan memberi perlindungan melalui efek barrier.'},
+ Bard:{type:'buff',cost:5,power:0,desc:'Battle Hymn: meningkatkan ATK sementara lewat nyanyian.'},
+ Oracle:{type:'evasion',cost:4,power:0,desc:'Foresight: membaca gerakan lawan dan menghindari serangan berikutnya.'},
+ Alchemist:{type:'poison',cost:5,power:1.05,desc:'Acid Flask: melempar ramuan korosif yang memberi efek racun.'},
+ Blacksmith:{type:'buff',cost:4,power:0,desc:'Forge Strike: memperkuat tenaga untuk serangan berikutnya.'},
+ Merchant:{type:'phys',cost:3,power:1.15,desc:'Coin Shot: serangan sederhana dengan biaya rendah.'},
+ Herbalist:{type:'barrier',cost:4,power:0,desc:'Herbal Poultice: memulihkan HP melalui ramuan herbal.'},
+ Scholar:{type:'magic',cost:5,power:1.4,desc:'Arcane Analysis: serangan sihir yang memanfaatkan pengetahuan.'},
+ Paladin:{type:'phys',cost:5,power:1.65,desc:'Radiant Smite: serangan suci yang kuat.'},
+ 'Saint Knight':{type:'barrier',cost:6,power:0,desc:'Sanctified Aegis: memulihkan HP dan menyiapkan pertahanan.'},
+ Kensei:{type:'phys',cost:5,power:1.9,desc:'Perfect Draw: tebasan presisi dengan damage tinggi.'},
+ 'Dread Berserker':{type:'phys',cost:6,power:2.05,desc:'Dread Cleave: tebasan brutal berdaya besar.'},
+ Archmage:{type:'magic',cost:8,power:2.0,desc:'Prismatic Burst: ledakan sihir berbasis MAG.'},
+ 'Abyss Summoner':{type:'magic',cost:8,power:1.95,desc:'Abyssal Bolt: energi abyss menyerang target.'},
+ 'Lich Lord':{type:'poison',cost:7,power:1.5,desc:'Soul Rot: serangan energi jiwa yang meninggalkan racun.'},
+ Chronomancer:{type:'evasion',cost:6,power:0,desc:'Time Slip: menghindari serangan dengan melangkah sesaat ke luar waktu.'},
+ 'Shadow Stalker':{type:'phys',cost:5,power:1.95,desc:'Umbral Execution: serangan bayangan yang sangat kuat.'},
+ 'Master Ranger':{type:'pierce',cost:5,power:1.8,desc:'Deadeye Volley: tembakan elit yang menembus sebagian DEF.'},
+ 'High Priest':{type:'barrier',cost:7,power:0,desc:'Greater Benediction: memulihkan HP dan memberi perlindungan.'},
+ 'Fate Weaver':{type:'buff',cost:6,power:0,desc:'Rewrite Fate: meningkatkan ATK sementara dengan mengubah peluang.'},
+ 'Master Smith':{type:'buff',cost:5,power:0,desc:'Mythril Forge: menyiapkan peningkatan ATK sementara.'},
+ 'Grand Alchemist':{type:'barrier',cost:6,power:0,desc:'Philosopher Elixir: ramuan pemulihan untuk bertahan lebih lama.'},
+ 'Trade Magnate':{type:'buff',cost:4,power:0,desc:'Golden Contract: meningkatkan ATK sementara lewat persiapan dan taktik.'},
+ 'Grand Arcanist Researcher':{type:'magic',cost:7,power:1.75,desc:'Forbidden Thesis: melepaskan sihir hasil riset terlarang.'}
+};
+/* Efek khusus skill support/utility agar deskripsi sesuai hasil combat. */
+Object.assign(skillData,{
+ 'Mend Wounds':{cost:5,power:0,type:'heal',healRatio:.24,desc:'Memulihkan 24% HP maksimum.'},
+ 'Holy Bolt':{cost:4,power:1.25,type:'magic',status:'stun',desc:'Serangan suci dengan peluang stun.'},
+ 'Sanctuary':{cost:6,power:0,type:'barrier',desc:'Memulihkan HP dan mengurangi serangan berikutnya.'},
+ 'Greater Benediction':{cost:7,power:0,type:'heal',healRatio:.32,desc:'Memulihkan 32% HP maksimum.'},
+ 'Herbal Poultice':{cost:4,power:0,type:'heal',healRatio:.2,desc:'Memulihkan 20% HP maksimum.'},
+ 'Vital Tonic':{cost:5,power:0,type:'heal',healRatio:.18,desc:'Memulihkan HP dan membantu bertahan.'},
+ 'Wild Remedy':{cost:6,power:0,type:'heal',healRatio:.28,desc:'Memulihkan HP dengan ramuan alami.'},
+ 'Restoration Wave':{cost:8,power:0,type:'heal',healRatio:.3,desc:'Gelombang pemulihan kuat.'},
+ 'Perfect Antidote':{cost:5,power:0,type:'heal',healRatio:.2,desc:'Memulihkan HP dengan ramuan.'},
+ 'Iron Wall':{cost:4,power:0,type:'guard',desc:'Mengurangi damage yang diterima selama dua serangan.'},
+ 'Guardian Counter':{cost:4,power:1.05,type:'counter',desc:'Bersiap membalas serangan musuh.'},
+ 'Sacred Fortress':{cost:7,power:0,type:'barrier',desc:'Barrier dan pemulihan kecil.'},
+ 'Aegis of Dawn':{cost:6,power:0,type:'barrier',desc:'Barrier suci yang mengurangi damage masuk.'},
+ 'Mana Barrier':{cost:9,power:0,type:'barrier',desc:'Barrier magis dan pemulihan kecil.'},
+ 'Multi Shot':{cost:8,power:1.0,type:'multi',desc:'Tiga serangan beruntun.'},
+ 'Storm of Arrows':{cost:8,power:1.15,type:'multi',desc:'Rentetan panah tiga kali.'},
+ 'Twin Cut':{cost:6,power:1.0,type:'multi',desc:'Dua tebasan cepat.'},
+ 'Night Venom':{cost:6,power:1.15,type:'poison',desc:'Serangan bayangan beracun.'},
+ 'Ice Lance':{cost:8,power:1.5,type:'magic',status:'freeze',desc:'Tombak es dengan peluang membekukan target.'},
+ 'Lightning Arc':{cost:10,power:1.8,type:'magic',status:'stun',desc:'Petir dengan peluang membuat target stun.'}
+});
+Object.entries(basicSkillProfiles).forEach(([className,profile])=>{
+ const skill=classes[className]?.skills?.[0];
+ if(skill)skillData[skill]={...profile,basic:true};
+});
+/* Final overrides: applied after base-skill profiles so utility effects remain correct. */
+Object.assign(skillData,{
+ 'Mend Wounds':{cost:5,power:0,type:'heal',healRatio:.24,desc:'Memulihkan 24% HP maksimum.'},
+ 'Holy Bolt':{cost:4,power:1.25,type:'magic',status:'stun',desc:'Serangan suci dengan peluang stun.'},
+ 'Sanctuary':{cost:6,power:0,type:'barrier',desc:'Memulihkan HP dan mengurangi serangan berikutnya.'},
+ 'Greater Benediction':{cost:7,power:0,type:'heal',healRatio:.32,desc:'Memulihkan 32% HP maksimum.'},
+ 'Herbal Poultice':{cost:4,power:0,type:'heal',healRatio:.2,desc:'Memulihkan 20% HP maksimum.'},
+ 'Vital Tonic':{cost:5,power:0,type:'heal',healRatio:.18,desc:'Memulihkan HP dan membantu bertahan.'},
+ 'Wild Remedy':{cost:6,power:0,type:'heal',healRatio:.28,desc:'Memulihkan HP dengan ramuan alami.'},
+ 'Restoration Wave':{cost:8,power:0,type:'heal',healRatio:.3,desc:'Gelombang pemulihan kuat.'},
+ 'Perfect Antidote':{cost:5,power:0,type:'heal',healRatio:.2,desc:'Memulihkan HP dengan ramuan.'},
+ 'Iron Wall':{cost:4,power:0,type:'guard',desc:'Mengurangi damage yang diterima selama dua serangan.'},
+ 'Guardian Counter':{cost:4,power:1.05,type:'counter',desc:'Bersiap membalas serangan musuh.'},
+ 'Sacred Fortress':{cost:7,power:0,type:'barrier',desc:'Barrier dan pemulihan kecil.'},
+ 'Aegis of Dawn':{cost:6,power:0,type:'barrier',desc:'Barrier suci yang mengurangi damage masuk.'},
+ 'Mana Barrier':{cost:9,power:0,type:'barrier',desc:'Barrier magis dan pemulihan kecil.'},
+ 'Multi Shot':{cost:8,power:1.0,type:'multi',desc:'Tiga serangan beruntun.'},
+ 'Storm of Arrows':{cost:8,power:1.15,type:'multi',desc:'Rentetan panah tiga kali.'},
+ 'Twin Cut':{cost:6,power:1.0,type:'multi',desc:'Dua tebasan cepat.'},
+ 'Night Venom':{cost:6,power:1.15,type:'poison',desc:'Serangan bayangan beracun.'},
+ 'Ice Lance':{cost:8,power:1.5,type:'magic',status:'freeze',desc:'Tombak es dengan peluang membekukan target.'},
+ 'Lightning Arc':{cost:10,power:1.8,type:'magic',status:'stun',desc:'Petir dengan peluang membuat target stun.'}
+});
+Object.assign(classes.Warrior,{tier:'Dasar',role:'Petarung',description:classDescriptions.Warrior});
+Object.assign(classes.Mage,{tier:'Dasar',role:'Sihir',description:classDescriptions.Mage});
+Object.assign(classes.Archer,{tier:'Dasar',role:'Kelincahan',description:classDescriptions.Archer});
+Object.assign(classes.Assassin,{tier:'Dasar',role:'Kelincahan',description:classDescriptions.Assassin});
+const baseClassNames=Object.keys(classes).filter(n=>classes[n].tier==='Dasar');
+const evolutionPaths={Warrior:'Paladin',Knight:'Saint Knight',Samurai:'Kensei',Berserker:'Dread Berserker',Mage:'Archmage',Summoner:'Abyss Summoner',Necromancer:'Lich Lord',Oracle:'Chronomancer',Assassin:'Shadow Stalker',Ranger:'Master Ranger',Cleric:'High Priest',Paladin:'Saint Knight',Blacksmith:'Master Smith',Alchemist:'Grand Alchemist',Merchant:'Trade Magnate',Scholar:'Grand Arcanist Researcher'};
+function maybeEvolve(c){
+ const next=evolutionPaths[c.class];
+ if(!next||c.wins<6||c.evolvedTo===next||Math.random()>.12)return;
+ const old=c.class;c.class=next;c.evolvedTo=next;
+ const advanced=classes[next];
+ Object.entries(advanced.base).forEach(([key,value])=>{if(c.stats[key]!=null)c.stats[key]=Math.max(c.stats[key],value);});
+ c.hp=Math.min(c.stats.HP,c.hp+Math.round(c.stats.HP*.2));c.mp=Math.min(c.stats.MP,c.mp+Math.round(c.stats.MP*.2));
+ c.skills=[...new Set(c.skills.concat(advanced.skills))];
+ log(c.name+' berevolusi dari '+old+' menjadi '+next+' setelah pengalaman bertarung.','training');
+ action(c,'Berevolusi menjadi '+next);
+}
+function classCatalogView(){
+ const groups=['Petarung','Sihir','Kelincahan','Support','Profesi'];
+ return '<section class="panel"><h2>Class & Evolusi</h2><p class="muted">24 class dasar dan 16 class lanjutan. Class lanjutan diperoleh melalui perkembangan karakter, bukan dipilih saat dunia baru dibuat. Semua class tempur bisa bertarung solo; class profesi punya aktivitas ekonomi atau riset khusus.</p>'+groups.map(role=>'<h3>'+esc(role)+'</h3><div class="two">'+Object.keys(classes).filter(n=>classes[n].role===role).map(n=>'<article class="kingdom"><div class="row"><h3>'+esc(n)+'</h3><span class="tag">'+esc(classes[n].tier||'Dasar')+'</span></div><p>'+esc(classes[n].description||n)+'</p><small class="muted">Skill: '+classes[n].skills.map(esc).join(' · ')+'</small>'+(classes[n].tier==='Lanjutan'?'<p class="muted">Evolusi dari: '+esc(classes[n].parent||'class terkait')+'</p>':'')+'</article>').join('')+'</div>').join('')+'</section>';
+}
+
+const japaneseGivenNames=['Haruto','Yuto','Sota','Ren','Minato','Riku','Aoi','Itsuki','Akira','Haru','Kaito','Takumi','Daiki','Hinata','Shota','Yuma','Kazuki','Tsubasa','Naoki','Ryota','Sakura','Hina','Yui','Aoi','Rin','Mei','Akari','Yuna','Mio','Hana','Saki','Koharu','Nanami','Ayaka','Misaki','Kaori','Reina','Emi','Natsuki','Shiori','Mizuki','Asuka','Chihiro','Hotaru','Sayuri','Tomoe','Kiyomi','Yuzuki','Kanna','Riko'];
+const japaneseFamilyNames=['Sato','Suzuki','Takahashi','Tanaka','Watanabe','Ito','Yamamoto','Nakamura','Kobayashi','Kato','Yoshida','Yamada','Sasaki','Yamaguchi','Matsumoto','Inoue','Kimura','Hayashi','Shimizu','Mori','Abe','Ikeda','Hashimoto','Ishikawa','Yamashita','Ogawa','Ishii','Hasegawa','Goto','Okada','Fujita','Maeda','Endo','Aoki','Sakamoto','Murakami','Ota','Kaneko','Fujii','Fukuda','Nishimura','Nakajima','Harada','Ono','Miyazaki','Ueda','Takeuchi','Kojima','Kondo','Shibata'];
+const personalities=['Brave','Cautious','Greedy','Ambitious','Curious','Competitive','Independent','Kind'];
+function uniqueJapaneseName(){
+ const used=new Set((state.characters||[]).map(c=>String(c.name||'')));
+ for(let i=0;i<2000;i++){
+  const full=pick(japaneseGivenNames)+' '+pick(japaneseFamilyNames);
+  if(full!=='Koi'&&!used.has(full))return full;
+ }
+ let suffix=1,full='Haru Yamato';
+ while(used.has(full)||full==='Koi')full='Haru Yamato '+(++suffix);
+ return full;
+}
+
+const state={day:1,minute:480,speed:1,paused:false,tab:'overview',tick:0,characters:[],guilds:[],events:[],dead:[],economy:[{gold:0},{gold:0},{gold:0},{gold:0}],nextLog:0,filter:'',kingdomFilter:'all'};
+function log(msg,kind){state.events.unshift({day:state.day,time:clock(),msg:msg,kind:kind||'info'});if(state.events.length>300)state.events.length=300;}
+function clock(){let m=state.minute%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function makeCharacter(i){
+const cls=pick(baseClassNames),race=pick(races),king=rand(0,3),gender=Math.random()<.5?'Laki-laki':'Perempuan',base=Object.assign({},classes[cls].base);
+Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
+const c={name:uniqueJapaneseName(),gender:gender,age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:pick(personalities),kingdom:king,location:'town',activity:'Menjelajahi kota',goal:pick(['Meningkatkan kekuatan','Mencari uang','Menjelajahi dungeon','Menguasai skill','Mencari equipment']),stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice().sort(()=>Math.random()-.5).slice(0,rand(3,4)),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+c.hp=c.stats.HP;c.mp=c.stats.MP;return c;
+}
+function makeKoiCharacter(i){
+ const cls='Samurai',race=races.find(r=>r.name==='Human'),base=Object.assign({},classes[cls].base);
+ Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
+ const c={name:'Koi',gender:Math.random()<.5?'Laki-laki':'Perempuan',age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:'Independent',kingdom:0,location:'town',activity:'Menjelajahi kota',goal:'Menguasai skill',stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice(),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+ return c;
+}
+function ensureCharacterRoster(){
+ if(!Array.isArray(state.characters))state.characters=[];
+ if(!Array.isArray(state.dead))state.dead=[];
+ let koi=state.characters.find(c=>c.name==='Koi');
+ const used=new Set();
+ state.characters.forEach(c=>{
+  if(c===koi)return;
+  const parts=String(c.name||'').split(' ');
+  const valid=parts.length===2&&japaneseGivenNames.includes(parts[0])&&japaneseFamilyNames.includes(parts[1])&&!used.has(c.name);
+  if(!valid)c.name=uniqueJapaneseName();
+  used.add(c.name);
+ });
+ if(!koi){
+  koi=makeKoiCharacter(state.characters.length);
+  state.characters.push(koi);
+ }else{
+  if(koi.class!=='Samurai'||koi.race!=='Human'){
+   const human=races.find(r=>r.name==='Human'),base=Object.assign({},classes.Samurai.base);
+   Object.keys(human.bonus).forEach(k=>{if(base[k]!=null)base[k]+=human.bonus[k];});
+   koi.stats=base;koi.hp=base.HP;koi.mp=base.MP;
+  }
+  koi.class='Samurai';koi.race='Human';koi.skills=classes.Samurai.skills.slice();
+  koi.trait=races.find(r=>r.name==='Human').trait;koi.weak=races.find(r=>r.name==='Human').weak;
+ }
+ state.dead.forEach(d=>{
+  const original=state.characters.find(c=>c.created===d.created);
+  if(original)d.name=original.name;
+  else if(d.name!=='Koi')d.name=uniqueJapaneseName();
+ });
+}
+function freshWorld(){
+state.day=1;state.minute=480;state.tick=0;state.events=[];state.dead=[];state.guilds=[];state.characters=[];
+for(let i=0;i<30;i++)state.characters.push(makeCharacter(i));
+state.characters.push(makeKoiCharacter(30));
+state.characters.forEach((c,i)=>{c.kingdom=i%4;c.location=Math.random()<.75?'town':'academy';});
+log('Dunia baru terbentuk. 31 petualang dengan nama Jepang yang unik mulai menjalani jalan mereka masing-masing.','world');
+log('Koi tiba sebagai Samurai dari ras Human. Empat kerajaan membuka gerbang kota, akademi, dan dungeon.','world');
+}
+function alive(){return state.characters.filter(c=>c.alive);}
+function locName(c){const k=kingdoms[c.kingdom];return c.location==='town'?k.town:c.location==='academy'?k.academy:c.location==='dungeon'?k.dungeon:'Perjalanan';}
+function statPower(c){return Math.round(c.stats.ATK*1.2+c.stats.MAG*1.1+c.stats.DEF*.7+c.stats.HP*.08+c.stats.SPD*.5+c.stats.CRIT*.25);}
+function action(c,act){
+c.activity=act;c.lastAction=act;c.history.unshift({day:state.day,act:act});if(c.history.length>12)c.history.length=12;
+}
+function gainStat(c,key,amount){const old=c.stats[key]||0;c.stats[key]=Math.min(key==='HP'?600:key==='MP'?500:100,old+amount);if(key==='HP'){c.hp=Math.min(c.stats.HP,c.hp+amount);}if(key==='MP'){c.mp=Math.min(c.stats.MP,c.mp+amount);}}
+function maybeTitle(c,title,condition){if(condition&&!c.titles.includes(title)){c.titles.push(title);c.rep+=5;log(c.name+' memperoleh title: '+title+'.','achievement');}}
+function travel(c,dest){if(classes[c.class]?.role==='Profesi'){
+ if(c.class==='Blacksmith'||c.class==='Master Smith'){c.craft++;c.gold+=rand(8,18);gainStat(c,'CRAFT',1);action(c,'Menempa atau memperbaiki perlengkapan');if(c.craft%4===0)c.loot++;}
+ else if(c.class==='Merchant'||c.class==='Trade Magnate'){const profit=rand(10,28)+Math.floor(c.stats.CHA/3);c.gold+=profit;c.rep+=1;action(c,'Berdagang dan menegosiasikan harga');}
+ else if(c.class==='Herbalist'){c.loot+=1;c.gold+=rand(3,10);gainStat(c,'PER',1);action(c,'Mengumpulkan herbal dan meracik obat');}
+ else {c.training++;gainStat(c,'WIS',1);c.loot+=Math.random()<.35?1:0;action(c,'Meneliti monster, sihir, atau artefak');}
+ c.stamina=Math.max(0,c.stamina-4);return;
+}
+if(c.location==='travel'){return;}c.location='travel';c.travelTo=dest;c.travelTicks=rand(2,5);c.stamina=Math.max(0,c.stamina-8);action(c,'Bepergian menuju '+kingdoms[dest].name);log(c.name+' memulai perjalanan menuju '+kingdoms[dest].name+'.');}
+function decision(c){
+if(!c.alive)return;
+if(c.hp<c.stats.HP*.28&&c.location==='dungeon'){c.location='town';c.injured=true;c.escapes++;action(c,'Mundur dari dungeon untuk menyelamatkan diri');log(c.name+' mundur dari dungeon karena HP kritis.','warning');return;}
+if(c.hp<c.stats.HP*.45||c.stamina<20||c.mp<c.stats.MP*.18){if(c.location==='dungeon'&&c.hp>c.stats.HP*.28&&Math.random()<.3){return;}c.location='town';c.hp=Math.min(c.stats.HP,c.hp+Math.max(5,Math.round(c.stats.HP*.16)));c.mp=Math.min(c.stats.MP,c.mp+Math.max(4,Math.round(c.stats.MP*.22)));c.stamina=Math.min(100,c.stamina+rand(18,34));c.injured=false;action(c,'Beristirahat dan memulihkan kondisi');return;}
+const r=Math.random(),brave=c.personality==='Brave'||c.personality==='Ambitious',cautious=c.personality==='Cautious';
+if(c.location==='travel'){
+c.travelTicks--;if(c.travelTicks<=0){c.kingdom=c.travelTo;c.location='town';action(c,'Tiba di '+kingdoms[c.kingdom].name);log(c.name+' tiba di '+kingdoms[c.kingdom].name+'.','travel');}return;
+}
+if(c.location==='dungeon'){
+if(r<.68){combat(c,kingdoms[c.kingdom].monsters[rand(0,kingdoms[c.kingdom].monsters.length-1)]);return;}
+c.location='town';c.gold+=rand(8,28);c.loot++;c.rep+=1;action(c,'Keluar dari dungeon membawa hasil eksplorasi');log(c.name+' keluar dari dungeon dengan hasil eksplorasi.');return;
+}
+if(r<(cautious?.30:.18)){c.location='academy';c.stamina=Math.max(0,c.stamina-8);let key=pick(c.class==='Mage'?['MAG','WIS','MDEF']:c.class==='Warrior'?['ATK','DEF','END']:c.class==='Archer'?['ACC','SPD','PER']:['SPD','CRIT','EVA']);gainStat(c,key,1);c.training++;if(c.training%3===0){c.skills.push(pick(classes[c.class].skills));c.skills=[...new Set(c.skills)];}action(c,'Berlatih '+key+' di akademi');log(c.name+' berlatih '+key+' di akademi.','training');return;}
+if(r<(brave?.62:.43)){c.location='dungeon';action(c,'Memasuki '+kingdoms[c.kingdom].dungeon);log(c.name+' memasuki '+kingdoms[c.kingdom].dungeon+'.','dungeon');return;}
+if(r<.72){c.gold+=rand(5,18);c.stamina=Math.max(0,c.stamina-5);action(c,'Bekerja atau membantu pedagang di kota');log(c.name+' memperoleh uang dari aktivitas kota.');return;}
+if(r<.83&&c.gold>35){let item=pick(['Iron Sword','Apprentice Robe','Hunter Boots','Warding Charm','Minor Potion']);c.gold-=35;c.coinsSpent+=35;c.equipment[pick(['weapon','armor','accessory'])]=item;let k=pick(['ATK','DEF','MAG','MDEF','SPD']);gainStat(c,k,2);action(c,'Membeli '+item+' dan memperbaiki perlengkapan');log(c.name+' membeli '+item+'.','loot');return;}
+if(r<.91&&state.guilds.length<5&&Math.random()<.18){let g={name:pick(['Silver Wolves','Dawn Order','Abyss Watch','Starfall','Iron Pact']),members:[],gold:0,rep:0};state.guilds.push(g);c.guild=g.name;g.members.push(c.name);action(c,'Mendirikan guild '+g.name);log(c.name+' mendirikan guild '+g.name+'.','guild');return;}
+if(c.gold>70&&Math.random()<.2){let other=alive().filter(o=>o!==c&&o.kingdom===c.kingdom&&o.location==='town'&&o.guild&&!c.guild);if(other.length){c.guild=other[0].guild;let g=state.guilds.find(x=>x.name===c.guild);if(g&&!g.members.includes(c.name))g.members.push(c.name);action(c,'Bergabung dengan guild '+c.guild);log(c.name+' bergabung dengan guild '+c.guild+'.','guild');return;}}
+if(r<.96&&Math.random()<.3){travel(c,rand(0,3));return;}
+c.location='town';action(c,'Menjelajahi pusat kota dan mencari peluang');
+}
+function monster(name,level){
+const bases={Slime:[35,8,3,2,4],Goblin:[45,11,5,3,7],Skeleton:[55,13,7,2,5],Orc:[85,18,9,3,5],'Dire Wolf':[62,15,5,2,13],Treant:[105,14,14,4,2],Golem:[145,20,22,3,2],Wraith:[75,12,5,13,10],Drake:[175,25,16,8,9],Demon:[160,23,12,17,11]};
+let b=bases[name]||[50,10,5,5,5],scale=1+Math.min(2,level*.08);
+return {name:name,hp:Math.round(b[0]*scale),maxHp:Math.round(b[0]*scale),atk:Math.round(b[1]*scale),def:Math.round(b[2]*scale),mag:Math.round(b[3]*scale),spd:b[4],xp:level};
+}
+function combat(c,monsterName){
+const m=monster(monsterName,Math.max(1,Math.floor((c.stats.ATK+c.stats.MAG)/22)));
+const startHp=c.hp;let turns=0,lastType='',combo=0;
+const gear=c.equipment||{};
+const gearBonus={ATK:0,MAG:0,DEF:0,MDEF:0,SPD:0,CRIT:0};
+Object.values(gear).forEach(item=>{
+ if(!item)return;
+ const n=String(item).toLowerCase();
+ if(n.includes('sword'))gearBonus.ATK+=3;
+ if(n.includes('robe')){gearBonus.MAG+=2;gearBonus.MDEF+=2;}
+ if(n.includes('hunter')||n.includes('boots'))gearBonus.SPD+=2;
+ if(n.includes('warding')||n.includes('charm')){gearBonus.DEF+=2;gearBonus.MDEF+=2;}
+ if(n.includes('iron')&&n.includes('armor'))gearBonus.DEF+=3;
+});
+const atk=()=>c.stats.ATK+gearBonus.ATK+(c.combatBuffATK||0);
+const mag=()=>c.stats.MAG+gearBonus.MAG;
+const def=()=>c.stats.DEF+gearBonus.DEF;
+const mdef=()=>c.stats.MDEF+gearBonus.MDEF;
+const role=classes[c.class]?.role||'Petarung';
+const synergy={Petarung:{phys:1.12,counter:1.12,guard:1.08},Sihir:{magic:1.14,barrier:1.08,heal:1.08},Kelincahan:{phys:1.08,pierce:1.12,poison:1.12,evasion:1.08,multi:1.08},Support:{heal:1.15,barrier:1.12,buff:1.1,magic:1.05},Profesi:{phys:1.04,magic:1.04,poison:1.08,buff:1.1,heal:1.08}};
+c.combatBuffATK=0;c.guard=0;c.evade=0;c.counterReady=0;
+m.poison=0;m.stun=0;m.freeze=0;m.marked=0;
+action(c,'Bertarung melawan '+m.name);
+while(c.hp>0&&m.hp>0&&turns<9){
+ turns++;
+ const affordable=c.skills.map(name=>({name,sk:skillData[name]})).filter(x=>x.sk&&c.mp>=x.sk.cost);
+ let chosen;
+ if(affordable.length&&Math.random()<.82){
+  const ranked=affordable.map(x=>{
+   const sk=x.sk;let score=1+Math.max(0,sk.power||0)*2;
+   if(['heal','barrier'].includes(sk.type))score+=c.hp<c.stats.HP*.55?5:c.hp<c.stats.HP*.8?2:-2;
+   if(['guard','evasion'].includes(sk.type))score+=c.hp<c.stats.HP*.45?3:0;
+   if(sk.type==='buff')score+=(c.combatBuffATK||0)<3?2:-2;
+   if(sk.type==='poison')score+=m.poison?-.5:2;
+   if(sk.status)score+=m[sk.status]?-.5:1;
+   if(sk.type===lastType)score+=.8;
+   score*=synergy[role]?.[sk.type]||1;
+   score*=Math.max(.35,1-sk.cost/35);
+   return {...x,score};
+  }).sort((a,b)=>b.score-a.score);
+  chosen=pick(ranked.slice(0,Math.min(3,ranked.length)));
+ }else chosen={name:'Basic Attack',sk:null};
+ const use=chosen.name,sk=chosen.sk;
+ let dmg=0,skipEnemy=false;
+ if(sk){
+  c.mp-=sk.cost;c.skillUse++;
+  const type=sk.type||'phys';
+  combo=type===lastType?combo+1:1;lastType=type;
+  const comboMult=combo>=3?1.18:combo===2?1.08:1;
+  const classMult=synergy[role]?.[type]||1;
+  if(type==='guard'){c.guard=2;dmg=sk.power?Math.max(1,Math.round((atk()*sk.power-m.def*.4)*classMult*comboMult)):0;}
+  else if(type==='barrier'){c.guard=2;c.hp=Math.min(c.stats.HP,c.hp+Math.max(8,Math.round(c.stats.HP*.08)));dmg=sk.power?Math.max(1,Math.round((atk()*sk.power-m.def*.4)*classMult*comboMult)):0;}
+  else if(type==='heal'){c.hp=Math.min(c.stats.HP,c.hp+Math.max(10,Math.round(c.stats.HP*(sk.healRatio||.22))));}
+  else if(type==='evasion'){c.evade=2;dmg=sk.power?Math.max(1,Math.round(atk()*sk.power-m.def*.4)):0;}
+  else if(type==='buff'){c.combatBuffATK=Math.min(8,(c.combatBuffATK||0)+Math.max(2,Math.round(c.stats.ATK*.12)));c.buff=2;dmg=sk.power?Math.max(1,Math.round(atk()*sk.power-m.def*.4)):0;}
+  else if(type==='counter'){c.counterReady=1;dmg=sk.power?Math.max(1,Math.round(atk()*sk.power-m.def*.5)):0;}
+  else{
+   const hitCount=type==='multi'?3:1;
+   for(let h=0;h<hitCount;h++){
+    const raw=(type==='magic'?mag():atk())*(sk.power||1)*(type==='multi'?.48:1)*classMult*comboMult;
+    let hit=Math.max(1,Math.round(raw-(type==='pierce'?m.def*.22:m.def*.62)));
+    if(Math.random()*100<c.stats.CRIT+gearBonus.CRIT)hit=Math.round(hit*c.stats['CRIT DMG']/100);
+    dmg+=hit;
+   }
+   if(type==='poison'||sk.status==='poison')m.poison=Math.max(m.poison||0,3);
+   if(sk.status&&['stun','freeze'].includes(sk.status)&&!m[sk.status]&&Math.random()<.35)m[sk.status]=1;
+   if(type==='mark'||sk.status==='mark')m.marked=2;
+  }
+ }else{
+  combo=lastType==='phys'?combo+1:1;lastType='phys';
+  dmg=Math.max(1,Math.round(atk()*(.8+Math.random()*.45)-m.def*.6));
+ }
+ if(dmg>0){if(m.marked>0)dmg=Math.round(dmg*1.15);m.hp-=dmg;}
+ if(m.hp<=0)break;
+ if(m.poison>0){m.hp-=Math.max(2,Math.round(m.maxHp*.035));m.poison--;}
+ if(m.hp<=0)break;
+ if(m.stun>0||m.freeze>0)skipEnemy=true;
+ if(m.stun>0)m.stun--;if(m.freeze>0)m.freeze--;
+ if(m.marked>0)m.marked--;
+ if(skipEnemy)continue;
+ let mdmg=Math.max(1,Math.round(m.atk*.8-def()*.45));
+ if(m.mag>mdef()&&Math.random()<.25)mdmg=Math.max(1,Math.round(m.mag-mdef()*.4));
+ if(c.evade>0){c.evade--;mdmg=0;}else if(Math.random()*100<c.stats.EVA+gearBonus.SPD)mdmg=0;
+ if(c.guard>0){mdmg=Math.round(mdmg*.35);c.guard--;}
+ if(c.counterReady){m.hp-=Math.max(1,Math.round(atk()*.65-m.def*.3));c.counterReady=0;}
+ c.hp-=mdmg;
+}
+c.combatBuffATK=0;c.counterReady=0;
+if(m.hp<=0){let reward=rand(8,25)+m.xp*2;c.gold+=reward;c.kills++;c.wins++;c.rep+=2;c.stamina=Math.max(0,c.stamina-rand(8,16));let skey=pick(role==='Sihir'?['MAG','WIS']:role==='Petarung'?['ATK','END','DEF']:role==='Kelincahan'?['ACC','SPD']:['SPD','CRIT']);gainStat(c,skey,1);if(Math.random()<.18){let item=pick(['Iron Ore','Monster Fang','Mana Crystal','Ancient Relic']);c.loot++;}log(c.name+' mengalahkan '+m.name+' setelah '+turns+' giliran, memperoleh '+reward+' gold dan kemajuan '+skey+'.','combat');maybeTitle(c,'Goblin Slayer',c.kills>=5);maybeTitle(c,'Dungeon Survivor',c.escapes>=3&&c.wins>=5);maybeTitle(c,'Dragon Hunter',c.kills>=8);if(c.kills%4===0){let key=pick(['ATK','DEF','MAG','SPD','ACC']);gainStat(c,key,1);}maybeEvolve(c);return;}
+if(c.hp<=0){c.hp=0;c.alive=false;state.dead.push(c);log(c.name+' ('+c.class+') meninggal saat melawan '+m.name+'.','death');return;}
+c.hp=Math.max(1,c.hp);c.injured=c.hp<startHp*.65;
+}
+function tick(){
+if(state.paused)return;
+state.minute+=10;if(state.minute>=1440){state.minute-=1440;state.day++;log('Hari '+state.day+' dimulai di empat kerajaan.','world');}
+state.tick++;
+alive().forEach(c=>{if(c.nextAction>state.tick)return;c.nextAction=state.tick+rand(1,3);decision(c);});
+if(state.tick%12===0&&Math.random()<.3){let k=pick(kingdoms),e=pick(['Pasar '+k.name+' ramai oleh pedagang keliling.','Penjaga '+k.name+' melaporkan aktivitas monster.','Akademi '+k.name+' membuka sesi latihan tambahan.','Rumor artefak langka terdengar di '+k.name+'.']);log(e,'event');}
+if(state.tick%24===0)save(false);
+render();
+}
+const tabs=[['overview','Dunia'],['kingdoms','Kerajaan'],['classes','Class'],['characters','Karakter'],['dungeons','Dungeon'],['guilds','Guild'],['quests','Quest'],['bestiary','Bestiary'],['events','Kronik'],['memorial','Memorial'],['settings','Pengaturan']];
+function metrics(){const a=alive();return '<div class="metric"><span>Populasi hidup</span><strong>'+a.length+'</strong></div><div class="metric"><span>Memorial</span><strong>'+state.dead.length+'</strong></div><div class="metric"><span>Monster dikalahkan</span><strong>'+a.reduce((n,c)=>n+c.kills,0)+state.dead.reduce((n,c)=>n+c.kills,0)+'</strong></div><div class="metric"><span>Guild aktif</span><strong>'+state.guilds.length+'</strong></div>';}
+function charRow(c){return '<div class="item"><div class="info"><strong>'+esc(c.name)+'</strong><small>'+esc(c.race)+' · '+esc(c.class)+' · '+esc(kingdoms[c.kingdom].name)+'</small><div class="bar"><i style="width:'+Math.max(0,c.hp/c.stats.HP*100)+'%"></i></div><small>HP '+c.hp+'/'+c.stats.HP+' · '+esc(c.activity)+'</small></div><button onclick="window.openChar('+state.characters.indexOf(c)+')">Lihat</button></div>';}
+function overview(){
+const a=alive().slice().sort((x,y)=>y.kills-x.kills),recent=state.events.slice(0,12);
+return '<div class="layout"><section class="panel"><h2>✦ Ringkasan Dunia</h2><div class="notice">Simulasi berjalan otomatis. Karakter memilih aktivitas sendiri; Tuan hanya mengamati dan mengatur waktu dunia.</div><div class="two"><div class="statbox"><span>Hari simulasi</span><b>'+state.day+'</b></div><div class="statbox"><span>Jam dunia</span><b>'+clock()+'</b></div><div class="statbox"><span>Petualang aktif</span><b>'+a.length+'</b></div><div class="statbox"><span>Quest selesai</span><b>'+a.reduce((n,c)=>n+c.quests,0)+'</b></div></div><h3>Petualang yang menonjol</h3><div class="list">'+(a.slice(0,7).map(charRow).join('')||'<div class="empty">Belum ada karakter.</div>')+'</div></section><section class="panel"><h2>📜 Kronik Terbaru</h2><div class="log">'+recent.map(e=>'<div class="logline"><time>H'+e.day+' '+e.time+'</time>'+esc(e.msg)+'</div>').join('')+'</div><h3>Kerajaan</h3>'+kingdoms.map((k,i)=>'<div class="item"><div class="info"><strong>'+esc(k.kanji)+' · '+esc(k.name)+'</strong><small>'+alive().filter(c=>c.kingdom===i).length+' petualang aktif</small></div><button onclick="window.goKingdom('+i+')">Lihat</button></div>').join('')+'</section></div>';
+}
+function kingdomsView(){
+return '<section class="panel"><h2>Kerajaan Dunia</h2><p class="muted">Pilih kerajaan untuk melihat tempat penting, fasilitas, monster, dan aktivitas penduduknya.</p><div class="two">'+kingdoms.map((k,i)=>'<article class="kingdom" style="border-color:'+k.color+'66"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><div><h3 style="color:'+k.color+'">'+esc(k.kanji)+' · '+esc(k.name)+'</h3><p>'+esc(k.theme)+'</p></div><span class="tag">'+alive().filter(c=>c.kingdom===i).length+' penduduk</span></div><p>'+esc(k.desc)+'</p><div class="statgrid"><div class="statbox"><span>Ibu kota</span><b>'+esc(k.town)+'</b></div><div class="statbox"><span>Tempat penting</span><b>'+k.places.length+'</b></div></div><p style="margin-top:10px"><button class="primary" onclick="window.viewKingdom('+i+')">Lihat Kerajaan</button></p></article>').join('')+'</div><h2 style="margin-top:16px">Aktivitas lokasi dunia</h2><div class="two">'+['town','academy','dungeon','travel'].map(loc=>'<div class="item"><div class="info"><strong>'+({town:'Pusat Kota',academy:'Akademi',dungeon:'Dungeon',travel:'Perjalanan'}[loc])+'</strong><small>'+alive().filter(c=>c.location===loc).length+' karakter</small></div><button onclick="window.filterLocation(&quot;'+loc+'&quot;)">Lihat</button></div>').join('')+'</div></section>';
+}
+function charactersView(){
+let arr=alive().filter(c=>(!state.filter||(c.name+' '+c.race+' '+c.class+' '+c.personality).toLowerCase().includes(state.filter.toLowerCase()))&&(state.kingdomFilter==='all'||c.kingdom===+state.kingdomFilter));
+return '<section class="panel"><h2>Karakter Dunia ('+arr.length+')</h2><div class="field"><input id="searchChar" placeholder="Cari nama, ras, class..." value="'+esc(state.filter)+'"><select id="filterKing"><option value="all">Semua kerajaan</option>'+kingdoms.map((k,i)=>'<option value="'+i+'" '+(state.kingdomFilter==i?'selected':'')+'>'+k.name+'</option>').join('')+'</select><select id="sortChar"><option value="power">Urut: Power</option><option value="kills">Monster dikalahkan</option><option value="gold">Kekayaan</option><option value="name">Nama</option></select></div><div class="list" id="charList">'+(arr.map(charRow).join('')||'<div class="empty">Tidak ada karakter yang cocok.</div>')+'</div></section>';
+}
+function dungeonsView(){
+return '<div class="layout"><section class="panel"><h2>Dungeon & Raid</h2>'+kingdoms.map((k,i)=>'<article class="kingdom"><h3>'+esc(k.dungeon)+'</h3><p>'+esc(k.name)+' · Ancaman '+(['Rendah','Menengah','Tinggi','Sangat tinggi'][i])+'</p><div class="two"><div class="statbox"><span>Monster khas</span><b>'+k.monsters.map(esc).join(', ')+'</b></div><div class="statbox"><span>Petualang di dalam</span><b>'+alive().filter(c=>c.kingdom===i&&c.location==='dungeon').length+'</b></div></div><p style="margin-top:8px"><button onclick="window.showDungeon('+i+')">Pantau dungeon</button></p></article>').join('')+'</section><section class="panel"><h2>Eksplorasi aktif</h2><div class="list">'+alive().filter(c=>c.location==='dungeon').map(charRow).join('')+'</div></section></div>';
+}
+function guildsView(){return '<div class="layout"><section class="panel"><h2>Guild Aktif</h2>'+(state.guilds.length?state.guilds.map(g=>'<article class="kingdom"><h3>⚔ '+esc(g.name)+'</h3><p>'+g.members.length+' anggota · Reputasi '+g.rep+'</p>'+g.members.map(esc).map(n=>'<span class="tag">'+n+'</span>').join('')+'</article>').join(''):'<div class="empty">Belum ada guild. Karakter dapat mendirikan guild melalui keputusan AI.</div>')+'</section><section class="panel"><h2>Petualang tanpa guild</h2><div class="list">'+alive().filter(c=>!c.guild).slice(0,20).map(charRow).join('')+'</div></section></div>';}
+function questsView(){const a=alive();return '<div class="layout"><section class="panel"><h2>Quest Board</h2><div class="notice">Quest dibuat dari aktivitas simulasi. Karakter dapat menerima tugas berburu, eksplorasi, dan pengumpulan material secara mandiri.</div>'+['Hunt Request','Dungeon Survey','Material Gathering','Academy Trial'].map((q,i)=>'<article class="kingdom"><h3>'+q+'</h3><p>'+['Kalahkan monster di wilayah kerajaan.','Jelajahi dungeon khas kerajaan.','Kumpulkan bahan dari monster.','Tingkatkan kemahiran di akademi.'][i]+'</p><span class="tag gold">Reward '+(20+i*15)+' gold</span><span class="tag">'+(i===1?'Berisiko': 'Aktivitas umum')+'</span></article>').join('')+'</section><section class="panel"><h2>Rekam aktivitas</h2><div class="statgrid"><div class="statbox"><span>Monster dikalahkan</span><b>'+a.reduce((n,c)=>n+c.kills,0)+'</b></div><div class="statbox"><span>Latihan</span><b>'+a.reduce((n,c)=>n+c.training,0)+'</b></div><div class="statbox"><span>Loot</span><b>'+a.reduce((n,c)=>n+c.loot,0)+'</b></div></div><h3>Petualang paling aktif</h3><div class="list">'+a.slice().sort((x,y)=>(y.kills+y.training)-(x.kills+x.training)).slice(0,8).map(charRow).join('')+'</div></section></div>';}
+function bestiaryView(){let all={};kingdoms.forEach(k=>k.monsters.forEach(m=>all[m]=(all[m]||0)+1));return '<section class="panel"><h2>Bestiary</h2><div class="two">'+Object.keys(all).map(n=>{let m=monster(n,2);return '<article class="kingdom"><h3>◈ '+esc(n)+'</h3><p>Habitat: '+kingdoms.filter(k=>k.monsters.includes(n)).map(k=>k.name).join(', ')+'</p><div class="statgrid"><div class="statbox"><span>HP</span><b>'+m.hp+'</b></div><div class="statbox"><span>ATK</span><b>'+m.atk+'</b></div><div class="statbox"><span>DEF</span><b>'+m.def+'</b></div></div></article>';}).join('')+'</div></section>';}
+function eventsView(){return '<section class="panel"><h2>Kronik Dunia</h2><div class="log" style="height:auto;max-height:65vh">'+state.events.map(e=>'<div class="logline"><time>Hari '+e.day+' · '+e.time+'</time>'+esc(e.msg)+'</div>').join('')+'</div></section>';}
+function memorialView(){return '<section class="panel"><h2>Memorial</h2><p class="muted">Karakter yang meninggal tetap tercatat di sini dan tidak kembali ke simulasi normal.</p><div class="list">'+(state.dead.map(c=>'<div class="item"><div class="info"><strong>'+esc(c.name)+' <span class="tag red">Meninggal</span></strong><small>'+esc(c.race)+' · '+esc(c.class)+' · '+esc(kingdoms[c.kingdom].name)+' · '+c.kills+' monster dikalahkan</small></div><button onclick="window.openDead('+state.characters.indexOf(c)+')">Memorial</button></div>').join('')||'<div class="empty">Belum ada karakter yang meninggal.</div>')+'</div></section>';}
+function settingsView(){return '<div class="layout"><section class="panel"><h2>Pengaturan Dunia</h2><div class="notice">Save disimpan di browser perangkat ini. Mode private atau penghapusan data browser dapat menghapus save.</div><div class="list"><div class="item"><div class="info"><strong>Simpan sekarang</strong><small>Simpan kondisi simulasi saat ini.</small></div><button onclick="window.save(true)">Simpan</button></div><div class="item"><div class="info"><strong>Export save JSON</strong><small>Unduh cadangan dunia.</small></div><button onclick="window.exportSave()">Export</button></div><div class="item"><div class="info"><strong>Import save JSON</strong><small>Muat dunia dari file cadangan.</small></div><input type="file" id="importFile" accept=".json,application/json" style="max-width:145px"></div><div class="item"><div class="info"><strong>Reset dunia</strong><small>Membuat 30 karakter baru. Save lama akan diganti setelah konfirmasi.</small></div><button class="danger" onclick="window.resetWorld()">Reset</button></div></div></section><section class="panel"><h2>Info Simulasi</h2><div class="statgrid"><div class="statbox"><span>Tick</span><b>'+state.tick+'</b></div><div class="statbox"><span>Kecepatan</span><b>'+state.speed+'×</b></div><div class="statbox"><span>Karakter awal</span><b>'+state.characters.length+'</b></div><div class="statbox"><span>Event tersimpan</span><b>'+state.events.length+'</b></div><div class="statbox"><span>Skill terdaftar</span><b>'+Object.keys(skillData).length+'</b></div><div class="statbox"><span>Ras</span><b>'+races.length+'</b></div></div><h3>Aturan</h3><p class="muted">Tidak ada level karakter. Atribut tumbuh melalui latihan dan pertarungan. Tidak ada romance atau sistem hubungan personal. Guild dan party hanya untuk mekanik gameplay.</p></section></div>';}
+function render(){
+$('#day').textContent=state.day;$('#clock').textContent=clock();$('#pauseBtn').textContent=state.paused?'▶ Lanjut':'Ⅱ Pause';document.querySelectorAll('.speed').forEach(b=>b.classList.toggle('active',+b.dataset.speed===state.speed));
+$('#metrics').innerHTML=metrics();$('#tabs').innerHTML=tabs.map(t=>'<button data-tab="'+t[0]+'" class="'+(state.tab===t[0]?'active':'')+'">'+t[1]+'</button>').join('');
+const map={overview:overview,kingdoms:kingdomsView,classes:classCatalogView,characters:charactersView,dungeons:dungeonsView,guilds:guildsView,quests:questsView,bestiary:bestiaryView,events:eventsView,memorial:memorialView,settings:settingsView};
+$('#view').innerHTML=map[state.tab]();
+$('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;render();});
+if($('#searchChar'))$('#searchChar').oninput=e=>{state.filter=e.target.value;let pos=e.target.selectionStart;render();$('#searchChar').focus();$('#searchChar').setSelectionRange(pos,pos);};
+if($('#filterKing'))$('#filterKing').onchange=e=>{state.kingdomFilter=e.target.value;render();};
+if($('#sortChar'))$('#sortChar').onchange=e=>{let arr=alive().slice();const key=e.target.value;arr.sort((a,b)=>key==='name'?a.name.localeCompare(b.name):key==='gold'?b.gold-a.gold:key==='kills'?b.kills-a.kills:statPower(b)-statPower(a));$('#charList').innerHTML=arr.filter(c=>(!state.filter||(c.name+' '+c.race+' '+c.class+' '+c.personality).toLowerCase().includes(state.filter.toLowerCase()))&&(state.kingdomFilter==='all'||c.kingdom===+state.kingdomFilter)).map(charRow).join('');};
+if($('#importFile'))$('#importFile').onchange=importSave;
+}
+window.openChar=i=>{const c=state.characters[i];if(!c)return;$('#modalTitle').textContent=c.name;$('#modalBody').innerHTML='<div class="two"><div class="statbox"><span>Ras / Class</span><b>'+esc(c.race)+' / '+esc(c.class)+'</b></div><div class="statbox"><span>Gender / Umur</span><b>'+esc(c.gender)+' / '+c.age+'</b></div><div class="statbox"><span>Kerajaan</span><b>'+esc(kingdoms[c.kingdom].name)+'</b></div><div class="statbox"><span>Kepribadian</span><b>'+esc(c.personality)+'</b></div></div><h3>Status & tujuan</h3><p>'+esc(c.activity)+'<br><span class="muted">Lokasi: '+esc(locName(c))+' · Target: '+esc(c.goal)+'</span></p><div class="statgrid">'+Object.keys(c.stats).map(k=>'<div class="statbox"><span>'+esc(k)+'</span><b>'+c.stats[k]+'</b></div>').join('')+'</div><h3>Kondisi</h3><p>HP '+c.hp+'/'+c.stats.HP+' · MP '+c.mp+'/'+c.stats.MP+' · Stamina '+c.stamina+'/100 · Gold '+c.gold+'</p><div class="bar"><i style="width:'+c.hp/c.stats.HP*100+'%"></i></div><h3>Skill</h3>'+c.skills.map(s=>'<div class="item"><div class="info"><strong>'+esc(s)+'</strong><small>'+esc(skillData[s]?.desc||'Skill class')+' · Biaya '+(skillData[s]?.cost||0)+' MP</small></div></div>').join('')+'<h3>Ras & Class</h3><p>'+esc(c.trait)+' — '+esc(c.weak)+'</p><p>Title: '+(c.titles.length?c.titles.map(esc).join(', '):'Belum memiliki title')+'</p><h3>Riwayat terakhir</h3>'+c.history.map(h=>'<div class="logline">Hari '+h.day+' — '+esc(h.act)+'</div>').join('');$('#modalback').classList.add('show');};
+window.openDead=i=>{const c=state.characters[i];if(!c)return;window.openChar(i);$('#modalTitle').textContent='Memorial — '+c.name;};
+window.goKingdom=i=>{state.tab='kingdoms';render();window.viewKingdom(i);};
+window.viewKingdom=i=>{const k=kingdoms[i];if(!k)return;const residents=alive().filter(c=>c.kingdom===i);$('#modalTitle').textContent=k.kanji+' · '+k.name;$('#modalBody').innerHTML='<p class="muted">'+esc(k.theme)+'</p><p>'+esc(k.desc)+'</p><div class="two"><div class="statbox"><span>Ibu kota</span><b>'+esc(k.town)+'</b></div><div class="statbox"><span>Akademi</span><b>'+esc(k.academy)+'</b></div><div class="statbox"><span>Dungeon utama</span><b>'+esc(k.dungeon)+'</b></div><div class="statbox"><span>Penduduk aktif</span><b>'+residents.length+'</b></div></div><h3>Tempat penting</h3><div class="two">'+k.places.map(p=>'<article class="kingdom"><span class="tag gold">'+esc(p.type)+'</span><h3>'+esc(p.name)+'</h3><p>'+esc(p.desc)+'</p></article>').join('')+'</div><h3>Monster wilayah</h3>'+k.monsters.map(m=>'<span class="tag">'+esc(m)+'</span>').join('')+'<h3>Penduduk dan aktivitas</h3><div class="list">'+(residents.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>'<div class="item"><div class="info"><strong>'+esc(c.name)+'</strong><small>'+esc(c.race)+' · '+esc(c.class)+' · '+esc(locName(c))+'</small><small>'+esc(c.activity)+'</small></div><button onclick="window.openChar('+state.characters.indexOf(c)+')">Lihat</button></div>').join('')||'<div class="empty">Belum ada penduduk aktif.</div>')+'</div>';$ ('#modalback').classList.add('show');};
+window.filterLocation=loc=>{state.filter='';state.tab='characters';render();$('#searchChar').value='';let arr=alive().filter(c=>c.location===loc);$('#charList').innerHTML=arr.map(charRow).join('')||'<div class="empty">Tidak ada karakter di lokasi ini.</div>';};
+window.showDungeon=i=>{state.tab='dungeons';render();let arr=alive().filter(c=>c.kingdom===i&&c.location==='dungeon');$('#modalTitle').textContent=kingdoms[i].dungeon;$('#modalBody').innerHTML='<p>'+esc(kingdoms[i].desc)+'</p><h3>Petualang di dalam dungeon</h3><div class="list">'+arr.map(c=>'<div class="item"><div class="info"><strong>'+esc(c.name)+'</strong><small>HP '+c.hp+'/'+c.stats.HP+' · '+esc(c.activity)+'</small></div><button onclick="window.openChar('+state.characters.indexOf(c)+')">Lihat</button></div>').join('')+'</div><h3>Monster yang mungkin muncul</h3>'+kingdoms[i].monsters.map(m=>'<span class="tag">'+esc(m)+'</span>').join('');$('#modalback').classList.add('show');};
+window.save=(notify)=>{try{localStorage.setItem('fantaWorldSave',JSON.stringify(state));if(notify)alert('Dunia berhasil disimpan di browser.');}catch(e){if(notify)alert('Gagal menyimpan: '+e.message);}};
+window.exportSave=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='fanta-world-save.json';a.click();URL.revokeObjectURL(url);};
+function importSave(e){const f=e.target.files&&e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!Array.isArray(d.characters)||!Array.isArray(d.events)||!Number.isFinite(d.day))throw new Error('Format save tidak cocok');if(!confirm('Ganti dunia saat ini dengan save yang diimpor?'))return;Object.assign(state,d);render();window.save(true);}catch(err){alert('Import gagal: '+err.message);}};reader.readAsText(f);}
+window.resetWorld=()=>{if(!confirm('Reset seluruh dunia dan mengganti save saat ini?'))return;freshWorld();window.save(false);state.tab='overview';render();};
+const backtop=$('#backtop');window.addEventListener('scroll',()=>backtop.classList.toggle('show',window.scrollY>260),{passive:true});backtop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});$('#closeModal').onclick=()=>$('#modalback').classList.remove('show');$('#modalback').onclick=e=>{if(e.target===$('#modalback'))$('#modalback').classList.remove('show');};
+$('#pauseBtn').onclick=()=>{state.paused=!state.paused;render();};document.querySelectorAll('.speed').forEach(b=>b.onclick=()=>{state.speed=+b.dataset.speed;render();});
+function load(){try{const raw=localStorage.getItem('fantaWorldSave');if(raw){const d=JSON.parse(raw);if(Array.isArray(d.characters)&&Array.isArray(d.events)){Object.assign(state,d);/* Repair incomplete or outdated saves before the first render. */['characters','guilds','events','dead'].forEach(k=>{if(!Array.isArray(state[k]))state[k]=[];});if(!Array.isArray(state.economy))state.economy=[{gold:0},{gold:0},{gold:0},{gold:0}];if(!Number.isFinite(state.day))state.day=1;if(!Number.isFinite(state.minute))state.minute=480;if(!Number.isFinite(state.tick))state.tick=0;if(!Number.isFinite(state.speed)||state.speed<1)state.speed=1;if(typeof state.paused!=='boolean')state.paused=true;if(!state.tab)state.tab='overview';if(typeof state.filter!=='string')state.filter='';if(state.kingdomFilter==null)state.kingdomFilter='all';ensureCharacterRoster();state.paused=true;return;}}}catch(e){}freshWorld();}
+load();render();setInterval(()=>{if(!state.paused){for(let i=0;i<state.speed;i++)tick();}},1200);
+})();
+</script>
+</body>
+</html>
