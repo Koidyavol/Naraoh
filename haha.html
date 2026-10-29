@@ -618,36 +618,161 @@ c.hp=Math.max(1,c.hp);c.injured=c.hp<startHp*.65;
 function runGuildMissions(){const guilds=state.guilds.filter(g=>alive().some(c=>g.members.includes(c.name)));if(!guilds.length)return;const g=pick(guilds),members=alive().filter(c=>g.members.includes(c.name));if(!members.length)return;const reward=rand(8,18)+Math.min(12,members.length*2),total=reward*members.length;members.forEach(c=>{c.gold+=reward;c.rep+=1;action(c,'Menjalankan misi guild '+g.name);});g.gold=(g.gold||0)+total;g.rep=(g.rep||0)+members.length;g.missions=(g.missions||0)+1;g.lastMissionDay=state.day;let bought=0;const market=state.market.Potion||(state.market.Potion={stock:rand(18,40),price:18});const needs=members.filter(c=>(c.hp<c.stats.HP*.8||c.mp<c.stats.MP*.25)&&(c.potions||0)===0).sort((a,b)=>(a.hp/a.stats.HP)-(b.hp/b.stats.HP));for(const c of needs){const price=marketPrice('Potion');if(bought>=2||market.stock<=0||(g.gold||0)<price)break;g.gold-=price;market.stock--;c.potions=(c.potions||0)+1;bought++;log('Guild '+g.name+' membelikan 1 Potion untuk '+c.name+' dengan kas guild ('+price+' gold).','guild');}g.lastMission='Misi selesai; '+members.length+' anggota mendapat '+reward+' gold masing-masing.'+(bought?' Kas guild membiayai '+bought+' Potion untuk anggota.':'');log('Guild '+g.name+' menuntaskan misi otomatis ('+members.length+' anggota) dan memperoleh '+total+' gold total'+(bought?', lalu membiayai '+bought+' Potion':'')+'.','guild');}
 function arenaMonth(){return Math.floor((state.day-1)/30)+1;}
 function arenaDate(){return (state.day-1)%30+1;}
+function arenaMonth(){return Math.floor((state.day-1)/30)+1;}
+function arenaDate(){return (state.day-1)%30+1;}
+function arenaPower(c){const s=c.stats||{};return (s.ATK||0)*1.2+(s.MAG||0)*1.1+(s.DEF||0)*.7+(s.HP||0)*.08+(s.SPD||0)*.5;}
+function arenaDuel(a,b,round,month){
+ const makeFighter=c=>({
+  source:c,name:c.name,class:c.class,role:classes[c.class]?.role||'Petarung',
+  stats:{...(c.stats||{})},skills:Array.isArray(c.skills)?c.skills.slice():[],
+  hp:Math.max(1,Number(c.stats?.HP)||60),mp:Math.max(0,Number(c.stats?.MP)||0),
+  guard:0,evade:0,counter:0,buff:0,poison:0,stun:0,freeze:0,marked:0,
+  cooldown:{},usedSkills:0,damageDealt:0,damageTaken:0
+ });
+ const A=makeFighter(a),B=makeFighter(b),fighters=[A,B],trace=[];
+ const synergy={Petarung:{phys:1.12,counter:1.12,guard:1.08},Sihir:{magic:1.14,barrier:1.08,heal:1.08},Kelincahan:{phys:1.08,pierce:1.12,poison:1.12,evasion:1.08,multi:1.08},Support:{heal:1.15,barrier:1.12,buff:1.1,magic:1.05},Profesi:{phys:1.04,magic:1.04,poison:1.08,buff:1.1,heal:1.08}};
+ const line=(f,msg)=>trace.push('Giliran '+turn+' · '+f.name+' '+msg);
+ const gearStats=f=>{
+  const g={ATK:0,MAG:0,DEF:0,MDEF:0,SPD:0,CRIT:0};
+  Object.values(f.source.equipment||{}).forEach(item=>{if(!item)return;const n=String(item).toLowerCase();if(n.includes('sword'))g.ATK+=3;if(n.includes('robe')){g.MAG+=2;g.MDEF+=2;}if(n.includes('hunter')||n.includes('boots'))g.SPD+=2;if(n.includes('warding')||n.includes('charm')){g.DEF+=2;g.MDEF+=2;}if(n.includes('iron')&&n.includes('armor'))g.DEF+=3;});
+  return g;
+ };
+ fighters.forEach(f=>f.gear=gearStats(f));
+ const stat=(f,k)=>Number(f.stats[k]||0)+Number(f.gear[k]||0);
+ const chooseAction=f=>{
+  const usable=f.skills.map(name=>({name,sk:skillData[name]})).filter(x=>x.sk&&f.mp>=Math.max(0,x.sk.cost||0)&&(f.cooldown[x.name]||0)<=0);
+  if(!usable.length||Math.random()<.12)return {name:'Serangan biasa',sk:null};
+  const enemy=f===A?B:A;
+  const ranked=usable.map(x=>{
+   const sk=x.sk,type=sk.type||'phys';let score=1+Math.max(0,sk.power||0)*2;
+   if(type==='heal')score+=f.hp/f.stats.HP<.35?15:f.hp/f.stats.HP<.58?9:f.hp/f.stats.HP<.78?4:-5;
+   if(type==='barrier'||type==='guard'||type==='evasion'||type==='counter')score+=f.hp/f.stats.HP<.45?7:f.hp/f.stats.HP<.7?3:0;
+   if(type==='buff')score+=f.buff<3?3:-2;
+   if(type==='poison')score+=enemy.poison>0?-1:2;
+   if(sk.status&&enemy[sk.status]>0)score-=1;
+   const estimated=Math.max(1,Math.round((type==='magic'?stat(f,'MAG'):stat(f,'ATK'))*(sk.power||1)-stat(enemy,'DEF')*.5));
+   if(estimated>=enemy.hp&&['phys','magic','pierce','multi','poison','counter'].includes(type))score+=5;
+   if(f.mp/Math.max(1,f.stats.MP)<.22)score-=Math.max(0,sk.cost||0)*.45;
+   score*=synergy[f.role]?.[type]||1;
+   score*=Math.max(.35,1-(sk.cost||0)/38);
+   return {...x,score};
+  }).sort((x,y)=>y.score-x.score);
+  return ranked[0];
+ };
+ const act=(f,enemy)=>{
+  if(f.hp<=0||enemy.hp<=0)return;
+  Object.keys(f.cooldown).forEach(k=>{if(f.cooldown[k]>0)f.cooldown[k]--;});
+  let {name,sk}=chooseAction(f),dmg=0,type=sk?.type||'phys';
+  if(!sk){
+   dmg=Math.max(2,Math.round(stat(f,'ATK')*(.82+Math.random()*.35)-stat(enemy,'DEF')*.48));
+   if(Math.random()*100<stat(f,'CRIT'))dmg=Math.round(dmg*(Number(f.stats['CRIT DMG'])||150)/100);
+   line(f,'melakukan Serangan Biasa dan memberi '+dmg+' damage.');
+  }else{
+   f.mp=Math.max(0,f.mp-(sk.cost||0));f.usedSkills++;
+   f.cooldown[name]=2;
+   const mult=synergy[f.role]?.[type]||1;
+   const power=Number(sk.power)||0;
+   if(type==='heal'){
+    const heal=Math.max(8,Math.round(f.stats.HP*(sk.healRatio||.22)));const actual=Math.min(heal,f.stats.HP-f.hp);f.hp+=actual;
+    line(f,'menggunakan '+name+', memulihkan '+actual+' HP. MP -'+(sk.cost||0)+'.');
+   }else if(type==='guard'){
+    f.guard=2;dmg=power?Math.max(1,Math.round(stat(f,'ATK')*power-stat(enemy,'DEF')*.4)):0;
+    line(f,'menggunakan '+name+' dan memasang pertahanan'+(dmg?' sambil memberi '+dmg+' damage':'')+'. MP -'+(sk.cost||0)+'.');
+   }else if(type==='barrier'){
+    f.guard=2;const heal=Math.round(f.stats.HP*.06),actual=Math.min(heal,f.stats.HP-f.hp);f.hp+=actual;
+    dmg=power?Math.max(1,Math.round(stat(f,'MAG')*power-stat(enemy,'MDEF')*.4)):0;
+    line(f,'menggunakan '+name+', membuat barrier'+(actual?' dan memulihkan '+actual+' HP':'')+(dmg?' serta memberi '+dmg+' damage':'')+'. MP -'+(sk.cost||0)+'.');
+   }else if(type==='evasion'){
+    f.evade=2;dmg=power?Math.max(1,Math.round(stat(f,'ATK')*power-stat(enemy,'DEF')*.4)):0;
+    line(f,'menggunakan '+name+' dan meningkatkan peluang menghindar'+(dmg?' sambil memberi '+dmg+' damage':'')+'. MP -'+(sk.cost||0)+'.');
+   }else if(type==='buff'){
+    f.buff=Math.min(8,f.buff+Math.max(2,Math.round(stat(f,'ATK')*.12)));
+    dmg=power?Math.max(1,Math.round((stat(f,'ATK')+f.buff)*power-stat(enemy,'DEF')*.4)):0;
+    line(f,'menggunakan '+name+'; ATK meningkat'+(dmg?' dan memberi '+dmg+' damage':'')+'. MP -'+(sk.cost||0)+'.');
+   }else if(type==='counter'){
+    f.counter=1;dmg=power?Math.max(1,Math.round(stat(f,'ATK')*power-stat(enemy,'DEF')*.4)):0;
+    line(f,'menggunakan '+name+' dan bersiap melakukan counter'+(dmg?' sambil memberi '+dmg+' damage':'')+'. MP -'+(sk.cost||0)+'.');
+   }else{
+    const hits=type==='multi'?3:1;
+    for(let i=0;i<hits;i++){
+     const attackStat=type==='magic'?stat(f,'MAG'):stat(f,'ATK');
+     let hit=Math.max(1,Math.round((attackStat+f.buff)*power*(type==='multi'?.48:1)*mult-stat(enemy,type==='magic'?'MDEF':'DEF')*(type==='pierce'?.22:.55)));
+     if(Math.random()*100<stat(f,'CRIT'))hit=Math.round(hit*(Number(f.stats['CRIT DMG'])||150)/100);
+     dmg+=hit;
+    }
+    if(type==='poison'||sk.status==='poison')enemy.poison=Math.max(enemy.poison,3);
+    if(sk.status&&['stun','freeze'].includes(sk.status)&&Math.random()<.32)enemy[sk.status]=1;
+    if(type==='mark'||sk.status==='mark')enemy.marked=2;
+    line(f,'menggunakan skill '+name+' dan memberi '+dmg+' damage'+(type==='multi'?' dalam '+hits+' hit':'')+'. MP -'+(sk.cost||0)+'.');
+   }
+  }
+  if(dmg>0){if(enemy.marked>0)dmg=Math.round(dmg*1.15);enemy.hp-=dmg;f.damageDealt+=dmg;enemy.damageTaken+=dmg;}
+  if(enemy.hp<=0){enemy.hp=0;line(f,'menjatuhkan '+enemy.name+'!');return;}
+  if(enemy.poison>0){const pd=Math.max(2,Math.round(enemy.stats.HP*.035));enemy.hp-=pd;enemy.poison--;line(enemy,'terkena efek racun dan kehilangan '+pd+' HP.');if(enemy.hp<=0){enemy.hp=0;return;}}
+  if(enemy.stun>0||enemy.freeze>0){if(enemy.stun>0)enemy.stun--;if(enemy.freeze>0)enemy.freeze--;line(enemy,'kehilangan giliran akibat efek status.');return;}
+  let incoming=Math.max(1,Math.round((stat(enemy,'ATK')+enemy.buff)*(.78+Math.random()*.3)-stat(f,'DEF')*.48));
+  if(stat(enemy,'MAG')>stat(f,'MDEF')&&Math.random()<.24)incoming=Math.max(1,Math.round(stat(enemy,'MAG')-stat(f,'MDEF')*.4));
+  if(f.evade>0){f.evade--;if(Math.random()<.7){incoming=0;line(f,'berhasil menghindari serangan balasan.');}}
+  else if(Math.random()*100<Number(f.stats.EVA||0)){incoming=0;line(f,'menghindari serangan balasan.');}
+  if(f.guard>0){incoming=Math.round(incoming*.35);f.guard--;}
+  if(incoming>0){f.hp-=incoming;f.damageTaken+=incoming;line(enemy,'membalas dan memberi '+incoming+' damage kepada '+f.name+'.');}
+  else line(enemy,'gagal mengenai '+f.name+'.');
+  if(f.counter>0){const cd=Math.max(1,Math.round(stat(f,'ATK')*.65-stat(enemy,'DEF')*.25));enemy.hp-=cd;f.damageDealt+=cd;enemy.damageTaken+=cd;f.counter=0;line(f,'membalas dengan counter sebesar '+cd+' damage.');}
+  if(enemy.hp<=0)enemy.hp=0;if(f.hp<=0)f.hp=0;
+ };
+ let turn=0;
+ trace.push('Pertandingan '+round+': '+A.name+' vs '+B.name+'. Keduanya memulai dengan HP/MP penuh; skill, pertahanan, efek status, dan cooldown aktif.');
+ while(A.hp>0&&B.hp>0&&turn<30){
+  turn++;
+  const first=stat(A,'SPD')===stat(B,'SPD')?(Math.random()<.5?A:B):stat(A,'SPD')>stat(B,'SPD')?A:B;
+  const second=first===A?B:A;
+  act(first,second);
+  if(A.hp>0&&B.hp>0)act(second,first);
+ }
+ const winner=A.hp<=0?(B.hp<=0?(Math.random()<.5?A:B):B):B.hp<=0?A:(A.hp/A.stats.HP>=B.hp/B.stats.HP?A:B);
+ const loser=winner===A?B:A;
+ trace.push('Hasil akhir: '+winner.name+' menang dengan '+Math.max(0,winner.hp)+' HP dan '+winner.mp+' MP tersisa; '+loser.name+' tersisa '+Math.max(0,loser.hp)+' HP.');
+ const entry={round,a:a.name,b:b.name,winner:winner.name,turns:trace,skillUses:{[A.name]:A.usedSkills,[B.name]:B.usedSkills},remaining:{[A.name]:{hp:Math.max(0,A.hp),mp:A.mp},[B.name]:{hp:Math.max(0,B.hp),mp:B.mp}}};
+ state.arena.history.push(entry);
+ log('Arena bulan '+month+' · '+round+': '+a.name+' vs '+b.name+' — '+winner.name+' menang dengan sistem skill.','arena');
+ return {winner:winner===A?a:b,loser:winner===A?b:a};
+}
 function runMonthlyArena(){
  if(!state.arena)state.arena={history:[],winners:[],lastTournamentDay:0};
  if(state.arena.lastTournamentDay===state.day)return;
  const month=arenaMonth(),players=alive().slice().sort(()=>Math.random()-.5);
  state.arena.history=[];
- if(players.length<2){state.arena.lastTournamentDay=state.day;return;}
- const duel=(a,b,round)=>{
-  let ha=a.stats.HP||60,hb=b.stats.HP||60,trace=[];
-  for(let n=1;n<=12&&ha>0&&hb>0;n++){
-   const da=Math.max(3,Math.round(arenaPower(a)*.07-Math.max(0,b.stats.DEF||0)*.12+Math.random()*8));
-   hb-=da;trace.push('Giliran '+n+': '+a.name+' memberi '+da+' damage; HP '+b.name+' '+Math.max(0,hb));
-   if(hb>0){const db=Math.max(3,Math.round(arenaPower(b)*.07-Math.max(0,a.stats.DEF||0)*.12+Math.random()*8));ha-=db;trace.push(b.name+' membalas '+db+' damage; HP '+a.name+' '+Math.max(0,ha));}
+ if(players.length<2){state.arena.lastTournamentDay=state.day;log('Arena bulan '+month+' dilewati karena peserta hidup kurang dari dua.','arena');return;}
+ log('Arena Bulanan #'+month+' dimulai: '+players.length+' peserta, sistem gugur. Setiap duel memakai skill dan atribut asli karakter; kondisi dunia tidak ikut berubah.','arena');
+ let current=players.slice(),semiLosers=[];
+ while(current.length>1){
+  const next=[],lost=[];
+  for(let i=0;i<current.length;i+=2){
+   if(!current[i+1]){next.push(current[i]);continue;}
+   const round=current.length===2?'Final':current.length===4?'Semifinal':current.length<=8?'Perempat Final':'Babak '+(Math.ceil(Math.log2(players.length))-Math.floor(Math.log2(current.length))+1);
+   const r=arenaDuel(current[i],current[i+1],round,month);next.push(r.winner);lost.push(r.loser);
   }
-  const win=ha<=0&&hb<=0?(Math.random()<.5?a:b):ha<=0?b:hb<=0?a:ha/(a.stats.HP||60)>=hb/(b.stats.HP||60)?a:b;
-  const lose=win===a?b:a;state.arena.history.push({round,a:a.name,b:b.name,winner:win.name,turns:trace});
-  log('Arena bulan '+month+' · '+round+': '+a.name+' vs '+b.name+' — '+win.name+' menang.','arena');return {winner:win,loser:lose};
- };
- log('Arena Bulanan #'+month+' dimulai: '+players.length+' peserta, sistem gugur.','arena');
- let current=players,semiLosers=[];
- while(current.length>1){const next=[],lost=[];for(let i=0;i<current.length;i+=2){if(!current[i+1]){next.push(current[i]);continue;}const round=current.length===2?'Final':current.length===4?'Semifinal':current.length<=8?'Perempat Final':'Babak '+(Math.ceil(Math.log2(players.length))-Math.floor(Math.log2(current.length))+1);const r=duel(current[i],current[i+1],round);next.push(r.winner);lost.push(r.loser);}if(next.length===2&&lost.length===2)semiLosers=lost;current=next;}
- const first=current[0],final=state.arena.history.slice().reverse().find(x=>x.round==='Final'),second=final?players.find(c=>c.name===final.turns&&false)||players.find(c=>c.name!==first.name&&false):null;
- const finalEntry=final;const runner=finalEntry?players.find(c=>c.name===finalEntry.a&&finalEntry.winner!==c.name)||players.find(c=>c.name===finalEntry.b&&finalEntry.winner!==c.name):null;
- let third=semiLosers.length===2?duel(semiLosers[0],semiLosers[1],'Perebutan Juara 3').winner:players.filter(c=>c!==first&&c!==runner).sort((a,b)=>arenaPower(b)-arenaPower(a))[0];
+  if(current.length===4&&lost.length===2)semiLosers=lost;
+  current=next;
+ }
+ const first=current[0];
+ const final=state.arena.history.slice().reverse().find(x=>x.round==='Final');
+ const runner=final?players.find(c=>c.name===(final.a===first.name?final.b:final.a)):null;
+ let third=null;
+ if(semiLosers.length===2)third=arenaDuel(semiLosers[0],semiLosers[1],'Perebutan Juara 3',month).winner;
  const podium=[{c:first,place:1,title:'Juara Arena Bulan '+month,gold:500},{c:runner,place:2,title:'Runner-up Arena Bulan '+month,gold:250},{c:third,place:3,title:'Peringkat Tiga Arena Bulan '+month,gold:125}];
  const record={month,day:state.day,participants:players.length,first:first.name,second:runner?runner.name:'—',third:third?third.name:'—'};
- podium.forEach(p=>{if(!p.c)return;p.c.titles=Array.isArray(p.c.titles)?p.c.titles:[];p.c.titles.push(p.title);p.c.gold=(p.c.gold||0)+p.gold;log(p.c.name+' mendapat title '+p.title+' dan '+p.gold+' gold.','arena');});
- state.arena.winners=Array.isArray(state.arena.winners)?state.arena.winners:[];state.arena.winners.push(record);state.arena.lastTournamentDay=state.day;log('Juara arena bulan '+month+': '+record.first+' / '+record.second+' / '+record.third+'.','arena');save(false);
+ podium.forEach(p=>{if(!p.c)return;p.c.titles=Array.isArray(p.c.titles)?p.c.titles:[];if(!p.c.titles.includes(p.title))p.c.titles.push(p.title);p.c.gold=(p.c.gold||0)+p.gold;log(p.c.name+' mendapat title '+p.title+' dan '+p.gold+' gold.','arena');});
+ state.arena.winners=Array.isArray(state.arena.winners)?state.arena.winners:[];
+ state.arena.winners.push(record);state.arena.lastTournamentDay=state.day;
+ log('Juara arena bulan '+month+': '+record.first+' / '+record.second+' / '+record.third+'.','arena');save(false);
 }
-function arenaPower(c){const s=c.stats||{};return (s.ATK||0)*1.2+(s.MAG||0)*1.1+(s.DEF||0)*.7+(s.HP||0)*.08+(s.SPD||0)*.5;}
-function arenaView(){const a=state.arena||{history:[],winners:[]};const h=(a.history||[]).slice().reverse().map(m=>'<details class="item"><summary>'+esc(m.round)+' · '+esc(m.a)+' vs '+esc(m.b)+' — Pemenang: '+esc(m.winner)+'</summary><div class="log" style="height:auto;max-height:260px">'+m.turns.map(t=>'<div class="logline">'+esc(t)+'</div>').join('')+'</div></details>').join('');const w=(a.winners||[]).slice().reverse().map(x=>'<article class="kingdom"><h3>Arena Bulan '+x.month+' · Hari '+x.day+'</h3><p>🥇 '+esc(x.first)+' — 500 gold</p><p>🥈 '+esc(x.second)+' — 250 gold</p><p>🥉 '+esc(x.third)+' — 125 gold</p></article>').join('');return '<section class="panel"><h2>⚔ Arena Bulanan</h2><div class="notice">Turnamen otomatis setiap hari ke-5 tiap bulan (hari 5, 35, 65...). Riwayat duel direset saat edisi baru; arsip juara tetap tersimpan.</div><h3>Riwayat pertarungan terbaru</h3><div class="list">'+(h||'<div class="empty">Arena pertama diadakan hari ke-5.</div>')+'</div><h3>Daftar pemenang per bulan</h3><div class="list">'+(w||'<div class="empty">Belum ada pemenang.</div>')+'</div></section>';}
+function arenaView(){
+ const a=state.arena||{history:[],winners:[]};
+ const h=(a.history||[]).slice().reverse().map(m=>'<details class="item"><summary>'+esc(m.round)+' · '+esc(m.a)+' vs '+esc(m.b)+' — Pemenang: '+esc(m.winner)+'</summary><div class="log" style="height:auto;max-height:320px">'+m.turns.map(t=>'<div class="logline">'+esc(t)+'</div>').join('')+'</div><p class="muted small">Pemakaian skill: '+Object.entries(m.skillUses||{}).map(([n,v])=>esc(n)+' '+v+'×').join(' · ')+'</p><p class="muted small">Sisa status: '+Object.entries(m.remaining||{}).map(([n,v])=>esc(n)+' — HP '+v.hp+', MP '+v.mp).join(' · ')+'</p></details>').join('');
+ const w=(a.winners||[]).slice().reverse().map(x=>'<article class="kingdom"><h3>Arena Bulan '+x.month+' · Hari '+x.day+'</h3><p>🥇 '+esc(x.first)+' — 500 gold · Title Juara Arena</p><p>🥈 '+esc(x.second)+' — 250 gold · Title Runner-up</p><p>🥉 '+esc(x.third)+' — 125 gold · Title Peringkat Tiga</p><p class="muted small">'+x.participants+' peserta · Riwayat duel edisi ini tersimpan sampai turnamen berikutnya.</p></article>').join('');
+ return '<section class="panel"><h2>⚔ Arena Bulanan</h2><div class="notice">Turnamen otomatis setiap hari ke-5 tiap bulan (hari 5, 35, 65...). Duel memakai HP, MP, ATK, DEF, MAG, MDEF, SPD, CRIT, equipment, skill karakter, biaya MP, cooldown, combo serangan, barrier, heal, counter, poison, stun, dan freeze. HP/MP dunia tidak dikurangi oleh simulasi Arena. Riwayat duel direset saat edisi baru; arsip juara tetap tersimpan.</div><div class="statgrid"><div class="statbox"><span>Edisi berikutnya</span><b>Bulan '+(arenaMonth()+(arenaDate()>=5?1:0))+'</b></div><div class="statbox"><span>Peserta hidup</span><b>'+alive().length+'</b></div><div class="statbox"><span>Duel tersimpan</span><b>'+(a.history||[]).length+'</b></div><div class="statbox"><span>Arsip juara</span><b>'+(a.winners||[]).length+'</b></div></div><h3>Riwayat pertarungan terbaru</h3><div class="list">'+(h||'<div class="empty">Arena pertama diadakan pada hari ke-5 simulasi.</div>')+'</div><h3>Daftar pemenang per bulan</h3><div class="list">'+(w||'<div class="empty">Belum ada pemenang.</div>')+'</div></section>';
+}
 function tick(){
  if(arenaDate()===5&&state.arena&&state.arena.lastTournamentDay!==state.day)runMonthlyArena();
  if(state.day>0&&state.day%10===0&&state.lastRecruitDay!==state.day)recruitNewcomers();
