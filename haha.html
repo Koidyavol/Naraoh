@@ -212,6 +212,82 @@ Object.assign(skillData,{
  'Ice Lance':{cost:8,power:1.5,type:'magic',status:'freeze',desc:'Tombak es dengan peluang membekukan target.'},
  'Lightning Arc':{cost:10,power:1.8,type:'magic',status:'stun',desc:'Petir dengan peluang membuat target stun.'}
 });
+
+/* Skill tree tersembunyi: 8 cabang x 3 node untuk setiap class. Node memakai tipe combat aktif. */
+const skillTreeTemplates={
+ Petarung:[
+  ['Critical Edge','phys',1.25,'CRIT',2],['Bulwark','guard',0,'DEF',2],['Berserker','multi',1.05,'ATK',2],['Counter Mastery','counter',1.15,'DEF',1],['Bleeding Wound','poison',1.05,'ATK',1],['Combo Arts','multi',1.0,'SPD',2],['Duelist','pierce',1.55,'ACC',2],['Battle Vitality','heal',0,'HP',6]],
+ Sihir:[
+  ['Elemental Mastery','magic',1.4,'MAG',2],['Arcane Control','magic',1.25,'WIS',2],['Mystic Ward','barrier',0,'MDEF',2],['Mana Surge','magic',1.55,'MP',6],['Soul Drain','poison',1.0,'RES',1],['Chain Casting','multi',.9,'SPD',1],['Spell Focus','pierce',1.5,'ACC',1],['Mana Renewal','heal',0,'WIS',1]],
+ Kelincahan:[
+  ['Critical Edge','phys',1.3,'CRIT',3],['Venomcraft','poison',1.05,'ACC',1],['Shadow Arts','evasion',0,'SPD',2],['Evasion','counter',1.1,'EVA',3],['Hemorrhage','poison',1.0,'CRIT',1],['Rapid Assault','multi',1.0,'SPD',2],['Executioner','pierce',1.65,'CRIT',2],['Life Leech','heal',0,'HP',5]],
+ Support:[
+  ['Healing Arts','heal',0,'WIS',2],['Barrier Arts','barrier',0,'MDEF',2],['Inspiration','buff',0,'CHA',2],['Holy Offense','magic',1.4,'MAG',1],['Fate Control','evasion',0,'LUK',2],['Debilitation','poison',1.0,'ACC',1],['Focused Casting','pierce',1.45,'MP',5],['Renewal','heal',0,'HP',5]],
+ Profesi:[
+  ['Craft Mastery','buff',0,'CRAFT',2],['Alchemical Combat','poison',1.0,'ACC',1],['Tactical Trade','phys',1.2,'CHA',2],['Herbal Remedies','heal',0,'PER',2],['Research','magic',1.35,'WIS',2],['Precision Tools','pierce',1.4,'ACC',2],['Survival Craft','guard',0,'DEF',1],['Field Utility','barrier',0,'END',1]]
+};
+const treeBranchByClass={};
+const treeRankNames=['Initiate','Adept','Master'];
+Object.keys(classes).forEach(className=>{
+ const role=classes[className].role||'Petarung';
+ const templates=skillTreeTemplates[role]||skillTreeTemplates.Petarung;
+ treeBranchByClass[className]=templates.map((tpl,bi)=>{
+  const [id,type,power,stat,bonus]=tpl;
+  const nodes=treeRankNames.map((rank,ri)=>{
+   const name=className+' · '+id+' '+rank;
+   const nodeType=ri===1&&['phys','pierce'].includes(type)?'multi':ri===2&&['guard','evasion'].includes(type)?'counter':type;
+   const cost=[4,7,10][ri],scaledPower=power?+(power+ri*.35).toFixed(2):0;
+   skillData[name]={cost,power:scaledPower,type:nodeType,treeSkill:true,desc:id+' '+rank+' — kemampuan tersembunyi class '+className+'.'};
+   if(id==='Arcane Control'&&ri>0)skillData[name].status=ri===1?'freeze':'stun';
+   if(nodeType==='poison')skillData[name].status='poison';
+   if(nodeType==='heal')skillData[name].healRatio=[.18,.24,.32][ri];
+   return {name,rank:ri+1,requiredTraining:(ri+1)*3,requiredKills:(ri+1)*2};
+  });
+  return {id:'branch'+bi,name:id,type,bonusStat:stat,bonus, nodes};
+ });
+ classes[className].treeBranches=treeBranchByClass[className];
+});
+function ensureSkillTree(c){
+ if(!c||!classes[c.class])return;
+ if(!c.skillTree||typeof c.skillTree!=='object')c.skillTree={branch:null,branches:{},training:0,kills:0,skillAffinity:{},passivesApplied:{}};
+ const t=c.skillTree;t.branches=t.branches||{};t.skillAffinity=t.skillAffinity||{};t.passivesApplied=t.passivesApplied||{};
+ if(!Number.isFinite(t.training))t.training=0;if(!Number.isFinite(t.kills))t.kills=0;
+ if(!Array.isArray(c.skills))c.skills=[];
+}
+function applyTreePassive(c,b,rank){
+ const key=b.id+':'+rank;if(c.skillTree.passivesApplied[key])return;
+ const stat=b.bonusStat,amount=b.bonus;
+ if(c.stats[stat]!=null){c.stats[stat]+=amount;if(stat==='HP')c.hp=Math.min(c.stats.HP,c.hp+amount);if(stat==='MP')c.mp=Math.min(c.stats.MP,c.mp+amount);}
+ c.skillTree.passivesApplied[key]=true;
+}
+function chooseSkillBranch(c){
+ const t=c.skillTree,bs=treeBranchByClass[c.class]||[];
+ const scores=bs.map(b=>({b,score:(t.skillAffinity[b.id]||0)+(c.personality==='Brave'&&/Berserker|Critical|Executioner/i.test(b.name)?2:0)+(c.personality==='Cautious'&&/Bulwark|Ward|Evasion|Renewal|Vitality/i.test(b.name)?2:0)+(c.personality==='Curious'&&/Research|Focus|Mastery/i.test(b.name)?2:0)+Math.random()})).sort((a,b)=>b.score-a.score);
+ return scores[0]?.b||null;
+}
+function progressSkillTree(c,source){
+ ensureSkillTree(c);const t=c.skillTree;if(source==='training')t.training++;if(source==='combat')t.kills++;
+ const bs=treeBranchByClass[c.class]||[];if(!bs.length)return;
+ if(!t.branch){
+  if(t.training<3&&t.kills<2)return;
+  const b=chooseSkillBranch(c);if(!b)return;t.branch=b.id;t.branches[b.id]=1;applyTreePassive(c,b,1);
+  const n=b.nodes[0];if(!c.skills.includes(n.name)){c.skills.push(n.name);log(c.name+' membuka cabang tersembunyi '+b.name+' dan mempelajari '+n.name+'.','training');}return;
+ }
+ const b=bs.find(x=>x.id===t.branch);if(!b){t.branch=null;return;}
+ const rank=t.branches[b.id]||1,node=b.nodes[rank];
+ if(node&&t.training>=node.requiredTraining&&t.kills>=node.requiredKills){
+  t.branches[b.id]=rank+1;applyTreePassive(c,b,rank+1);
+  if(!c.skills.includes(node.name)){c.skills.push(node.name);log(c.name+' membuka '+node.name+' melalui perkembangan skill tree.','training');}
+ }else if(Math.random()<.025){
+  const other=bs.find(x=>x.id!==b.id&&!t.branches[x.id]);
+  if(other){t.branches[other.id]=1;applyTreePassive(c,other,1);if(!c.skills.includes(other.nodes[0].name))c.skills.push(other.nodes[0].name);log(c.name+' menemukan cabang skill rahasia '+other.name+'.','training');}
+ }
+}
+function recordSkillAffinity(c,name){
+ ensureSkillTree(c);const sk=skillData[name];if(!sk)return;
+ (treeBranchByClass[c.class]||[]).forEach(b=>{if(b.type===sk.type)c.skillTree.skillAffinity[b.id]=(c.skillTree.skillAffinity[b.id]||0)+1;});
+}
+
 Object.assign(classes.Warrior,{tier:'Dasar',role:'Petarung',description:classDescriptions.Warrior});
 Object.assign(classes.Mage,{tier:'Dasar',role:'Sihir',description:classDescriptions.Mage});
 Object.assign(classes.Archer,{tier:'Dasar',role:'Kelincahan',description:classDescriptions.Archer});
@@ -225,7 +301,7 @@ function maybeEvolve(c){
  const advanced=classes[next];
  Object.entries(advanced.base).forEach(([key,value])=>{if(c.stats[key]!=null)c.stats[key]=Math.max(c.stats[key],value);});
  c.hp=Math.min(c.stats.HP,c.hp+Math.round(c.stats.HP*.2));c.mp=Math.min(c.stats.MP,c.mp+Math.round(c.stats.MP*.2));
- c.skills=[...new Set(c.skills.concat(advanced.skills))];
+ c.skills=[...new Set(c.skills.concat(advanced.skills))];if(c.skillTree){c.skillTree.branch=null;c.skillTree.branches={};c.skillTree.training=0;c.skillTree.kills=0;c.skillTree.skillAffinity={};c.skillTree.passivesApplied={};}
  log(c.name+' berevolusi dari '+old+' menjadi '+next+' setelah pengalaman bertarung.','training');
  action(c,'Berevolusi menjadi '+next);
 }
@@ -256,13 +332,13 @@ function clock(){let m=state.minute%1440;return String(Math.floor(m/60)).padStar
 function makeCharacter(i){
 const cls=pick(baseClassNames),race=pick(races),king=rand(0,3),gender=Math.random()<.5?'Laki-laki':'Perempuan',base=Object.assign({},classes[cls].base);
 Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
-const c={name:uniqueJapaneseName(),gender:gender,age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:pick(personalities),kingdom:king,location:'town',activity:'Menjelajahi kota',goal:pick(['Meningkatkan kekuatan','Mencari uang','Menjelajahi dungeon','Menguasai skill','Mencari equipment']),stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice().sort(()=>Math.random()-.5).slice(0,rand(3,4)),equipment:{weapon:null,armor:null,accessory:null},titles:[],materials:{IronOre:0,MonsterFang:0,ManaCrystal:0,AncientRelic:0,Herb:0},crafted:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+const c={skillTree:{branch:null,branches:{},training:0,kills:0,skillAffinity:{},passivesApplied:{}},name:uniqueJapaneseName(),gender:gender,age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:pick(personalities),kingdom:king,location:'town',activity:'Menjelajahi kota',goal:pick(['Meningkatkan kekuatan','Mencari uang','Menjelajahi dungeon','Menguasai skill','Mencari equipment']),stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice().sort(()=>Math.random()-.5).slice(0,rand(3,4)),equipment:{weapon:null,armor:null,accessory:null},titles:[],materials:{IronOre:0,MonsterFang:0,ManaCrystal:0,AncientRelic:0,Herb:0},crafted:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
 c.hp=c.stats.HP;c.mp=c.stats.MP;return c;
 }
 function makeKoiCharacter(i){
  const cls='Samurai',race=races.find(r=>r.name==='Human'),base=Object.assign({},classes[cls].base);
  Object.keys(race.bonus).forEach(k=>{if(base[k]!=null)base[k]+=race.bonus[k];});
- const c={name:'Koi',gender:Math.random()<.5?'Laki-laki':'Perempuan',age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:'Independent',kingdom:0,location:'town',activity:'Menjelajahi kota',goal:'Menguasai skill',stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice(),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
+ const c={skillTree:{branch:null,branches:{},training:0,kills:0,skillAffinity:{},passivesApplied:{}},name:'Koi',gender:Math.random()<.5?'Laki-laki':'Perempuan',age:rand(18,54),race:race.name,trait:race.trait,weak:race.weak,class:cls,personality:'Independent',kingdom:0,location:'town',activity:'Menjelajahi kota',goal:'Menguasai skill',stats:base,hp:base.HP,mp:base.MP,stamina:100,gold:rand(30,130),skills:classes[cls].skills.slice(),equipment:{weapon:null,armor:null,accessory:null},titles:[],alive:true,injured:false,kills:0,wins:0,escapes:0,training:0,craft:0,quests:0,loot:0,skillUse:0,defending:0,poison:0,burn:0,stun:0,guard:0,buff:0,evade:0,history:[],lastAction:'Baru tiba di dunia',nextAction:0,party:null,guild:null,rep:0,coinsSpent:0,created:i};
  return c;
 }
 function ensureCharacterRoster(){
@@ -346,7 +422,7 @@ if(c.location==='dungeon'){
 if(r<.68){combat(c,kingdoms[c.kingdom].monsters[rand(0,kingdoms[c.kingdom].monsters.length-1)]);return;}
 c.location='town';c.gold+=rand(8,28);c.loot++;c.rep+=1;action(c,'Keluar dari dungeon membawa hasil eksplorasi');log(c.name+' keluar dari dungeon dengan hasil eksplorasi.');return;
 }
-if(r<(cautious?.30:.18)){c.location='academy';c.stamina=Math.max(0,c.stamina-8);let key=pick(c.class==='Mage'?['MAG','WIS','MDEF']:c.class==='Warrior'?['ATK','DEF','END']:c.class==='Archer'?['ACC','SPD','PER']:['SPD','CRIT','EVA']);gainStat(c,key,1);c.training++;if(c.training%3===0){c.skills.push(pick(classes[c.class].skills));c.skills=[...new Set(c.skills)];}action(c,'Berlatih '+key+' di akademi');log(c.name+' berlatih '+key+' di akademi.','training');return;}
+if(r<(cautious?.30:.18)){c.location='academy';c.stamina=Math.max(0,c.stamina-8);let key=pick(c.class==='Mage'?['MAG','WIS','MDEF']:c.class==='Warrior'?['ATK','DEF','END']:c.class==='Archer'?['ACC','SPD','PER']:['SPD','CRIT','EVA']);gainStat(c,key,1);c.training++;if(c.training%3===0){const known=new Set(c.skills);const available=(classes[c.class].skills||[]).filter(name=>!known.has(name));if(available.length){const learned=pick(available);c.skills.push(learned);log(c.name+' mempelajari skill class '+learned+'.','training');}}progressSkillTree(c,'training');action(c,'Berlatih '+key+' di akademi');log(c.name+' berlatih '+key+' di akademi.','training');return;}
 if(r<(brave?.62:.43)){c.location='dungeon';action(c,'Memasuki '+kingdoms[c.kingdom].dungeon);log(c.name+' memasuki '+kingdoms[c.kingdom].dungeon+'.','dungeon');return;}
 if(r<.72){c.gold+=rand(5,18);c.stamina=Math.max(0,c.stamina-5);action(c,'Bekerja atau membantu pedagang di kota');log(c.name+' memperoleh uang dari aktivitas kota.');return;}
 if(r<.83&&c.gold>35){let item=pick(['Iron Sword','Apprentice Robe','Hunter Boots','Warding Charm','Minor Potion']);c.gold-=35;c.coinsSpent+=35;c.equipment[pick(['weapon','armor','accessory'])]=item;let k=pick(['ATK','DEF','MAG','MDEF','SPD']);gainStat(c,k,2);action(c,'Membeli '+item+' dan memperbaiki perlengkapan');log(c.name+' membeli '+item+'.','loot');return;}
@@ -403,6 +479,7 @@ while(c.hp>0&&m.hp>0&&turns<9){
   chosen=pick(ranked.slice(0,Math.min(3,ranked.length)));
  }else chosen={name:'Basic Attack',sk:null};
  const use=chosen.name,sk=chosen.sk;
+ if(sk)recordSkillAffinity(c,use);
  let dmg=0,skipEnemy=false;
  if(sk){
   c.mp-=sk.cost;c.skillUse++;
@@ -448,7 +525,7 @@ while(c.hp>0&&m.hp>0&&turns<9){
  c.hp-=mdmg;
 }
 c.combatBuffATK=0;c.counterReady=0;
-if(m.hp<=0){let reward=rand(8,25)+m.xp*2;c.gold+=reward;c.kills++;c.wins++;c.rep+=2;c.stamina=Math.max(0,c.stamina-rand(8,16));let skey=pick(role==='Sihir'?['MAG','WIS']:role==='Petarung'?['ATK','END','DEF']:role==='Kelincahan'?['ACC','SPD']:['SPD','CRIT']);gainStat(c,skey,1);c.materials=c.materials||{};const drop=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic','Herb']);c.materials[drop]=(c.materials[drop]||0)+1;if(Math.random()<.18){const extra=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic']);c.materials[extra]=(c.materials[extra]||0)+1;c.loot++;}log(c.name+' mengalahkan '+m.name+' setelah '+turns+' giliran, memperoleh '+reward+' gold dan kemajuan '+skey+'.','combat');maybeTitle(c,'Goblin Slayer',c.kills>=5);maybeTitle(c,'Dungeon Survivor',c.escapes>=3&&c.wins>=5);maybeTitle(c,'Dragon Hunter',c.kills>=8);if(c.kills%4===0){let key=pick(['ATK','DEF','MAG','SPD','ACC']);gainStat(c,key,1);}maybeEvolve(c);return;}
+if(m.hp<=0){let reward=rand(8,25)+m.xp*2;c.gold+=reward;c.kills++;c.wins++;c.rep+=2;progressSkillTree(c,'combat');c.stamina=Math.max(0,c.stamina-rand(8,16));let skey=pick(role==='Sihir'?['MAG','WIS']:role==='Petarung'?['ATK','END','DEF']:role==='Kelincahan'?['ACC','SPD']:['SPD','CRIT']);gainStat(c,skey,1);c.materials=c.materials||{};const drop=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic','Herb']);c.materials[drop]=(c.materials[drop]||0)+1;if(Math.random()<.18){const extra=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic']);c.materials[extra]=(c.materials[extra]||0)+1;c.loot++;}log(c.name+' mengalahkan '+m.name+' setelah '+turns+' giliran, memperoleh '+reward+' gold dan kemajuan '+skey+'.','combat');maybeTitle(c,'Goblin Slayer',c.kills>=5);maybeTitle(c,'Dungeon Survivor',c.escapes>=3&&c.wins>=5);maybeTitle(c,'Dragon Hunter',c.kills>=8);if(c.kills%4===0){let key=pick(['ATK','DEF','MAG','SPD','ACC']);gainStat(c,key,1);}maybeEvolve(c);return;}
 if(c.hp<=0){c.hp=0;c.alive=false;c.deathDay=state.day;c.deathCause='Gugur saat melawan '+m.name;c.deathLocation=locName(c);state.dead.push(c);log(c.name+' ('+c.class+') gugur saat melawan '+m.name+' di '+c.deathLocation+'.','death');return;}
 c.hp=Math.max(1,c.hp);c.injured=c.hp<startHp*.65;
 }
@@ -513,7 +590,7 @@ window.resetWorld=()=>{if(!confirm('Reset seluruh dunia dan mengganti save saat 
 // Guild missions now run automatically from tick(); no manual trigger is exposed.
 const backtop=$('#backtop');window.addEventListener('scroll',()=>backtop.classList.toggle('show',window.scrollY>260),{passive:true});backtop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});$('#closeModal').onclick=()=>$('#modalback').classList.remove('show');$('#modalback').onclick=e=>{if(e.target===$('#modalback'))$('#modalback').classList.remove('show');};
 $('#pauseBtn').onclick=()=>{state.paused=!state.paused;render();};document.querySelectorAll('.speed').forEach(b=>b.onclick=()=>{state.speed=+b.dataset.speed;render();});
-function load(){try{const raw=localStorage.getItem('hahaWorldSave');if(raw){const d=JSON.parse(raw);if(Array.isArray(d.characters)&&Array.isArray(d.events)){Object.assign(state,d);/* Repair incomplete or outdated saves before the first render. */['characters','guilds','events','dead'].forEach(k=>{if(!Array.isArray(state[k]))state[k]=[];});if(!Array.isArray(state.economy))state.economy=[{gold:0},{gold:0},{gold:0},{gold:0}];if(!state.market||typeof state.market!=='object')state.market={};marketGoods.forEach(g=>{if(!state.market[g.id]||typeof state.market[g.id]!=='object')state.market[g.id]={stock:rand(18,40),price:g.base};if(!Number.isFinite(state.market[g.id].stock))state.market[g.id].stock=20;if(!Number.isFinite(state.market[g.id].price))state.market[g.id].price=g.base;});if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.dead))state.dead=[];state.guilds.forEach(g=>{if(!Array.isArray(g.members))g.members=[];if(!Number.isFinite(g.gold))g.gold=0;if(!Number.isFinite(g.rep))g.rep=0;if(!Number.isFinite(g.missions))g.missions=0;});state.characters.forEach(c=>{if(!c.materials)c.materials={IronOre:0,MonsterFang:0,ManaCrystal:0,AncientRelic:0,Herb:0};if(!Array.isArray(c.crafted))c.crafted=[];});if(!Number.isFinite(state.day))state.day=1;if(!Number.isFinite(state.minute))state.minute=480;if(!Number.isFinite(state.tick))state.tick=0;if(!Number.isFinite(state.lastRecruitDay))state.lastRecruitDay=0;if(!Number.isFinite(state.speed)||state.speed<1)state.speed=1;if(typeof state.paused!=='boolean')state.paused=true;if(!state.tab)state.tab='overview';if(typeof state.filter!=='string')state.filter='';if(state.kingdomFilter==null)state.kingdomFilter='all';ensureCharacterRoster();cleanupGuilds();cleanupQuests();state.paused=true;return;}}}catch(e){}freshWorld();}
+function load(){try{const raw=localStorage.getItem('hahaWorldSave');if(raw){const d=JSON.parse(raw);if(Array.isArray(d.characters)&&Array.isArray(d.events)){Object.assign(state,d);/* Repair incomplete or outdated saves before the first render. */['characters','guilds','events','dead'].forEach(k=>{if(!Array.isArray(state[k]))state[k]=[];});if(!Array.isArray(state.economy))state.economy=[{gold:0},{gold:0},{gold:0},{gold:0}];if(!state.market||typeof state.market!=='object')state.market={};marketGoods.forEach(g=>{if(!state.market[g.id]||typeof state.market[g.id]!=='object')state.market[g.id]={stock:rand(18,40),price:g.base};if(!Number.isFinite(state.market[g.id].stock))state.market[g.id].stock=20;if(!Number.isFinite(state.market[g.id].price))state.market[g.id].price=g.base;});if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.dead))state.dead=[];state.guilds.forEach(g=>{if(!Array.isArray(g.members))g.members=[];if(!Number.isFinite(g.gold))g.gold=0;if(!Number.isFinite(g.rep))g.rep=0;if(!Number.isFinite(g.missions))g.missions=0;});state.characters.forEach(c=>{if(!c.materials)c.materials={IronOre:0,MonsterFang:0,ManaCrystal:0,AncientRelic:0,Herb:0};if(!Array.isArray(c.crafted))c.crafted=[];ensureSkillTree(c);});if(!Number.isFinite(state.day))state.day=1;if(!Number.isFinite(state.minute))state.minute=480;if(!Number.isFinite(state.tick))state.tick=0;if(!Number.isFinite(state.lastRecruitDay))state.lastRecruitDay=0;if(!Number.isFinite(state.speed)||state.speed<1)state.speed=1;if(typeof state.paused!=='boolean')state.paused=true;if(!state.tab)state.tab='overview';if(typeof state.filter!=='string')state.filter='';if(state.kingdomFilter==null)state.kingdomFilter='all';ensureCharacterRoster();cleanupGuilds();cleanupQuests();state.paused=true;return;}}}catch(e){}freshWorld();}
 load();render();setInterval(()=>{if(!state.paused){for(let i=0;i<state.speed;i++)tick();}},1200);
 })();
 </script>
