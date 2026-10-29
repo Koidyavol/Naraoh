@@ -436,7 +436,16 @@ var C=[
 {"n":"Abyssal Reversal","k":"t","s":"Counter","g":"🔻","x":0,"t":"Bayar 1000 LP untuk menanggapi serangan lawan (efek sederhana)."},
 {"n":"Wings Severed","k":"t","s":"Continuous","g":"⛓️","x":0,"t":"Monster lawan kehilangan 200 ATK."}
 ];
-C.forEach(function(c,i){c.id=i});
+var fusionMaterials={
+'Gravebound Bone Colossus':['Gravebound Soldier','Gravebound Necromancer'],
+'Gravebound Crypt Dragon':['Crypt Warden','Gravebound Hound'],
+'Gravebound Soul Reaper':['Gravebound Scout','Gravebound Soldier'],
+'Gravebound Tomb Titan':['Gravebound Warden','Crypt Warden'],
+'Gravebound Dread Knight':['Gravebound Soldier','Gravebound Hound'],
+'Gravebound Bone Oracle':['Bone Herald','Gravebound Necromancer'],
+'Gravebound Abyss Walker':['Gravebound Reclaimer','Crypt Warden']
+};
+C.forEach(function(c,i){c.id=i;if(c.s=='Fusion'&&!c.fm&&fusionMaterials[c.n])c.fm=fusionMaterials[c.n]});
 var FR={Normal:['#d9b44a','#1a1304'],Effect:['#c98a3a','#1a1304'],Ritual:['#3a6fd1','#fff'],Fusion:['#7a45c9','#fff'],Synchro:['#e8e8f0','#14141f'],Xyz:['#16162a','#fff'],Pendulum:['linear-gradient(#c98a3a 50%,#1f9a86 50%)','#fff'],Link:['#2f7fe0','#fff'],Spell:['#1f9a86','#fff'],Trap:['#b0306e','#fff']};
 var ART={LIGHT:'#f3e3a0,#8a6a1c',DARK:'#6b4aa8,#120c24',EARTH:'#9a7a4a,#2a1d0e',Spell:'#6fd1bd,#0b3d35',Trap:'#e07aa8,#3b0b25'};
 function fk(c){return c.k=='m'?c.s:(c.k=='s'?'Spell':'Trap')}
@@ -572,16 +581,18 @@ function attack0(s,i,t){var d=s=='p'?'o':'p',x=S[s].mz[i],nm=s=='p'?'Kamu':'Lawa
 function opp(s){return s=='p'?'o':'p'}
 function w4(c){return c.k=='m'&&c.r=='Warrior'&&c.l==4}
 function bu(c){return c.k!='m'&&/Bushido/.test(c.n)}
-function lim(x){return x.dbl||x.c.s=='Fusion'?2:1}
+function lim(x){return x.dbl||x.c.n=='Twin Blade Musashi'?2:1}
 function pw(s,x,k){var P=S[s],v=x.c[k];if(v==null)return 0;
- if(k=='p')v+=(x.eq||0)*500+(x.bo||0)+(x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.c.n=='Dojo Banner'})?300:0)+(x.c.n.indexOf('Fallen Angel')===0&&P.mz.some(function(m){return m&&!m.fd&&m.c.n=='Sinblade Knight'})?200:0)+(x.c.r=='Warrior'&&x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.scale&&t.c.n=='Torii Gate Guardian'})?300:0)+(x.c.n.indexOf('Gravebound')===0&&P.st.some(function(t){return t&&!t.fd&&t.c.n=='Tomb Gate'})?200:0);
- else v+=P.mz.some(function(m){return m&&m!=x&&!m.fd&&!m.neg&&m.c.n=='Hatamoto Guard'})?300:0;
+ if(k=='p')v+=(x.eq||0)*500+(x.bo||0)+(x.c.r=='Warrior'&&x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.c.n=='Dojo Banner'})?300:0)+(x.c.n.indexOf('Fallen Angel')===0&&P.mz.some(function(m){return m&&!m.fd&&!m.neg&&m.c.n=='Sinblade Knight'})?200:0)+(x.c.r=='Warrior'&&x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.scale&&t.c.n=='Torii Gate Guardian'})?300:0)+(x.c.n.indexOf('Gravebound')===0&&P.fz&&P.fz.c.n=='Tomb Gate'?200:0)+(x.c.n.indexOf('Goblin')===0&&P.mz.some(function(m){return m&&!m.fd&&!m.neg&&m.c.n=='Goblin Forge Colossus'})?300:0)+(x.c.n.indexOf('Gravebound')===0&&P.mz.some(function(m){return m&&!m.fd&&!m.neg&&m.c.n=='Gravebound Overlord'})?300:0);
+ else v+=(x.c.r=='Warrior'&&P.mz.some(function(m){return m&&m!=x&&!m.fd&&!m.neg&&m.c.n=='Hatamoto Guard'})?300:0);
  if(k=='p'&&x.c.r=='Fiend'&&(x.c.n.indexOf('Goblin')===0||x.c.n=='King Goblin')&&P.mz.some(function(m){return m&&!m.fd&&m.c.n=='King Goblin'}))v+=300;
- if([S.p.fz,S.o.fz].some(function(f){return f&&f.c.n=='Castle of Edo'}))v+=200;return v}
+ if(P.fz&&P.fz.c.n=='Castle of Edo'&&x.c.r=='Warrior')v+=200;if(k=='d'&&P.fz&&P.fz.c.n=='Castle of Edo'&&x.c.r=='Warrior')v+=200;return v}
 function ssp(s,f,from,neg){var P=S[s],z=P.mz.indexOf(null),i=-1;P[from].forEach(function(c,j){if(i<0&&f(c))i=j});if(z<0||i<0)return false;
  var c=P[from].splice(i,1)[0],x=inst(c,'atk',false);x.neg=neg;P.mz[z]=x;lg(c.n+' di-Special Summon.');if(!neg)trig(s,c,'ss');return true}
 function addHand(s,f,from){var P=S[s],i=-1;P[from].forEach(function(c,j){if(i<0&&f(c))i=j});if(i>=0){var c=P[from].splice(i,1)[0];P.hand.push(c);lg(c.n+' ditambahkan ke tangan.')}}
+function linkProtected(s,i){var P=S[s],x=P.mz[i];if(!x||x.c.r!='Warrior')return false;return P.mz.some(function(m,j){return m&&!m.fd&&!m.neg&&m.c.n=='Torii Gate Warden'&&Math.abs(j-i)==1})}
 function kill(s,i,eff){var x=S[s].mz[i];if(!x)return;
+ if(eff&&linkProtected(s,i))return lg(x.c.n+' dilindungi Torii Gate Warden dari efek lawan.');
  if(eff&&x.c.n.indexOf('Tokugane')>=0&&!x.neg&&S[s].mz.some(function(m){return m&&!m.fd&&m.c.s=='Xyz'}))return lg(x.c.n+' tidak bisa dihancurkan oleh efek.');
  lg(x.c.n+' dihancurkan.');toGy(s,i)}
 function killST(s,i){var P=S[s],x=P.st[i];if(!x)return;P.st[i]=null;P.gy.push(x.c);if(x.eqTarget)x.eqTarget.eq=Math.max(0,(x.eqTarget.eq||0)-1);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
@@ -608,16 +619,17 @@ function trig(s,c,h){if(c.n=='Fallen Angel Azazel'&&(h=='ns'||h=='ss'))chain(s,c
  if(c.n=='Torii Gate Guardian'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Warrior'&&k.l<=3},'hand',0)});
  if(c.n=='Kitsune Scale Adept'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.s=='Pendulum'},'deck')});
  if(c.n=='Thunder Shogun Vanguard'&&h=='ps')S[s].mz.forEach(function(x){if(x&&x.c==c)x.bo=(x.bo||0)+500});
- if(c.n=='Dojo Master Takeda'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return bu(k)&&k.k=='s'},'gy')})
+ if(c.n=='Dojo Master Takeda'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return bu(k)&&k.k=='s'},'gy')});
+ if(c.n=='Torii Gate Warden'&&h=='ln')lg('Torii Gate Warden di-Link Summon; perlindungan Warrior di zona bersebelahan aktif.')
  if(c.n=='Goblin Banner Captain'&&(h=='ns'||h=='ss'))S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Goblin')===0&&m.c!=c)m.bo=(m.bo||0)+300});
  if(c.n=='Goblin Scrap Bomber'&&h=='fu')chain(s,c.n,function(){var o=opp(s);for(var i=S[o].st.length-1;i>=0;i--)if(S[o].st[i])killST(o,i)});
- if(c.n=='Goblin Forge Colossus'&&h=='sy')S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Goblin')===0&&m.c!=c)m.bo=(m.bo||0)+300});
+ if(c.n=='Goblin Forge Colossus'&&h=='sy')lg('Goblin Forge Colossus: Goblin lain mendapat 300 ATK selama monster ini face-up.');
  if(c.n=='Gravebound Scout'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Scout'},'deck')});
  if(c.n=='Bone Herald'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){addHand(s,function(k){return k.k!='m'&&['Grave Call','Ossuary Pact','Necrotic Surge','Eternal Burial','Tomb Gate'].indexOf(k.n)>=0},'gy')});
  if(c.n=='Gravebound Reclaimer'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Reclaimer'},'gy',0)});
  if(c.n=='Gravebound Overlord'&&h=='fu')chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.n.indexOf('Gravebound')===0&&k.n!='Gravebound Overlord'},'gy',0)});
- if(c.n=='Gravebound Overlord'&&h=='fu')S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Gravebound')===0&&m.c!=c)m.bo=(m.bo||0)+300});
- if(c.n=='Abyssal Wing Tuner'&&(h=='ns'||h=='ss'))S[s].mz.forEach(function(m){if(m&&!m.fd&&m.c.n.indexOf('Fallen Angel')===0)m.bo=(m.bo||0)+200});
+ if(c.n=='Gravebound Overlord'&&h=='fu')lg('Gravebound Overlord: Gravebound lain mendapat 300 ATK selama monster ini face-up.');
+
 
  if(c.n=='Fallen Angel Black Seraph'&&h=='sy')chain(s,c.n,function(){dmg(opp(s),500)});
  if(c.n=='Fallen Angel Nocturne'&&h=='sy')chain(s,c.n,function(){var o=opp(s),i=S[o].mz.findIndex(Boolean);if(i>=0)S[o].mz[i].neg=1});
@@ -687,14 +699,26 @@ function sqok(){return !S.f.sq&&S.p.mz.indexOf(null)>=0&&cnt('p')>0}
 function ssh(s,hi){var P=S[s],c=P.hand[hi];if(!sqok()||!c)return;var valid=c.n=='Katana Squire'?P.mz.some(function(m){return m&&!m.fd&&m.c.r=='Warrior'}):c.n=='Goblin Spear Raider'?P.mz.some(function(m){return m&&!m.fd&&m.c.n.indexOf('Goblin')===0}):c.n=='Abyssal Wing Tuner'?P.mz.some(function(m){return m&&!m.fd&&m.c.n.indexOf('Fallen Angel')===0}):c.n=='Lucifer\'s Envoy'?P.mz.some(function(m){return m&&!m.fd&&m.c.s=='Synchro'}):false;if(!valid)return lg('Syarat Special Summon kartu ini belum terpenuhi.');S.f.sq=1;chain(s,c.n,function(){var j=P.hand.indexOf(c),z=P.mz.indexOf(null);if(j>=0&&z>=0){P.hand.splice(j,1);P.mz[z]=inst(c,'atk',false);trig(s,c,'ss')}})}
 function mats(s,c){var P=S[s],f=[],r=null,g=function(i){return P.mz[i].c};P.mz.forEach(function(x,i){if(x&&!x.fd&&x.c.k=='m')f.push(i)});
  if(c.s=='Xyz'){var u=f.filter(function(i){return g(i).s!='Xyz'&&g(i).s!='Link'&&g(i).l==c.l});if(u.length>=2)r=u.slice(0,2)}
- else if(c.s=='Synchro'){f.forEach(function(t){f.forEach(function(n){if(!r&&t!=n&&g(t).tu&&!g(n).tu&&g(t).l+g(n).l==c.l)r=[t,n]})})}
+ else if(c.s=='Synchro'){
+  var tuners=f.filter(function(i){return !!g(i).tu});
+  tuners.some(function(ti){
+   var rest=f.filter(function(i){return i!==ti&&!g(i).tu});
+   function find(pos,total,arr){
+    if(total==c.l&&arr.length){r=[ti].concat(arr);return true}
+    if(total>=c.l||pos>=rest.length)return false;
+    for(var j=pos;j<rest.length;j++){var lv=g(rest[j]).l;if(total+lv<=c.l&&find(j+1,total+lv,arr.concat([rest[j]])))return true}
+    return false;
+   }
+   return find(0,g(ti).l,[]);
+  });
+ }
  else if(c.s=='Fusion'&&c.fm&&c.fm.length){var a=f.filter(function(i){return g(i).n==c.fm[0]})[0],b=f.filter(function(i){return g(i).n==c.fm[1]&&i!=a})[0];if(a!=null&&b!=null)r=[a,b]}
  else if(c.s=='Link'){var target=c.l||2,chosen=null;
   function pick(pos,total,arr){if(chosen)return;if(total==target&&arr.length>=2){chosen=arr.slice();return}if(total>=target||pos>=f.length)return;
    for(var j=pos;j<f.length;j++){var card=g(f[j]),vals=card.s=='Link'?[1,Math.max(1,card.l||1)]:[1];for(var q=0;q<vals.length;q++){var val=vals[q];if(total+val<=target)pick(j+1,total+val,arr.concat([f[j]]));if(chosen)return}}}
   pick(0,0,[]);if(chosen)r=chosen}
  return r}
-function exs(s,ei){var P=S[s],c=P.ex[ei];if(!c)return false;var m=mats(s,c);if(!m)return lg('Material atau zona monster belum memenuhi syarat '+c.s+' Summon.'),false;var mt=m.map(function(i){return P.mz[i].c});m.forEach(function(i){if(c.s=='Xyz')P.mz[i]=null;else toGy(s,i)});P.ex.splice(ei,1);var z=P.mz.indexOf(null);if(z<0)return false;var x=inst(c,'atk',false);if(c.s=='Xyz')x.m=mt;if(c.s=='Fusion')x.dbl=1;P.mz[z]=x;lg((s=='p'?'Kamu ':'Lawan ')+c.s+' Summon '+c.n+'!');showFx('summon',c.s+' SUMMON · '+c.n);if(c.s=='Synchro')trig(s,c,'sy');if(c.s=='Fusion')trig(s,c,'fu');return true}
+function exs(s,ei){var P=S[s],c=P.ex[ei];if(!c)return false;var m=mats(s,c);if(!m)return lg('Material atau zona monster belum memenuhi syarat '+c.s+' Summon.'),false;var mt=m.map(function(i){return P.mz[i].c});m.forEach(function(i){if(c.s=='Xyz')P.mz[i]=null;else toGy(s,i)});P.ex.splice(ei,1);var z=P.mz.indexOf(null);if(z<0)return false;var x=inst(c,'atk',false);if(c.s=='Xyz')x.m=mt;P.mz[z]=x;lg((s=='p'?'Kamu ':'Lawan ')+c.s+' Summon '+c.n+'!');showFx('summon',c.s+' SUMMON · '+c.n);if(c.s=='Synchro')trig(s,c,'sy');if(c.s=='Fusion')trig(s,c,'fu');if(c.s=='Link')trig(s,c,'ln');return true}
 function rite(s,hi){var P=S[s],rm=-1,rit=P.hand[hi];if(S.t!=s||!cm()&&s=='p')return lg('Ritual Summon hanya bisa dilakukan pada Main Phase.'),false;if(!rit||rit.k!='s'||rit.s!='Ritual')return lg('Pilih Ritual Spell untuk Ritual Summon.');P.hand.forEach(function(c,i){if(i!=hi&&c.k=='m'&&c.s=='Ritual'&&rm<0)rm=i});if(rm<0)return lg('Tidak ada Ritual Monster di tangan.');if(P.mz.indexOf(null)<0)return lg('Zona monster penuh.');var c=P.hand[rm],f=[],t=0,u=[];P.mz.forEach(function(x,i){if(x&&!x.fd)f.push({field:true,i:i,c:x.c})});P.hand.forEach(function(k,i){if(k.k=='m'&&k.s!='Ritual'&&i!=rm&&i!=hi)f.push({field:false,i:i,c:k})});f.sort(function(a,b){return b.c.l-a.c.l});f.forEach(function(v){if(t<c.l){t+=v.c.l;u.push(v)}});if(t<c.l)return lg('Level Tribute kurang untuk '+c.n+'.');u.filter(function(v){return v.field}).sort(function(a,b){return b.i-a.i}).forEach(function(v){toGy(s,v.i)});u.filter(function(v){return !v.field}).forEach(function(v){var q=P.hand.indexOf(v.c);if(q>=0)P.gy.push(P.hand.splice(q,1)[0])});var si=P.hand.indexOf(rit);if(si>=0)P.gy.push(P.hand.splice(si,1)[0]);var ri=P.hand.indexOf(c);if(ri>=0)P.hand.splice(ri,1);P.mz[P.mz.indexOf(null)]=inst(c,'atk',false);lg('Ritual Summon '+c.n+'!');showFx('summon','RITUAL SUMMON · '+c.n)}
 function begin(s){S.t=s;S.n++;S.ns=0;S.f={};S.bt=0;[S.p,S.o].forEach(function(P){P.st.forEach(function(x){if(x)x.sm=0})});S.sel=null;S.pend=null;S.ph='Main 1';S[s].mz.forEach(function(x){if(x){x.at=x.mv=x.sm=x.ef=0}});if(S.n>1)draw(s);lg(s=='p'?'Giliranmu dimulai.':'Giliran lawan.')}
 function endTurn(s){var P=S[s];S.p.mz.concat(S.o.mz).forEach(function(x){if(x){x.neg=0;x.bo=0;x.dbl=0}});while(P.hand.length>6)P.gy.push(P.hand.pop());begin(s=='p'?'o':'p');if(S.t=='o'&&!S.over)setTimeout(aiTurn,600)}
@@ -755,6 +779,7 @@ function render(){
 }
 function zc(s,k,i){var pd=S.pend;if(pd&&pd.t=='tg'){if(s=='p'&&k=='m'&&S.p.mz[i]){spell('p',pd.hi,i);S.pend=null;S.sel=null}return render()}
  if(pd&&pd.t=='trib'){if(s=='p'&&k=='m'&&S.p.mz[i]&&pd.pk.indexOf(i)<0){pd.pk.push(i);if(pd.pk.length>=pd.need){normal('p',pd.hi,pd.set,pd.pk);S.pend=null;S.sel=null}}return render()}
+ if(pd&&pd.t=='eff'&&s=='o'&&k=='m'&&linkProtected('o',i)){lg('Target dilindungi Torii Gate Warden dan tidak bisa dipilih oleh efek lawan.');return render()}
  if(pd&&s=='o'&&((k=='m'&&S.o.mz[i])||(pd.t=='eff'&&S.p.mz[pd.i]&&S.p.mz[pd.i].c.b&&k=='s'&&S.o.st[i])||(pd.t=='eff'&&S.p.mz[pd.i]&&S.p.mz[pd.i].c.b&&k=='f'&&S.o.fz))){if(pd.t=='atk'&&k=='m')attack('p',pd.i,i);else if(pd.t=='eff'){var x=S.p.mz[pd.i];if(!x||!x.m.length)return render();x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else if(k=='m')kill('o',i,1);else if(k=='s')killST('o',i);else if(k=='f')killField('o')})}S.pend=null;S.sel=null;return render()}
  S.pend=null;S.sel={s:s,k:k,i:i};render()}
 function pendok(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});return sc.length>=2&&P.hand.some(function(c){return c.k=='m'&&c.s=='Pendulum'&&c.l>Math.min.apply(null,sc)&&c.l<Math.max.apply(null,sc)})&&P.mz.indexOf(null)>=0}
