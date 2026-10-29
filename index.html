@@ -474,6 +474,8 @@ function addHand(s,f,from){var P=S[s],i=-1;P[from].forEach(function(c,j){if(i<0&
 function kill(s,i,eff){var x=S[s].mz[i];if(!x)return;
  if(eff&&x.c.n.indexOf('Tokugane')>=0&&!x.neg&&S[s].mz.some(function(m){return m&&!m.fd&&m.c.s=='Xyz'}))return lg(x.c.n+' tidak bisa dihancurkan oleh efek.');
  lg(x.c.n+' dihancurkan.');toGy(s,i)}
+function killST(s,i){var P=S[s],x=P.st[i];if(!x)return;P.st[i]=null;P.gy.push(x.c);if(x.eqTarget)x.eqTarget.eq=Math.max(0,(x.eqTarget.eq||0)-1);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
+function killField(s){var P=S[s],x=P.fz;if(!x)return;P.fz=null;P.gy.push(x.c);lg(x.c.n+' dihancurkan dan dikirim ke GY.');showFx('destroy',x.c.n+' · DESTROYED')}
 function trig(s,c,h){if(c.n=='Ronin Blademaster'&&h=='ns')chain(s,c.n,function(){addHand(s,bu,'deck')});
  if(c.n=='Spearline Captain'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,w4,'deck',1)});
  if(c.n=='Torii Gate Guardian'&&(h=='ns'||h=='ss'))chain(s,c.n,function(){ssp(s,function(k){return k.k=='m'&&k.r=='Warrior'&&k.l<=3},'hand',0)});
@@ -535,7 +537,7 @@ function panel(){var h='Ketuk kartu untuk melihat dan memakainya.',sl=S.sel,pd=S
  b=function(a,t,v,g,d){return'<button class="btn'+(g?' g':'')+'" data-act="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+(d?' disabled':'')+'>'+t+'</button>'};
  if(S.over)return'<b>'+S.over+'</b><br>'+b('new','Duel baru');
  if(S.rq){var rq=S.rq;return'Lawan memicu '+(rq.kind=='atk'?'serangan':rq.L[0].n)+'. Respon?<br>'+rq.o.map(function(i){return b('rq','Aktifkan '+S.p.st[i].c.n,i)}).join('')+b('rq','Lewati',-1,1)}
- if(pd)return(pd.t=='trib'?'Pilih '+(pd.need-pd.pk.length)+' monstermu sebagai Tribute.':pd.t=='atk'?'Pilih monster lawan yang diserang.':'Pilih monster lawan untuk dihancurkan.')+'<br>'+b('can','Batal',null,1);
+ if(pd)return(pd.t=='trib'?'Pilih '+(pd.need-pd.pk.length)+' monstermu sebagai Tribute.':pd.t=='atk'?'Pilih monster lawan yang diserang.':'Pilih kartu lawan untuk dihancurkan.')+'<br>'+b('can','Batal',null,1);
  if(sl){var s=sl.s,P=S[s],c=null,x=null;h='';
   if(sl.k=='m'){x=P.mz[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Monster Set (tertutup).'}
   else if(sl.k=='s'){x=P.st[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Kartu Set (tertutup).'}
@@ -547,7 +549,7 @@ function panel(){var h='Ketuk kartu untuk melihat dan memakainya.',sl=S.sel,pd=S
   if(c){h=info(c);
    if(sl.k=='h'&&cm()){if(c.k=='m'){var nd=lv(c),ok=!S.ns&&cnt('p')>=nd&&(P.mz.indexOf(null)>=0||nd>0);h+=b('ns','Normal Summon'+(nd?' (Tribute '+nd+')':''),null,0,!ok)+b('sm','Set',null,0,!ok)+(c.n=='Katana Squire'?b('ss','Special Summon (efek)',null,0,!sqok()):'')+(c.s=='Pendulum'?b('scale','Pasang Scale',null,0,P.st.indexOf(null)<0):'')}else{h+=b('sst','Set',null,0,P.st.indexOf(null)<0);if(c.k=='s')h+=b('sp','Aktifkan')}}
    if(sl.k=='m'&&s=='p'){if(S.ph=='Battle'&&S.n>1&&(x.at||0)<lim(x)&&x.pos=='atk'&&!x.fd)h+=b('atk','Serang');
-    if(cm()){h+=x.fd?b('flip','Flip Summon',null,0,!!x.sm):b('pos','Ganti posisi',null,0,!!(x.mv||x.sm));var u=x.m.length&&!x.ef&&!x.fd,ui=x.c.n.indexOf('Ujimasa')>=0;if(u&&x.c.s=='Xyz')h+=b(ui?'uji':'eff',x.c.b?'Efek: detach 1, hancurkan 1 monster lawan':ui?'Efek: detach 1, +1000 ATK dan serang 2 kali':'Efek: detach 1, negate 1 monster lawan');if(x.c.n=='Dojo Bell Monk'&&!x.ef&&!x.fd)h+=b('mon','Efek: Special Summon dari GY',null,0,!S.p.gy.some(w4))}}}}
+    if(cm()){h+=x.fd?b('flip','Flip Summon',null,0,!!x.sm):b('pos','Ganti posisi',null,0,!!(x.mv||x.sm));var u=x.m.length&&!x.ef&&!x.fd,ui=x.c.n.indexOf('Ujimasa')>=0;if(u&&x.c.s=='Xyz')h+=b(ui?'uji':'eff',x.c.b?'Efek: detach 1, hancurkan 1 kartu lawan':ui?'Efek: detach 1, +1000 ATK dan serang 2 kali':'Efek: detach 1, negate 1 monster lawan');if(x.c.n=='Dojo Bell Monk'&&!x.ef&&!x.fd)h+=b('mon','Efek: Special Summon dari GY',null,0,!S.p.gy.some(w4))}}}}
  if(sl&&sl.k=='f'&&sl.s=='p'&&P.fz&&P.fz.c.n=='Castle of Edo'&&cm()&&!S.f.castleUsed&&P.hand.some(function(c){return c.k=='m'&&c.r=='Warrior'&&c.l==4})&&P.mz.indexOf(null)>=0)h+='<br><button class="btn" data-act="castle">Castle of Edo: Special Summon Warrior Level 4</button>';
  return h}
 function render(){
@@ -569,7 +571,7 @@ function render(){
 }
 function zc(s,k,i){var pd=S.pend;if(pd&&pd.t=='tg'){if(s=='p'&&k=='m'&&S.p.mz[i]){spell('p',pd.hi,i);S.pend=null;S.sel=null}return render()}
  if(pd&&pd.t=='trib'){if(s=='p'&&k=='m'&&S.p.mz[i]&&pd.pk.indexOf(i)<0){pd.pk.push(i);if(pd.pk.length>=pd.need){normal('p',pd.hi,pd.set,pd.pk);S.pend=null;S.sel=null}}return render()}
- if(pd&&s=='o'&&k=='m'&&S.o.mz[i]){if(pd.t=='atk')attack('p',pd.i,i);else{var x=S.p.mz[pd.i];x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else kill('o',i,1)})}S.pend=null;S.sel=null;return render()}
+ if(pd&&s=='o'&&((k=='m'&&S.o.mz[i])||(pd.t=='eff'&&k=='s'&&S.o.st[i])||(pd.t=='eff'&&k=='f'&&S.o.fz))){if(pd.t=='atk'&&k=='m')attack('p',pd.i,i);else if(pd.t=='eff'){var x=S.p.mz[pd.i];if(!x||!x.m.length)return render();x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else if(k=='m')kill('o',i,1);else if(k=='s')killST('o',i);else if(k=='f')killField('o')})}S.pend=null;S.sel=null;return render()}
  S.pend=null;S.sel={s:s,k:k,i:i};render()}
 function pendok(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});return sc.length>=2&&P.hand.some(function(c){return c.k=='m'&&c.s=='Pendulum'&&c.l>Math.min.apply(null,sc)&&c.l<Math.max.apply(null,sc)})&&P.mz.indexOf(null)>=0}
  function psummon(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});if(!pendok())return lg('Skala Pendulum atau monster yang cocok belum tersedia.');var lo=Math.min.apply(null,sc),hi=Math.max.apply(null,sc),n=0;for(var i=P.hand.length-1;i>=0&&P.mz.indexOf(null)>=0;i--){var c=P.hand[i];if(c.k=='m'&&c.s=='Pendulum'&&c.l>lo&&c.l<hi){P.hand.splice(i,1);P.mz[P.mz.indexOf(null)]=inst(c,'atk',false);n++;trig('p',c,'ps')}}lg('Pendulum Summon: '+n+' monster.')}
