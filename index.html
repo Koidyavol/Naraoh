@@ -542,7 +542,7 @@ render();
 (function(){
 var DM=window.DM,C=DM.C,FR=DM.FR,S,$=function(i){return document.getElementById(i)};
 function sh(a){for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0,t=a[i];a[i]=a[j];a[j]=t}return a}
-function mk(s){var m=[],e=[],d=s=='p'?DM.counts():null;C.forEach(function(c){for(var i=0;i<(d?d[c.id]||0:c.x);i++)(c.e?e:m).push(c)});return{deck:sh(m),hand:[],mz:[null,null,null,null,null],st:[null,null,null,null,null],fz:null,gy:[],ban:[],ex:e}}
+function mk(s){var m=[],e=[],d;if(s=='p')d=DM.counts();else{var pool=D.d.filter(function(deck,i){var main=0,extra=0;C.forEach(function(c){var n=deck.m[c.id]||0;if(c.e)extra+=n;else main+=n});return main>=40&&main<=60&&extra<=15&&i!=D.a});if(!pool.length)pool=D.d.filter(function(deck){var main=0,extra=0;C.forEach(function(c){var n=deck.m[c.id]||0;if(c.e)extra+=n;else main+=n});return main>=40&&main<=60&&extra<=15});var pick=pool.length?pool[Math.floor(Math.random()*pool.length)]:null;d=pick?pick.m:null}C.forEach(function(c){for(var i=0;i<(d?d[c.id]||0:c.x);i++)(c.e?e:m).push(c)});return{deck:sh(m),hand:[],mz:[null,null,null,null,null],st:[null,null,null,null,null],fz:null,gy:[],ban:[],ex:e}}
 function inst(c,pos,fd){return{c:c,pos:pos,fd:fd,m:[],sm:1,at:0,mv:0,ef:0}}
 function lv(c){return c.l>=7?2:c.l>=5?1:0}
 function cnt(s){return S[s].mz.filter(Boolean).length}
