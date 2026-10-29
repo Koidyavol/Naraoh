@@ -412,13 +412,14 @@ function travel(c,dest){if(classes[c.class]?.role==='Profesi'){
 if(c.location==='travel'){return;}c.location='travel';c.travelTo=dest;c.travelTicks=rand(2,5);c.stamina=Math.max(0,c.stamina-8);action(c,'Bepergian menuju '+kingdoms[dest].name);log(c.name+' memulai perjalanan menuju '+kingdoms[dest].name+'.');}
 function decision(c){
 if(!c.alive)return;
-if(c.hp<c.stats.HP*.28&&c.location==='dungeon'){c.location='town';c.injured=true;c.escapes++;action(c,'Mundur dari dungeon untuk menyelamatkan diri');log(c.name+' mundur dari dungeon karena HP kritis.','warning');return;}
+if(c.hp<c.stats.HP*.42&&c.location==='dungeon'){c.location='town';c.injured=true;c.escapes++;c.stamina=Math.max(0,c.stamina-3);action(c,'Mundur dari dungeon untuk menyelamatkan diri');log(c.name+' memilih mundur dari dungeon sebelum HP terlalu rendah.','warning');return;}
 if(c.hp<c.stats.HP*.45||c.stamina<20||c.mp<c.stats.MP*.18){if(c.location==='dungeon'&&c.hp>c.stats.HP*.28&&Math.random()<.3){return;}c.location='town';c.hp=Math.min(c.stats.HP,c.hp+Math.max(5,Math.round(c.stats.HP*.16)));c.mp=Math.min(c.stats.MP,c.mp+Math.max(4,Math.round(c.stats.MP*.22)));c.stamina=Math.min(100,c.stamina+rand(18,34));c.injured=false;action(c,'Beristirahat dan memulihkan kondisi');return;}
 const r=Math.random(),brave=c.personality==='Brave'||c.personality==='Ambitious',cautious=c.personality==='Cautious';
 if(c.location==='travel'){
 c.travelTicks--;if(c.travelTicks<=0){c.kingdom=c.travelTo;c.location='town';action(c,'Tiba di '+kingdoms[c.kingdom].name);log(c.name+' tiba di '+kingdoms[c.kingdom].name+'.','travel');}return;
 }
 if(c.location==='dungeon'){
+if(c.hp<c.stats.HP*.72||c.mp<c.stats.MP*.22){c.location='town';c.hp=Math.min(c.stats.HP,c.hp+Math.max(8,Math.round(c.stats.HP*.24)));c.mp=Math.min(c.stats.MP,c.mp+Math.max(6,Math.round(c.stats.MP*.3)));c.stamina=Math.min(100,c.stamina+rand(12,22));c.injured=false;action(c,'Memulihkan diri sebelum kembali ke dungeon');return;}
 if(r<.68){combat(c,kingdoms[c.kingdom].monsters[rand(0,kingdoms[c.kingdom].monsters.length-1)]);return;}
 c.location='town';c.gold+=rand(8,28);c.loot++;c.rep+=1;action(c,'Keluar dari dungeon membawa hasil eksplorasi');log(c.name+' keluar dari dungeon dengan hasil eksplorasi.');return;
 }
@@ -433,7 +434,7 @@ c.location='town';action(c,'Menjelajahi pusat kota dan mencari peluang');
 }
 function monster(name,level){
 const bases={Slime:[35,8,3,2,4],Goblin:[45,11,5,3,7],Skeleton:[55,13,7,2,5],Orc:[85,18,9,3,5],'Dire Wolf':[62,15,5,2,13],Treant:[105,14,14,4,2],Golem:[145,20,22,3,2],Wraith:[75,12,5,13,10],Drake:[175,25,16,8,9],Demon:[160,23,12,17,11]};
-let b=bases[name]||[50,10,5,5,5],scale=1+Math.min(2,level*.08);
+let b=bases[name]||[50,10,5,5,5],scale=1+Math.min(.9,Math.max(0,level-1)*.035);
 return {name:name,hp:Math.round(b[0]*scale),maxHp:Math.round(b[0]*scale),atk:Math.round(b[1]*scale),def:Math.round(b[2]*scale),mag:Math.round(b[3]*scale),spd:b[4],xp:level};
 }
 function combat(c,monsterName){
@@ -460,14 +461,16 @@ c.combatBuffATK=0;c.guard=0;c.evade=0;c.counterReady=0;
 m.poison=0;m.stun=0;m.freeze=0;m.marked=0;
 action(c,'Bertarung melawan '+m.name);
 while(c.hp>0&&m.hp>0&&turns<9){
+ if(c.hp<=Math.max(10,Math.round(c.stats.HP*.2))&&m.hp>Math.max(8,Math.round(m.maxHp*.12)))break;
  turns++;
  const affordable=c.skills.map(name=>({name,sk:skillData[name]})).filter(x=>x.sk&&c.mp>=x.sk.cost);
  let chosen;
  if(affordable.length&&Math.random()<.82){
   const ranked=affordable.map(x=>{
    const sk=x.sk;let score=1+Math.max(0,sk.power||0)*2;
-   if(['heal','barrier'].includes(sk.type))score+=c.hp<c.stats.HP*.55?5:c.hp<c.stats.HP*.8?2:-2;
-   if(['guard','evasion'].includes(sk.type))score+=c.hp<c.stats.HP*.45?3:0;
+   if(sk.type==='heal')score+=c.hp<c.stats.HP*.3?13:c.hp<c.stats.HP*.5?9:c.hp<c.stats.HP*.7?5:c.hp<c.stats.HP*.85?1:-5;
+   if(sk.type==='barrier')score+=c.hp<c.stats.HP*.3?10:c.hp<c.stats.HP*.55?7:c.hp<c.stats.HP*.75?4:-1;
+   if(['guard','evasion','counter'].includes(sk.type))score+=c.hp<c.stats.HP*.3?8:c.hp<c.stats.HP*.5?5:c.hp<c.stats.HP*.7?2:0;
    if(sk.type==='buff')score+=(c.combatBuffATK||0)<3?2:-2;
    if(sk.type==='poison')score+=m.poison?-.5:2;
    if(sk.status)score+=m[sk.status]?-.5:1;
@@ -525,6 +528,7 @@ while(c.hp>0&&m.hp>0&&turns<9){
  c.hp-=mdmg;
 }
 c.combatBuffATK=0;c.counterReady=0;
+if(c.hp>0&&m.hp>0){c.location='town';c.injured=true;c.escapes=(c.escapes||0)+1;c.hp=Math.max(1,Math.min(c.stats.HP,c.hp+Math.max(6,Math.round(c.stats.HP*.12))));c.mp=Math.min(c.stats.MP,c.mp+Math.max(2,Math.round(c.stats.MP*.08)));c.stamina=Math.max(0,c.stamina-5);action(c,'Mundur taktis dari '+m.name+' untuk menyelamatkan diri');log(c.name+' melakukan mundur taktis dari '+m.name+' karena pertarungan terlalu berbahaya.','warning');return;}
 if(m.hp<=0){let reward=rand(8,25)+m.xp*2;c.gold+=reward;c.kills++;c.wins++;c.rep+=2;progressSkillTree(c,'combat');c.stamina=Math.max(0,c.stamina-rand(8,16));let skey=pick(role==='Sihir'?['MAG','WIS']:role==='Petarung'?['ATK','END','DEF']:role==='Kelincahan'?['ACC','SPD']:['SPD','CRIT']);gainStat(c,skey,1);c.materials=c.materials||{};const drop=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic','Herb']);c.materials[drop]=(c.materials[drop]||0)+1;if(Math.random()<.18){const extra=pick(['IronOre','MonsterFang','ManaCrystal','AncientRelic']);c.materials[extra]=(c.materials[extra]||0)+1;c.loot++;}log(c.name+' mengalahkan '+m.name+' setelah '+turns+' giliran, memperoleh '+reward+' gold dan kemajuan '+skey+'.','combat');maybeTitle(c,'Goblin Slayer',c.kills>=5);maybeTitle(c,'Dungeon Survivor',c.escapes>=3&&c.wins>=5);maybeTitle(c,'Dragon Hunter',c.kills>=8);if(c.kills%4===0){let key=pick(['ATK','DEF','MAG','SPD','ACC']);gainStat(c,key,1);}maybeEvolve(c);return;}
 if(c.hp<=0){c.hp=0;c.alive=false;c.deathDay=state.day;c.deathCause='Gugur saat melawan '+m.name;c.deathLocation=locName(c);state.dead.push(c);log(c.name+' ('+c.class+') gugur saat melawan '+m.name+' di '+c.deathLocation+'.','death');return;}
 c.hp=Math.max(1,c.hp);c.injured=c.hp<startHp*.65;
