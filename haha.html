@@ -189,6 +189,29 @@ Object.entries(basicSkillProfiles).forEach(([className,profile])=>{
  const skill=classes[className]?.skills?.[0];
  if(skill)skillData[skill]={...profile,basic:true};
 });
+/* Final overrides: applied after base-skill profiles so utility effects remain correct. */
+Object.assign(skillData,{
+ 'Mend Wounds':{cost:5,power:0,type:'heal',healRatio:.24,desc:'Memulihkan 24% HP maksimum.'},
+ 'Holy Bolt':{cost:4,power:1.25,type:'magic',status:'stun',desc:'Serangan suci dengan peluang stun.'},
+ 'Sanctuary':{cost:6,power:0,type:'barrier',desc:'Memulihkan HP dan mengurangi serangan berikutnya.'},
+ 'Greater Benediction':{cost:7,power:0,type:'heal',healRatio:.32,desc:'Memulihkan 32% HP maksimum.'},
+ 'Herbal Poultice':{cost:4,power:0,type:'heal',healRatio:.2,desc:'Memulihkan 20% HP maksimum.'},
+ 'Vital Tonic':{cost:5,power:0,type:'heal',healRatio:.18,desc:'Memulihkan HP dan membantu bertahan.'},
+ 'Wild Remedy':{cost:6,power:0,type:'heal',healRatio:.28,desc:'Memulihkan HP dengan ramuan alami.'},
+ 'Restoration Wave':{cost:8,power:0,type:'heal',healRatio:.3,desc:'Gelombang pemulihan kuat.'},
+ 'Perfect Antidote':{cost:5,power:0,type:'heal',healRatio:.2,desc:'Memulihkan HP dengan ramuan.'},
+ 'Iron Wall':{cost:4,power:0,type:'guard',desc:'Mengurangi damage yang diterima selama dua serangan.'},
+ 'Guardian Counter':{cost:4,power:1.05,type:'counter',desc:'Bersiap membalas serangan musuh.'},
+ 'Sacred Fortress':{cost:7,power:0,type:'barrier',desc:'Barrier dan pemulihan kecil.'},
+ 'Aegis of Dawn':{cost:6,power:0,type:'barrier',desc:'Barrier suci yang mengurangi damage masuk.'},
+ 'Mana Barrier':{cost:9,power:0,type:'barrier',desc:'Barrier magis dan pemulihan kecil.'},
+ 'Multi Shot':{cost:8,power:1.0,type:'multi',desc:'Tiga serangan beruntun.'},
+ 'Storm of Arrows':{cost:8,power:1.15,type:'multi',desc:'Rentetan panah tiga kali.'},
+ 'Twin Cut':{cost:6,power:1.0,type:'multi',desc:'Dua tebasan cepat.'},
+ 'Night Venom':{cost:6,power:1.15,type:'poison',desc:'Serangan bayangan beracun.'},
+ 'Ice Lance':{cost:8,power:1.5,type:'magic',status:'freeze',desc:'Tombak es dengan peluang membekukan target.'},
+ 'Lightning Arc':{cost:10,power:1.8,type:'magic',status:'stun',desc:'Petir dengan peluang membuat target stun.'}
+});
 Object.assign(classes.Warrior,{tier:'Dasar',role:'Petarung',description:classDescriptions.Warrior});
 Object.assign(classes.Mage,{tier:'Dasar',role:'Sihir',description:classDescriptions.Mage});
 Object.assign(classes.Archer,{tier:'Dasar',role:'Kelincahan',description:classDescriptions.Archer});
