@@ -435,7 +435,7 @@ render();
 (function(){
 var DM=window.DM,C=DM.C,FR=DM.FR,S,$=function(i){return document.getElementById(i)};
 function sh(a){for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0,t=a[i];a[i]=a[j];a[j]=t}return a}
-function mk(s){var m=[],e=[],d=s=='p'?DM.counts():null;C.forEach(function(c){for(var i=0;i<(d?d[c.id]||0:c.x);i++)(c.e?e:m).push(c)});return{deck:sh(m),hand:[],mz:[null,null,null,null,null],st:[null,null,null,null,null],fz:null,gy:[],ex:e}}
+function mk(s){var m=[],e=[],d=s=='p'?DM.counts():null;C.forEach(function(c){for(var i=0;i<(d?d[c.id]||0:c.x);i++)(c.e?e:m).push(c)});return{deck:sh(m),hand:[],mz:[null,null,null,null,null],st:[null,null,null,null,null],fz:null,gy:[],ban:[],ex:e}}
 function inst(c,pos,fd){return{c:c,pos:pos,fd:fd,m:[],sm:1,at:0,mv:0,ef:0}}
 function lv(c){return c.l>=7?2:c.l>=5?1:0}
 function cnt(s){return S[s].mz.filter(Boolean).length}
@@ -444,7 +444,7 @@ function lg(t){S.log.unshift(t);S.log=S.log.slice(0,4)}
 function showFx(type,text){S.fx={type:type,text:text};render();setTimeout(function(){if(S&&S.fx&&S.fx.text==text){S.fx=null;render()}},760)}
 function dmg(s,n){S.lp[s]=Math.max(0,S.lp[s]-n);if(n>0)showFx('damage','-'+n+' LP');if(!S.lp[s])S.over=s=='p'?'Kamu kalah. Life Points habis.':'Kamu menang! Life Points lawan habis.'}
 function draw(s){var P=S[s];if(!P.deck.length){S.over=s=='p'?'Kamu kalah. Deck habis.':'Kamu menang! Deck lawan habis.';return}P.hand.push(P.deck.pop())}
-function toGy(s,i){var P=S[s],x=P.mz[i];if(!x)return;P.mz[i]=null;P.gy.push(x.c);showFx('destroy',x.c.n+' · DESTROYED');x.m.forEach(function(m){P.gy.push(m)});if(x.c.b&&!x.neg)chain(s,x.c.n,function(){ssp(s,w4,'gy',0)})}
+function toGy(s,i){var P=S[s],x=P.mz[i];if(!x)return;P.mz[i]=null;if(x.c.n=='Kagemaru the Shadow Ninja'){P.ban.push(x.c);lg(x.c.n+' di-banished saat meninggalkan field.')}else P.gy.push(x.c);showFx('destroy',x.c.n+' · DESTROYED');x.m.forEach(function(m){P.gy.push(m)});if(x.c.b&&!x.neg)chain(s,x.c.n,function(){ssp(s,w4,'gy',0)})}
 function normal(s,hi,set,tr){var P=S[s],c=P.hand[hi];if(!c)return false;tr=tr||[];var need=lv(c);if(S.ns)return lg('Normal Summon/Set sudah digunakan pada giliran ini.'),false;if(tr.length<need)return lg('Tribute belum cukup untuk '+c.n+'.'),false;if(tr.length>need)return lg('Jumlah Tribute terlalu banyak untuk '+c.n+'.'),false;if(tr.some(function(i){return i<0||i>=P.mz.length||!P.mz[i]}))return lg('Pilih monster Tribute yang masih berada di field.'),false;tr.forEach(function(i){if(P.mz[i])toGy(s,i)});var free=P.mz.indexOf(null);if(free<0)return lg('Zona Monster penuh setelah Tribute.'),false;var ci=P.hand.indexOf(c);if(ci<0)return false;P.hand.splice(ci,1);P.mz[free]=inst(c,set?'def':'atk',set);S.ns=1;lg((s=='p'?'Kamu ':'Lawan ')+(set?'men-Set monster.':'Normal Summon '+c.n+'.'));showFx('summon',set?'SET MONSTER':c.s+' SUMMON');if(!set)trig(s,c,'ns');return true}
 function putST(s,hi,fd){var P=S[s],c=P.hand[hi];
  if(c.k=='s'&&!fd&&c.s=='Field'){P.hand.splice(hi,1);if(P.fz)P.gy.push(P.fz.c);P.fz={c:c,fd:false};lg(c.n+' diaktifkan.');return}
@@ -481,7 +481,7 @@ function trig(s,c,h){if(c.n=='Ronin Blademaster'&&h=='ns')chain(s,c.n,function()
  if(c.n=='Thunder Shogun Vanguard'&&h=='ps')S[s].mz.forEach(function(x){if(x&&x.c==c)x.bo=(x.bo||0)+500});
  if(c.n=='Dojo Master Takeda'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return bu(k)&&k.k=='s'},'gy')})}
 function opts(d,k){var P=S[d],o=[];P.st.forEach(function(x,i){if(!x||!x.fd||x.sm)return;var n=x.c.n;
- if(k=='fx'&&n=='Shogun’s Decree'&&S.lp[d]>1000&&cnt(d)>0)o.push(i);
+ if(k=='fx'&&n=='Shogun’s Decree'&&S.lp[d]>1000&&P.mz.some(function(m){return m&&!m.fd&&m.c.r=='Warrior'}))o.push(i);
  if(k=='atk'&&n=='Parry and Counter'&&P.gy.some(w4))o.push(i)});return o}
 function use(d,i,k,L){var P=S[d],x=P.st[i];if(!x||!x.fd)return;var target=L.length-1;P.st[i]=null;P.gy.push(x.c);lg((d=='p'?'Kamu':'Lawan')+' mengaktifkan '+x.c.n+' · Chain Link '+(L.length+1)+'.');
  if(k=='fx'){dmg(d,1000);L.push({s:d,n:x.c.n,fn:function(){if(L[target])L[target].neg=1;lg('Efek '+(L[target]?L[target].n:'sebelumnya')+' di-negate.')}})}
@@ -541,13 +541,14 @@ function panel(){var h='Ketuk kartu untuk melihat dan memakainya.',sl=S.sel,pd=S
   else if(sl.k=='s'){x=P.st[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Kartu Set (tertutup).'}
   else if(sl.k=='f'){x=P.fz;if(x)c=x.c;else h='Field Zone kosong.'}
   else if(sl.k=='h')c=P.hand[sl.i];
-  else if(sl.k=='g')h='<b>Graveyard ('+P.gy.length+')</b><br><small>'+(P.gy.map(function(g){return g.n}).join(', ')||'kosong')+'</small>';
+  else if(sl.k=='g'){h='<b>Graveyard ('+P.gy.length+')</b><br><small>'+(P.gy.map(function(g){return g.n}).join(', ')||'kosong')+'</small>';if(s=='p'&&cm()&&P.mz.some(function(m){return m&&!m.fd&&m.c.s=='Xyz'})&&P.gy.some(function(g){return g.n=='Kagemaru the Shadow Ninja'}))h+='<br><button class="btn" data-act="kage">Special Summon Kagemaru dari GY</button>'}
   else if(sl.k=='d')h='Deck: '+P.deck.length+' kartu.';
   else if(sl.k=='x'){h='<b>Extra Deck ('+P.ex.length+')</b>';if(s=='p')P.ex.forEach(function(e,k){h+='<br><small>'+e.n+' ('+e.s+')</small>';if(e.s!='Fusion'||e.fm)h+=b('xyz',e.s+' Summon',k,0,!cm()||!mats('p',e))})}
   if(c){h=info(c);
    if(sl.k=='h'&&cm()){if(c.k=='m'){var nd=lv(c),ok=!S.ns&&cnt('p')>=nd&&(P.mz.indexOf(null)>=0||nd>0);h+=b('ns','Normal Summon'+(nd?' (Tribute '+nd+')':''),null,0,!ok)+b('sm','Set',null,0,!ok)+(c.n=='Katana Squire'?b('ss','Special Summon (efek)',null,0,!sqok()):'')+(c.s=='Pendulum'?b('scale','Pasang Scale',null,0,P.st.indexOf(null)<0):'')}else{h+=b('sst','Set',null,0,P.st.indexOf(null)<0);if(c.k=='s')h+=b('sp','Aktifkan')}}
    if(sl.k=='m'&&s=='p'){if(S.ph=='Battle'&&S.n>1&&(x.at||0)<lim(x)&&x.pos=='atk'&&!x.fd)h+=b('atk','Serang');
     if(cm()){h+=x.fd?b('flip','Flip Summon',null,0,!!x.sm):b('pos','Ganti posisi',null,0,!!(x.mv||x.sm));var u=x.m.length&&!x.ef&&!x.fd,ui=x.c.n.indexOf('Ujimasa')>=0;if(u&&x.c.s=='Xyz')h+=b(ui?'uji':'eff',x.c.b?'Efek: detach 1, hancurkan 1 monster lawan':ui?'Efek: detach 1, +1000 ATK dan serang 2 kali':'Efek: detach 1, negate 1 monster lawan');if(x.c.n=='Dojo Bell Monk'&&!x.ef&&!x.fd)h+=b('mon','Efek: Special Summon dari GY',null,0,!S.p.gy.some(w4))}}}}
+ if(sl&&sl.k=='f'&&sl.s=='p'&&P.fz&&P.fz.c.n=='Castle of Edo'&&cm()&&!S.f.castleUsed&&P.hand.some(function(c){return c.k=='m'&&c.r=='Warrior'&&c.l==4})&&P.mz.indexOf(null)>=0)h+='<br><button class="btn" data-act="castle">Castle of Edo: Special Summon Warrior Level 4</button>';
  return h}
 function render(){
  var o=side('o'),p=side('p'),ps=['Draw','Standby','Main 1','Battle','Main 2','End'],
@@ -559,9 +560,9 @@ function render(){
  $('bd').innerHTML=(S.fx?'<div class="duel-fx '+S.fx.type+'"><span>'+S.fx.text+'</span></div>':'')+
  '<div class="turn-note">'+(S.over?'DUEL SELESAI':(S.t=='p'?'Giliranmu':'Giliran lawan')+' · Putaran '+Math.ceil(S.n/2))+'</div>'+
  hp('o',1)+'<div class="oh" aria-label="Kartu tangan lawan">'+S.o.hand.map(function(){return'<i class="hb"></i>'}).join('')+'</div>'+
- '<div class="board-side"><div class="board-head"><span>FIELD LAWAN</span><small>Extra '+S.o.ex.length+' · GY '+S.o.gy.length+'</small></div>'+zoneNames+'<div class="rw">'+o[0]+'</div>'+rowNames+'<div class="rw">'+o[1]+'</div></div>'+
+ '<div class="board-side"><div class="board-head"><span>FIELD LAWAN</span><small>Extra '+S.o.ex.length+' · GY '+S.o.gy.length+' · Banished '+S.o.ban.length+'</small></div>'+zoneNames+'<div class="rw">'+o[0]+'</div>'+rowNames+'<div class="rw">'+o[1]+'</div></div>'+
  '<div class="ph" aria-label="Fase duel">'+ps.map(function(x,i){var cl=x==S.ph&&S.t=='p'?' on':(idx>i?' done':'');return'<span class="phase-step'+cl+'">'+x+'</span>'}).join('')+'</div>'+
- '<div class="board-side"><div class="board-head player"><span>FIELD KAMU</span><small>Extra '+S.p.ex.length+' · GY '+S.p.gy.length+'</small></div>'+rowNames+'<div class="rw">'+p[1]+'</div>'+zoneNames+'<div class="rw">'+p[0]+'</div></div>'+
+ '<div class="board-side"><div class="board-head player"><span>FIELD KAMU</span><small>Extra '+S.p.ex.length+' · GY '+S.p.gy.length+' · Banished '+S.p.ban.length+'</small></div>'+rowNames+'<div class="rw">'+p[1]+'</div>'+zoneNames+'<div class="rw">'+p[0]+'</div></div>'+
  hp('p',0)+'<div class="turn-note">Deck '+S.p.deck.length+' · Tangan '+S.p.hand.length+' · Ketuk kartu untuk memilih aksi</div>'+
  '<div class="hand" aria-label="Kartu di tangan">'+S.p.hand.map(function(c,i){var f=FR[DM.fk(c)],a=S.sel&&S.sel.k=='h'&&S.sel.i==i;return'<button class="hc'+(a?' sel':'')+'" data-s="p" data-k="h" data-i="'+i+'" style="background:'+f[0]+';color:'+f[1]+'" aria-label="'+c.n+'"><small>'+c.n+'</small><span>'+c.g+'</span><b>'+(c.k=='m'?c.p:'')+'</b></button>'}).join('')+'</div>'+
  ctl+'<div class="pn">'+panel()+'</div><div class="lgx"><b>Log Duel</b><br>'+S.log.join('<br>')+'</div>';
@@ -573,7 +574,7 @@ function zc(s,k,i){var pd=S.pend;if(pd&&pd.t=='tg'){if(s=='p'&&k=='m'&&S.p.mz[i]
 function pendok(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});return sc.length>=2&&P.hand.some(function(c){return c.k=='m'&&c.s=='Pendulum'&&c.l>Math.min.apply(null,sc)&&c.l<Math.max.apply(null,sc)})&&P.mz.indexOf(null)>=0}
  function psummon(){var P=S.p,sc=P.st.filter(function(x){return x&&x.scale}).map(function(x){return x.c.sc});if(!pendok())return lg('Skala Pendulum atau monster yang cocok belum tersedia.');var lo=Math.min.apply(null,sc),hi=Math.max.apply(null,sc),n=0;for(var i=P.hand.length-1;i>=0&&P.mz.indexOf(null)>=0;i--){var c=P.hand[i];if(c.k=='m'&&c.s=='Pendulum'&&c.l>lo&&c.l<hi){P.hand.splice(i,1);P.mz[P.mz.indexOf(null)]=inst(c,'atk',false);n++;trig('p',c,'ps')}}lg('Pendulum Summon: '+n+' monster.')}
  function act(a,v){var P=S.p,sl=S.sel,x=sl&&sl.k=='m'?P.mz[sl.i]:null;
- if(a=='new')return start();if(a=='psummon'){psummon();return render()}if(a=='scale'&&sl&&sl.k=='h'){var pc=P.hand[sl.i],zz=P.st.indexOf(null);if(pc&&pc.s=='Pendulum'&&zz>=0){P.hand.splice(sl.i,1);P.st[zz]={c:pc,fd:false,sm:0,scale:true};lg(pc.n+' dipasang sebagai Pendulum Scale '+pc.sc+'.');S.sel=null}return render()}
+ if(a=='new')return start();if(a=='kage'){if(!cm()||!P.mz.some(function(m){return m&&!m.fd&&m.c.s=='Xyz'}))return lg('Efek Kagemaru membutuhkan Xyz Monster dan Main Phase.'),render();var ok=ssp('p',function(c){return c.n=='Kagemaru the Shadow Ninja'},'gy',0);if(ok){S.sel=null;lg('Kagemaru Special Summon dari GY.')}return render()}if(a=='castle'){if(!cm()||S.f.castleUsed||!P.fz||P.fz.c.n!='Castle of Edo')return render();S.f.castleUsed=1;var ok=ssp('p',function(c){return c.k=='m'&&c.r=='Warrior'&&c.l==4},'hand',0);if(!ok)lg('Tidak ada Warrior Level 4 di tangan atau zona Monster penuh.');else showFx('summon','CASTLE OF EDO · SPECIAL SUMMON');return render()}if(a=='psummon'){psummon();return render()}if(a=='scale'&&sl&&sl.k=='h'){var pc=P.hand[sl.i],zz=P.st.indexOf(null);if(pc&&pc.s=='Pendulum'&&zz>=0){P.hand.splice(sl.i,1);P.st[zz]={c:pc,fd:false,sm:0,scale:true};lg(pc.n+' dipasang sebagai Pendulum Scale '+pc.sc+'.');S.sel=null}return render()}
  if(a=='can'){S.pend=null;return render()}
  if(a=='end'){endTurn('p');return render()}
  if(a=='nx'){if(S.ph=='Main 1')S.ph=S.n>1?'Battle':'Main 2';else if(S.ph=='Battle')S.ph='Main 2';else if(S.ph=='Main 2')S.ph='End';else{endTurn('p');return render()}S.sel=null;lg('Masuk '+S.ph+' Phase.');return render()}
