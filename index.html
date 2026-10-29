@@ -34,7 +34,7 @@ const extras=[
 ];
 let state;
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function createDeck(){let arr=[];for(const row of deckRecipe){for(let i=0;i<row[5];i++)arr.push(make(row[0],row[1],row[2],row[3],row[4]))}while(arr.length<40){let row=deckRecipe[arr.length%deckRecipe.length];arr.push(make(row[0],row[1],row[2],row[3],row[4]))}return shuffle(arr.slice(0,40))}
+function createDeck(){let arr=[];for(const row of deckRecipe){for(let i=0;i<row[4];i++)arr.push(make(row[0],row[1],row[2],row[3],row[5]))}while(arr.length<40){let row=deckRecipe[arr.length%deckRecipe.length];arr.push(make(row[0],row[1],row[2],row[3],row[5]))}return shuffle(arr.slice(0,40))}
 function fresh(){state={pLP:8000,aLP:8000,pDeck:createDeck(),aDeck:createDeck(),pHand:[],aHand:[],pGrave:[],aGrave:[],pBanished:[],aBanished:[],pField:Array(5).fill(null),aField:Array(5).fill(null),pST:Array(5).fill(null),aST:Array(5).fill(null),extra:extras.map(r=>make(r[0],r[1],r[2],r[3],r[4])),turn:1,phase:'DRAW',current:'player',normalUsed:false,attacked:[],selectedHand:null,selectedField:null,selectedST:null,selectedExtra:null,over:false,logs:[]};for(let i=0;i<5;i++){state.pHand.push(state.pDeck.pop());state.aHand.push(state.aDeck.pop())}log('Kamu menarik 5 kartu. Giliran pertama dimulai.');state.phase='MAIN';render();say('Pilih kartu di tanganmu. Monster bisa di-Normal Summon sekali per giliran; pilih dua monster Level 4 untuk Xyz.')}
 function log(t){if(!state)return;state.logs.unshift('• '+t);state.logs=state.logs.slice(0,35)}
 function say(t){document.getElementById('message').textContent=t}
