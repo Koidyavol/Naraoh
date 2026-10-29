@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duel Monsters</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;800&family=Nunito+Sans:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c0a1d; --bg2:#17123a; --panel:#1d1748; --line:#3a2f7a;
+  --gold:#e9b949; --gold2:#a9791c; --text:#ece8ff; --mute:#9d95cf;
+  --monster:#c98a3a; --spell:#1f9a86; --trap:#b0306e;
+  --fusion:#7a45c9; --ritual:#3a6fd1; --synchro:#e8e8f0; --xyz:#16162a; --link:#2f7fe0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; color:var(--text);
+  font-family:"Nunito Sans",system-ui,sans-serif; line-height:1.55;
+  background:
+    radial-gradient(900px 500px at 50% -10%, #3a2a8a55, transparent 70%),
+    var(--bg);
+}
+h1,h2,h3{font-family:"Cinzel",Georgia,serif;margin:0}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+.view[hidden]{display:none}
+
+/* Hero */
+.hero{text-align:center;padding:36px 0 28px}
+.eye{width:92px;height:92px;margin:0 auto 14px;display:block}
+.hero h1{font-size:clamp(2.1rem,8vw,3.6rem);font-weight:800;letter-spacing:.06em;
+  color:var(--gold);text-shadow:0 0 28px #e9b94955}
+.hero p{margin:10px auto 0;max-width:34ch;color:var(--mute)}
+
+/* Menu */
+.menu{display:grid;gap:14px;margin-top:8px}
+@media(min-width:720px){.menu{grid-template-columns:repeat(3,1fr)}}
+.m{
+  display:block;width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;
+  background:linear-gradient(160deg,var(--panel),var(--bg2));
+  border:2px solid var(--gold2);border-radius:6px;padding:18px 18px 20px;
+  position:relative;transition:transform .15s,border-color .15s,box-shadow .15s;
+}
+.m::after{content:"";position:absolute;inset:5px;border:1px solid var(--line);border-radius:3px;pointer-events:none}
+.m:hover,.m:focus-visible{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 8px 30px #e9b94933;outline:none}
+.m h2{font-size:1.5rem;color:var(--gold)}
+.m span{display:block;margin-top:6px;color:var(--mute);font-size:.95rem}
+.m.main{border-color:var(--gold)}
+
+/* Sections */
+.sec{margin-top:40px}
+.sec h3{font-size:1.2rem;color:var(--gold);margin-bottom:12px}
+.rules{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:720px){.rules{grid-template-columns:repeat(4,1fr)}}
+.rule{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:12px}
+.rule b{display:block;font-family:"Cinzel",serif;font-size:1.4rem;color:var(--text)}
+.rule small{color:var(--mute)}
+.phases{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.phases li{list-style:none;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:.85rem}
+.phases{padding:0}
+
+.group{margin-bottom:18px}
+.group h4{margin:0 0 8px;font-size:.95rem;color:var(--mute);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);
+  border-radius:4px;padding:6px 12px;font-size:.9rem}
+.chip i{width:12px;height:16px;border-radius:2px;border:1px solid #ffffff55;display:block}
+
+/* Placeholder views */
+.back{background:none;border:1px solid var(--line);color:var(--text);border-radius:4px;
+  padding:8px 14px;font:inherit;cursor:pointer;margin-bottom:22px}
+.back:hover,.back:focus-visible{border-color:var(--gold);outline:none}
+.view h2.t{font-size:2rem;color:var(--gold)}
+.box{margin-top:16px;background:var(--bg2);border:1px dashed var(--line);border-radius:8px;padding:24px}
+.box ul{margin:10px 0 0;padding-left:20px;color:var(--mute)}
+.tabs{display:flex;gap:8px;margin:18px 0 14px}
+.tab{background:var(--bg2);border:1px solid var(--line);color:var(--text);font:inherit;padding:8px 16px;border-radius:4px;cursor:pointer}
+.tab[aria-selected=true]{border-color:var(--gold);color:var(--gold)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.f{background:none;border:1px solid var(--line);color:var(--mute);font:inherit;font-size:.85rem;padding:4px 11px;border-radius:14px;cursor:pointer}
+.f[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:#1a1304}
+#q{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--text);font:inherit;padding:9px 12px;border-radius:4px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
+.cb{all:unset;cursor:pointer;display:block;border-radius:6px}
+.cb:focus-visible .card{outline:3px solid var(--gold)}
+.card{border-radius:6px;border:3px solid #0006;padding:7px;display:flex;flex-direction:column;gap:4px;aspect-ratio:59/86;font-size:.7rem;line-height:1.25;overflow:hidden}
+.card.big{aspect-ratio:auto;font-size:.8rem;width:min(86vw,340px);padding:12px;gap:6px}
+.card.boss{box-shadow:0 0 0 2px var(--gold),0 0 22px #e9b94988}
+.cn{font-family:"Cinzel",serif;font-weight:800;font-size:.82em}
+.big .cn{font-size:1.1rem}
+.cs{font-size:.9em;opacity:.9}
+.art{flex:1;min-height:0;border:2px solid #0008;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:#fff;text-shadow:0 2px 8px #000a}
+.big .art{flex:none;height:150px;font-size:5rem}
+.ct{font-size:.85em;font-weight:600}
+.tx{display:none;background:#fff9;color:#111;padding:7px;border-radius:3px;font-size:.95em}
+.big .tx{display:block}
+.ca{text-align:right;font-weight:800}
+#modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal[hidden]{display:none}
+#mw{display:flex;flex-direction:column;align-items:center;gap:12px;max-height:100%;overflow:auto}
+.sum{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.sum span{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:5px 12px}
+.dh{margin:18px 0 8px;font-size:1.05rem;color:var(--gold)}
+.row{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-bottom:1px solid var(--line);box-sizing:border-box}
+.row:hover,.row:focus-visible{background:var(--panel)}
+.row i{width:10px;height:14px;border-radius:2px;flex:none}
+.row b{margin-left:auto;color:var(--mute);font-weight:600;font-size:.85rem}
+.boxs{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--gold2);border-radius:8px;padding:16px;margin-top:14px;text-align:center}
+.rw{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:3px 0}
+.z{all:unset;cursor:pointer;box-sizing:border-box;width:100%;min-width:0;aspect-ratio:5/6;border:1px solid var(--line);border-radius:4px;background:#ffffff0a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;color:var(--mute)}
+.z i{font-style:normal}.z em{font-style:normal;font-weight:700;color:var(--text)}
+.z.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.z.tg{border-color:#ff6a6a;box-shadow:0 0 0 2px #ff6a6a}
+.mc{width:78%;height:88%;border-radius:3px;border:1px solid #0008;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.95rem;line-height:1.05;position:relative}
+.mc b{font-size:.55rem}
+.mc u{position:absolute;top:-3px;right:-3px;background:var(--gold);color:#000;font-size:.55rem;border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.mc.df{transform:rotate(90deg) scale(.72)}
+.mc.fd{opacity:.55}
+.mc.bk{background:repeating-linear-gradient(45deg,#3a2f7a,#3a2f7a 4px,#17123a 4px,#17123a 8px)}
+.lp{display:flex;justify-content:space-between;font-family:"Cinzel",serif;color:var(--gold);margin:6px 2px}
+.oh{display:flex;gap:3px;justify-content:center;min-height:22px}
+.hb{width:16px;height:22px;border-radius:2px;background:repeating-linear-gradient(45deg,#3a2f7a,#3a2f7a 3px,#17123a 3px,#17123a 6px)}
+.ph{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:8px 0;font-size:.7rem}
+.ph span{padding:2px 8px;border:1px solid var(--line);border-radius:10px;color:var(--mute)}
+.ph .on{background:var(--gold);color:#1a1304;border-color:var(--gold)}
+.hand{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px}
+.hc{all:unset;cursor:pointer;flex:none;box-sizing:border-box;width:60px;height:84px;border-radius:4px;border:2px solid #0006;padding:3px;font-size:.55rem;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;line-height:1.1}
+.hc span{font-size:1.5rem}
+.hc.sel{outline:2px solid var(--gold);outline-offset:1px}
+.pn{background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:10px;font-size:.9rem;min-height:110px;margin-top:6px}
+.btn{font:inherit;font-weight:600;background:var(--gold);color:#1a1304;border:0;border-radius:4px;padding:7px 12px;margin:6px 6px 0 0;cursor:pointer}
+.btn.g{background:none;border:1px solid var(--line);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.lgx{color:var(--mute);font-size:.8rem;margin-top:8px;min-height:60px}
+.dbar{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.dbar select,#dn{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:8px;font:inherit}
+#dn{width:100%;box-sizing:border-box}
+.dbar button,.dr button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:4px;padding:6px 12px;font:inherit;cursor:pointer}
+.dr{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.dr span{flex:1}.dr small{color:var(--mute)}.dr b{min-width:18px;text-align:center}
+.ok{color:#6fd18a}.bad{color:#ff8a8a}
+@media(prefers-reduced-motion:reduce){.m{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- BERANDA -->
+<main id="home" class="view">
+  <header class="hero">
+    <svg class="eye" viewBox="0 0 100 100" aria-hidden="true">
+      <polygon points="50,6 94,84 6,84" fill="none" stroke="#e9b949" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M22 56 Q50 30 78 56 Q50 82 22 56Z" fill="#17123a" stroke="#e9b949" stroke-width="3"/>
+      <circle cx="50" cy="56" r="10" fill="#e9b949"/><circle cx="50" cy="56" r="4" fill="#0c0a1d"/>
+    </svg>
+    <h1>Duel Monsters</h1>
+    <p>Susun deck, kalahkan lawan, kuras 8000 Life Points-nya.</p>
+  </header>
+
+  <nav class="menu" aria-label="Menu utama">
+    <button class="m main" data-go="duel"><h2>Duel</h2><span>Main lawan komputer dengan aturan Yu-Gi-Oh.</span></button>
+    <button class="m" data-go="deck"><h2>Deck</h2><span>Buat deck baru atau edit deck yang sudah ada.</span></button>
+    <button class="m" data-go="kartu"><h2>List Kartu</h2><span>Lihat semua kartu yang tersedia.</span></button>
+  </nav>
+
+  <section class="sec">
+    <h3>Aturan yang dipakai</h3>
+    <div class="rules">
+      <div class="rule"><b>8000</b><small>Life Points awal</small></div>
+      <div class="rule"><b>40–60</b><small>Kartu Main Deck</small></div>
+      <div class="rule"><b>0–15</b><small>Kartu Extra Deck</small></div>
+      <div class="rule"><b>Maks 3</b><small>Salinan per kartu</small></div>
+    </div>
+    <ul class="phases" aria-label="Urutan fase">
+      <li>Draw</li><li>Standby</li><li>Main 1</li><li>Battle</li><li>Main 2</li><li>End</li>
+    </ul>
+  </section>
+
+  <section class="sec">
+    <h3>Jenis kartu</h3>
+
+    <div class="group"><h4>Monster</h4>
+      <div class="chips">
+        <div class="chip"><i style="background:#d9b44a"></i>Normal</div>
+        <div class="chip"><i style="background:var(--monster)"></i>Effect</div>
+        <div class="chip"><i style="background:var(--ritual)"></i>Ritual</div>
+        <div class="chip"><i style="background:var(--fusion)"></i>Fusion</div>
+        <div class="chip"><i style="background:var(--synchro)"></i>Synchro</div>
+        <div class="chip"><i style="background:var(--xyz)"></i>Xyz</div>
+        <div class="chip"><i style="background:linear-gradient(#c98a3a,#1f9a86)"></i>Pendulum</div>
+        <div class="chip"><i style="background:var(--link)"></i>Link</div>
+      </div>
+    </div>
+
+    <div class="group"><h4>Spell</h4>
+      <div class="chips">
+        <div class="chip"><i style="background:var(--spell)"></i>Normal</div>
+        <div class="chip"><i style="background:var(--spell)"></i>Quick-Play</div>
+        <div class="chip"><i style="background:var(--spell)"></i>Continuous</div>
+        <div class="chip"><i style="background:var(--spell)"></i>Equip</div>
+        <div class="chip"><i style="background:var(--spell)"></i>Field</div>
+        <div class="chip"><i style="background:var(--spell)"></i>Ritual</div>
+      </div>
+    </div>
+
+    <div class="group"><h4>Trap</h4>
+      <div class="chips">
+        <div class="chip"><i style="background:var(--trap)"></i>Normal</div>
+        <div class="chip"><i style="background:var(--trap)"></i>Continuous</div>
+        <div class="chip"><i style="background:var(--trap)"></i>Counter</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- DUEL -->
+<section id="duel" class="view" hidden>
+  <button class="back" data-go="home">Kembali ke beranda</button>
+  <h2 class="t">Duel</h2>
+  <div id="bd"></div>
+</section>
+
+<!-- DECK -->
+<section id="deck" class="view" hidden>
+  <button class="back" data-go="home">Kembali ke beranda</button>
+  <h2 class="t">Deck</h2>
+  <div id="dk"></div>
+</section>
+
+<!-- LIST KARTU -->
+<section id="kartu" class="view" hidden>
+  <button class="back" data-go="home">Kembali ke beranda</button>
+  <h2 class="t">List Kartu</h2>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="all" aria-selected="true">Semua kartu</button>
+    <button class="tab" role="tab" data-tab="deck" aria-selected="false">Starter Deck Shogun</button>
+  </div>
+  <div id="p-all">
+    <div class="filters" id="fl"></div>
+    <input id="q" type="search" placeholder="Cari nama kartu" aria-label="Cari nama kartu">
+    <div class="grid" id="gr"></div>
+  </div>
+  <div id="p-deck" hidden></div>
+  <div id="modal" hidden><div id="mw"></div></div>
+</section>
+
+</div>
+<script>
+(function(){
+  var views=["home","duel","deck","kartu"];
+  function show(){
+    var h=(location.hash||"").replace("#","");
+    if(views.indexOf(h)<0||h==="")h="home";
+    views.forEach(function(v){document.getElementById(v).hidden=(v!==h)});
+    window.scrollTo(0,0);
+  }
+  document.addEventListener("click",function(e){
+    var b=e.target.closest("[data-go]");
+    if(!b)return;
+    var t=b.getAttribute("data-go");
+    location.hash=(t==="home")?"":t;
+    if(t==="home")show();
+  });
+  window.addEventListener("hashchange",show);
+  show();
+})();
+</script>
+<script>
+(function(){
+var C=[
+{n:'Ashigaru Footsoldier',k:'m',s:'Normal',at:'EARTH',r:'Warrior',l:4,p:1400,d:1200,g:'兵',x:3,t:'Prajurit pejalan kaki berbaju zirah murah. Ia bertempur tanpa nama, tetapi tidak pernah mundur.'},
+{n:'Ronin Blademaster',k:'m',s:'Effect',at:'LIGHT',r:'Warrior',l:4,p:1800,d:1200,g:'浪',x:3,t:'Jika kartu ini di-Normal Summon: tambahkan 1 Spell/Trap “Bushido” dari Deck ke tangan.'},
+{n:'Katana Squire',k:'m',s:'Effect',at:'EARTH',r:'Warrior',l:4,p:1500,d:1000,g:'刀',x:3,t:'Jika kamu mengontrol Warrior: kamu bisa Special Summon kartu ini dari tangan. Sekali per giliran.'},
+{n:'Spearline Captain',k:'m',s:'Effect',at:'EARTH',r:'Warrior',l:4,p:1700,d:900,g:'槍',x:2,t:'Jika kartu ini di-Summon: Special Summon 1 Warrior Level 4 dari Deck, tetapi efeknya di-negate.'},
+{n:'Hatamoto Guard',k:'m',s:'Effect',at:'EARTH',r:'Warrior',l:4,p:800,d:2000,g:'盾',x:3,t:'Warrior lain yang kamu kontrol naik 300 DEF.'},
+{n:'Kagemaru the Shadow Ninja',k:'m',s:'Effect',at:'DARK',r:'Warrior',l:4,p:1600,d:1100,g:'影',x:3,t:'Jika kamu mengontrol Xyz Monster: Special Summon kartu ini dari GY. Jika kartu ini meninggalkan lapangan, banish kartu ini.'},
+{n:'Dojo Bell Monk',k:'m',s:'Effect',tu:1,at:'LIGHT',r:'Warrior',l:2,p:500,d:1500,g:'鐘',x:2,t:'Tuner. Sekali per giliran: target 1 Warrior Level 4 di GY; Special Summon, tetapi efeknya di-negate.'},
+{n:'Torii Gate Guardian',k:'m',s:'Pendulum',sc:3,at:'LIGHT',r:'Warrior',l:4,p:1200,d:1800,g:'門',x:1,t:'[Efek Pendulum] Warrior Level 4 yang kamu kontrol naik 300 ATK. [Efek Monster] Jika kartu ini di-Summon: Special Summon 1 Warrior Level 3 atau lebih rendah dari tangan.'},
+{n:'Shogun Tokugane, Blade Sovereign',k:'m',s:'Ritual',at:'EARTH',r:'Warrior',l:8,p:2800,d:2000,g:'将',x:1,t:'Ritual Summon dengan “Rite of the Warlord”. Tidak bisa dihancurkan oleh efek lawan selama kamu mengontrol Xyz Monster.'},
+{n:'Shogun Masamune, Supreme Blade',k:'m',s:'Xyz',at:'LIGHT',r:'Warrior',l:4,p:2800,d:2000,g:'宗',x:3,e:1,b:1,t:'2 monster Level 4. Sekali per giliran, detach 1 material: hancurkan 1 kartu di lapangan. Jika kartu ini dikirim ke GY: Special Summon 1 Warrior Level 4 dari GY.'},
+{n:'Hatamoto Commander Ujimasa',k:'m',s:'Xyz',at:'EARTH',r:'Warrior',l:4,p:2400,d:1800,g:'司',x:2,e:1,t:'2 monster Level 4. Detach 1 material: kartu ini naik 1000 ATK sampai End Phase dan bisa menyerang dua kali.'},
+{n:'Hanzo, Phantom Shinobi',k:'m',s:'Xyz',at:'DARK',r:'Warrior',l:4,p:2300,d:1600,g:'忍',x:2,e:1,t:'2 monster Level 4. Detach 1 material: negate efek 1 monster face-up milik lawan sampai End Phase.'},
+{n:'Dojo Master Takeda',k:'m',s:'Synchro',at:'LIGHT',r:'Warrior',l:6,p:2400,d:1800,g:'師',x:1,e:1,t:'1 Tuner + 1 monster non-Tuner. Jika kartu ini di-Synchro Summon: tambahkan 1 Spell “Bushido” dari GY ke tangan.'},
+{n:'Twin Blade Musashi',k:'m',s:'Fusion',fm:['Ronin Blademaster','Katana Squire'],at:'EARTH',r:'Warrior',l:6,p:2300,d:1700,g:'二',x:1,e:1,t:'“Ronin Blademaster” + “Katana Squire”. Kartu ini bisa menyerang monster dua kali per Battle Phase.'},
+{n:'Torii Gate Warden',k:'m',s:'Link',at:'LIGHT',r:'Warrior',l:2,p:1600,g:'鳥',x:1,e:1,t:'2 Warrior. Warrior yang menunjuk ke kartu ini tidak bisa menjadi target efek lawan.'},
+{n:'Bushido Training',k:'s',s:'Normal',g:'稽',x:3,t:'Tambahkan 1 Warrior Level 4 dari Deck ke tangan. Hanya bisa mengaktifkan 1 “Bushido Training” per giliran.'},
+{n:'Dojo Banner',k:'s',s:'Continuous',g:'旗',x:2,t:'Warrior Level 4 yang kamu kontrol naik 300 ATK.'},
+{n:'Bushido Blade Oath',k:'s',s:'Equip',g:'誓',x:2,t:'Equip ke 1 Warrior: monster itu naik 500 ATK.'},
+{n:'Castle of Edo',k:'s',s:'Field',g:'城',x:2,t:'Semua Warrior naik 200 ATK/DEF. Sekali per giliran: Special Summon 1 Warrior Level 4 dari tangan.'},
+{n:'Sudden Charge',k:'s',s:'Quick-Play',g:'突',x:2,t:'Target 1 Warrior yang kamu kontrol; monster itu naik 800 ATK sampai End Phase.'},
+{n:'Rite of the Warlord',k:'s',s:'Ritual',g:'儀',x:1,t:'Ritual Summon 1 Ritual Monster Warrior. Tribute monster dari tangan atau lapangan yang total Level-nya sama atau lebih.'},
+{n:'Parry and Counter',k:'t',s:'Normal',g:'受',x:3,t:'Saat monster lawan mendeklarasikan serangan: negate serangan, lalu Special Summon 1 Warrior Level 4 dari GY.'},
+{n:'Seppuku Pledge',k:'t',s:'Continuous',g:'腹',x:2,t:'Sekali per giliran: Tribute 1 Warrior; hancurkan 1 Spell/Trap di lapangan.'},
+{n:'Shogun’s Decree',k:'t',s:'Counter',g:'令',x:2,t:'Saat efek kartu atau monster diaktifkan: bayar 1000 LP; negate aktivasi itu dan hancurkan kartunya. Hanya bisa diaktifkan jika kamu mengontrol Warrior.'}
+];
+C.forEach(function(c,i){c.id=i});
+var FR={Normal:['#d9b44a','#1a1304'],Effect:['#c98a3a','#1a1304'],Ritual:['#3a6fd1','#fff'],Fusion:['#7a45c9','#fff'],Synchro:['#e8e8f0','#14141f'],Xyz:['#16162a','#fff'],Pendulum:['linear-gradient(#c98a3a 50%,#1f9a86 50%)','#fff'],Link:['#2f7fe0','#fff'],Spell:['#1f9a86','#fff'],Trap:['#b0306e','#fff']};
+var ART={LIGHT:'#f3e3a0,#8a6a1c',DARK:'#6b4aa8,#120c24',EARTH:'#9a7a4a,#2a1d0e',Spell:'#6fd1bd,#0b3d35',Trap:'#e07aa8,#3b0b25'};
+function fk(c){return c.k=='m'?c.s:(c.k=='s'?'Spell':'Trap')}
+function head(c){
+  if(c.k!='m')return (c.k=='s'?'Spell':'Trap')+' Card'+(c.s=='Normal'?'':' ('+c.s+')');
+  if(c.s=='Link')return 'LINK-'+c.l;
+  if(c.s=='Xyz')return 'Rank '+c.l+' '+'●'.repeat(c.l);
+  return '★'.repeat(c.l)+(c.sc?'  Scale '+c.sc:'');
+}
+function tline(c){
+  if(c.k!='m')return '';
+  return '['+c.at+' / '+c.r+(c.tu?' / Tuner':'')+' / '+(c.s=='Normal'?'Normal':(c.s=='Effect'?'Effect':c.s+' / Effect'))+']';
+}
+function card(c,big){
+  var f=FR[fk(c)],a=ART[c.k=='m'?c.at:fk(c)];
+  return '<div class="card'+(big?' big':'')+(c.b?' boss':'')+'" style="background:'+f[0]+';color:'+f[1]+'">'+
+  '<div class="cn">'+c.n+'</div><div class="cs">'+head(c)+'</div>'+
+  '<div class="art" style="background:radial-gradient(circle,'+a+')"><span>'+c.g+'</span></div>'+
+  '<div class="ct">'+tline(c)+'</div><div class="tx">'+c.t+'</div>'+
+  (c.k=='m'?'<div class="ca">ATK/'+c.p+(c.s=='Link'?'':'  DEF/'+c.d)+'</div>':'')+'</div>';
+}
+var F='Semua',Q='';
+var FL=['Semua','Normal','Effect','Ritual','Fusion','Synchro','Xyz','Pendulum','Link','Spell','Trap'];
+function match(c){
+  var ok=F=='Semua'||(F=='Spell'?c.k=='s':(F=='Trap'?c.k=='t':(c.k=='m'&&c.s==F)));
+  return ok&&(!Q||c.n.toLowerCase().indexOf(Q)>=0);
+}
+function drawFilters(){
+  document.getElementById('fl').innerHTML=FL.map(function(x){return '<button class="f" data-f="'+x+'" aria-pressed="'+(x==F)+'">'+x+'</button>'}).join('');
+}
+function drawGrid(){
+  var r=C.filter(match);
+  document.getElementById('gr').innerHTML=r.length?r.map(function(c){return '<button class="cb" data-id="'+c.id+'" aria-label="'+c.n+'">'+card(c)+'</button>'}).join(''):'<p>Tidak ada kartu yang cocok. Ubah filter atau kata pencarian.</p>';
+}
+function rows(list){
+  return list.map(function(c){var f=FR[fk(c)][0];return '<button class="row" data-id="'+c.id+'"><i style="background:'+f+'"></i>'+c.x+'x '+c.n+'<b>'+(c.k=='m'?c.s:c.s+' '+(c.k=='s'?'Spell':'Trap'))+'</b></button>'}).join('');
+}
+function sum(l){return l.reduce(function(a,c){return a+c.x},0)}
+function drawDeck(){
+  var m=C.filter(function(c){return !c.e}),e=C.filter(function(c){return c.e});
+  var mon=m.filter(function(c){return c.k=='m'}),sp=m.filter(function(c){return c.k=='s'}),tr=m.filter(function(c){return c.k=='t'});
+  var boss=C.filter(function(c){return c.b})[0];
+  document.getElementById('p-deck').innerHTML=
+  '<h3 style="font-family:Cinzel,serif;font-size:1.6rem;color:var(--gold);margin:0">Shogun</h3>'+
+  '<p style="color:var(--mute);margin:4px 0">Starter deck bertema samurai. Kumpulkan dua Warrior Level 4, lalu Xyz Summon Shogun Masamune.</p>'+
+  '<div class="sum"><span>Main Deck: '+sum(m)+'</span><span>Extra Deck: '+sum(e)+'</span></div>'+
+  '<div class="boxs"><div>Kartu utama</div><button class="cb" data-id="'+boss.id+'">'+card(boss,true)+'</button></div>'+
+  '<h4 class="dh">Monster ('+sum(mon)+')</h4>'+rows(mon)+
+  '<h4 class="dh">Spell ('+sum(sp)+')</h4>'+rows(sp)+
+  '<h4 class="dh">Trap ('+sum(tr)+')</h4>'+rows(tr)+
+  '<h4 class="dh">Extra Deck ('+sum(e)+')</h4>'+rows(e);
+}
+function openM(id){document.getElementById('mw').innerHTML=card(C[id],true)+'<button class="back" id="mc">Tutup</button>';document.getElementById('modal').hidden=false;document.getElementById('mc').focus()}
+function closeM(){document.getElementById('modal').hidden=true}
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.id=='modal'||t.id=='mc')return closeM();
+  var b=t.closest('[data-id]');if(b&&b.closest('#kartu'))return openM(+b.getAttribute('data-id'));
+  b=t.closest('[data-f]');if(b){F=b.getAttribute('data-f');drawFilters();drawGrid();return}
+  b=t.closest('[data-tab]');if(b){var d=b.getAttribute('data-tab')=='deck';
+    document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected',x==b)});
+    document.getElementById('p-all').hidden=d;document.getElementById('p-deck').hidden=!d}
+});
+document.addEventListener('keydown',function(e){if(e.key=='Escape')closeM()});
+document.getElementById('q').addEventListener('input',function(e){Q=e.target.value.trim().toLowerCase();drawGrid()});
+drawFilters();drawGrid();drawDeck();
+window.DM={C:C,FR:FR,fk:fk};
+})();
+</script>
+<script>
+(function(){
+var DM=window.DM,C=DM.C,K='dm_decks',D,$=function(i){return document.getElementById(i)};
+function std(){var m={};C.forEach(function(c){m[c.id]=c.x});return{n:'Shogun',m:m}}
+try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!D||!D.d||!D.d[D.a])D={d:[std()],a:0};
+function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}}
+function st(dk){var m=0,e=0;C.forEach(function(c){var n=dk.m[c.id]||0;if(c.e)e+=n;else m+=n});return{m:m,e:e,ok:m>=40&&m<=60&&e<=15}}
+DM.counts=function(){var dk=D.d[D.a];return st(dk).ok?dk.m:std().m};
+function render(){var dk=D.d[D.a],t=st(dk),h='<div class="dbar"><select id="ds" aria-label="Pilih deck">'+D.d.map(function(d,i){return'<option value="'+i+'"'+(i==D.a?' selected':'')+'>'+d.n+'</option>'}).join('')+'</select><button data-d="new">Deck baru</button><button data-d="del">Hapus</button><button data-d="rst">Isi ulang Shogun</button></div><input id="dn" value="'+dk.n+'" aria-label="Nama deck">'+
+ '<p>Main Deck <b>'+t.m+'</b> (40 sampai 60), Extra Deck <b>'+t.e+'</b> (maks 15)</p><p class="'+(t.ok?'ok':'bad')+'">'+(t.ok?'Deck valid dan dipakai di Duel.':'Deck belum valid. Duel memakai Shogun bawaan.')+'</p>';
+ [0,1].forEach(function(ex){h+='<h4 class="dh">'+(ex?'Extra Deck':'Main Deck')+'</h4>';C.filter(function(c){return !!c.e==!!ex}).forEach(function(c){h+='<div class="dr"><span>'+c.n+' <small>'+(c.k=='m'?c.s:c.s+(c.k=='s'?' Spell':' Trap'))+'</small></span><button data-d="-" data-i="'+c.id+'" aria-label="Kurangi">-</button><b>'+(dk.m[c.id]||0)+'</b><button data-d="+" data-i="'+c.id+'" aria-label="Tambah">+</button></div>'})});
+ $('dk').innerHTML=h}
+$('dk').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var a=b.dataset.d,dk=D.d[D.a],i=b.dataset.i;
+ if(a=='+'){if((dk.m[i]||0)<3)dk.m[i]=(dk.m[i]||0)+1}
+ else if(a=='-'){if(dk.m[i]>0)dk.m[i]--}
+ else if(a=='new'){D.d.push({n:'Deck baru',m:{}});D.a=D.d.length-1}
+ else if(a=='del'){if(D.d.length>1){D.d.splice(D.a,1);D.a=0}}
+ else if(a=='rst'){dk.m=std().m}
+ save();render()});
+$('dk').addEventListener('change',function(e){if(e.target.id=='ds')D.a=+e.target.value;else if(e.target.id=='dn')D.d[D.a].n=e.target.value.replace(/[<>"&]/g,'')||'Tanpa nama';else return;save();render()});
+render();
+})();
+</script>
+<script>
+(function(){
+var DM=window.DM,C=DM.C,FR=DM.FR,S,$=function(i){return document.getElementById(i)};
+function sh(a){for(var i=a.length-1;i>0;i--){var j=Math.random()*(i+1)|0,t=a[i];a[i]=a[j];a[j]=t}return a}
+function mk(s){var m=[],e=[],d=s=='p'?DM.counts():null;C.forEach(function(c){for(var i=0;i<(d?d[c.id]||0:c.x);i++)(c.e?e:m).push(c)});return{deck:sh(m),hand:[],mz:[null,null,null,null,null],st:[null,null,null,null,null],fz:null,gy:[],ex:e}}
+function inst(c,pos,fd){return{c:c,pos:pos,fd:fd,m:[],sm:1,at:0,mv:0,ef:0}}
+function lv(c){return c.l>=7?2:c.l>=5?1:0}
+function cnt(s){return S[s].mz.filter(Boolean).length}
+function cm(){return S.t=='p'&&!S.over&&(S.ph=='Main 1'||S.ph=='Main 2')}
+function lg(t){S.log.unshift(t);S.log=S.log.slice(0,4)}
+function dmg(s,n){S.lp[s]=Math.max(0,S.lp[s]-n);if(!S.lp[s])S.over=s=='p'?'Kamu kalah. Life Points habis.':'Kamu menang! Life Points lawan habis.'}
+function draw(s){var P=S[s];if(!P.deck.length){S.over=s=='p'?'Kamu kalah. Deck habis.':'Kamu menang! Deck lawan habis.';return}P.hand.push(P.deck.pop())}
+function toGy(s,i){var P=S[s],x=P.mz[i];P.mz[i]=null;P.gy.push(x.c);x.m.forEach(function(m){P.gy.push(m)});if(x.c.b&&!x.neg)chain(s,x.c.n,function(){ssp(s,w4,'gy',0)})}
+function normal(s,hi,set,tr){var P=S[s],c=P.hand[hi];tr.forEach(function(i){toGy(s,i)});P.hand.splice(hi,1);P.mz[P.mz.indexOf(null)]=inst(c,set?'def':'atk',set);S.ns=1;lg((s=='p'?'Kamu ':'Lawan ')+(set?'men-Set monster.':'Normal Summon '+c.n+'.'));if(!set)trig(s,c,'ns')}
+function putST(s,hi,fd){var P=S[s],c=P.hand[hi];
+ if(c.k=='s'&&!fd&&c.s=='Field'){P.hand.splice(hi,1);if(P.fz)P.gy.push(P.fz.c);P.fz={c:c,fd:false};return}
+ if(c.k=='s'&&!fd&&['Normal','Quick-Play','Ritual'].indexOf(c.s)>=0){P.hand.splice(hi,1);P.gy.push(c);lg(c.n+' diaktifkan (efek belum diimplementasi).');return}
+ var z=P.st.indexOf(null);if(z<0)return;P.hand.splice(hi,1);P.st[z]={c:c,fd:fd,sm:1}}
+function canX(s,c){return S[s].mz.filter(function(x){return x&&!x.fd&&x.c.k=='m'&&x.c.s!='Xyz'&&x.c.s!='Link'&&x.c.l==c.l}).length>=2&&S[s].mz.indexOf(null)>=-1}
+function xyz(s,ei){var P=S[s],c=P.ex[ei],u=[];if(c.s!='Xyz')return false;
+ P.mz.forEach(function(x,i){if(x&&!x.fd&&x.c.k=='m'&&x.c.s!='Xyz'&&x.c.s!='Link'&&x.c.l==c.l&&u.length<2)u.push(i)});
+ if(u.length<2)return false;var mt=u.map(function(i){return P.mz[i].c});u.forEach(function(i){P.mz[i]=null});
+ P.ex.splice(ei,1);var x=inst(c,'atk',false);x.m=mt;P.mz[P.mz.indexOf(null)]=x;lg((s=='p'?'Kamu':'Lawan')+' Xyz Summon '+c.n+'!');return true}
+function attack0(s,i,t){var d=s=='p'?'o':'p',x=S[s].mz[i],nm=s=='p'?'Kamu':'Lawan';x.at=1;
+ if(t<0){dmg(d,x.c.p);lg(nm+' serang langsung: '+x.c.p+' damage.');return}
+ var y=S[d].mz[t];y.fd=false;var v=y.pos=='atk'?y.c.p:y.c.d,df=x.c.p-v;lg(x.c.n+' menyerang '+y.c.n+'.');
+ if(y.pos=='atk'){if(df>0){toGy(d,t);dmg(d,df)}else if(df<0){toGy(s,i);dmg(s,-df)}else{toGy(d,t);toGy(s,i)}}
+ else{if(df>0)toGy(d,t);else if(df<0)dmg(s,-df)}}
+function opp(s){return s=='p'?'o':'p'}
+function w4(c){return c.k=='m'&&c.r=='Warrior'&&c.l==4}
+function bu(c){return c.k!='m'&&/Bushido/.test(c.n)}
+function lim(x){return x.dbl||x.c.s=='Fusion'?2:1}
+function pw(s,x,k){var P=S[s],v=x.c[k];if(v==null)return 0;
+ if(k=='p')v+=(x.eq||0)*500+(x.bo||0)+(x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.c.n=='Dojo Banner'})?300:0);
+ else v+=P.mz.some(function(m){return m&&m!=x&&!m.fd&&!m.neg&&m.c.n=='Hatamoto Guard'})?300:0;
+ if([S.p.fz,S.o.fz].some(function(f){return f&&f.c.n=='Castle of Edo'}))v+=200;return v}
+function ssp(s,f,from,neg){var P=S[s],z=P.mz.indexOf(null),i=-1;P[from].forEach(function(c,j){if(i<0&&f(c))i=j});if(z<0||i<0)return false;
+ var c=P[from].splice(i,1)[0],x=inst(c,'atk',false);x.neg=neg;P.mz[z]=x;lg(c.n+' di-Special Summon.');if(!neg)trig(s,c,'ss');return true}
+function addHand(s,f,from){var P=S[s],i=-1;P[from].forEach(function(c,j){if(i<0&&f(c))i=j});if(i>=0){var c=P[from].splice(i,1)[0];P.hand.push(c);lg(c.n+' ditambahkan ke tangan.')}}
+function kill(s,i,eff){var x=S[s].mz[i];if(!x)return;
+ if(eff&&x.c.n.indexOf('Tokugane')>=0&&!x.neg&&S[s].mz.some(function(m){return m&&!m.fd&&m.c.s=='Xyz'}))return lg(x.c.n+' tidak bisa dihancurkan oleh efek.');
+ lg(x.c.n+' dihancurkan.');toGy(s,i)}
+function trig(s,c,h){if(c.n=='Ronin Blademaster'&&h=='ns')chain(s,c.n,function(){addHand(s,bu,'deck')});
+ if(c.n=='Spearline Captain')chain(s,c.n,function(){ssp(s,w4,'deck',1)});
+ if(c.n=='Dojo Master Takeda'&&h=='sy')chain(s,c.n,function(){addHand(s,function(k){return bu(k)&&k.k=='s'},'gy')})}
+function opts(d,k){var P=S[d],o=[];P.st.forEach(function(x,i){if(!x||!x.fd||x.sm)return;var n=x.c.n;
+ if(k=='fx'&&n=='Shogun’s Decree'&&S.lp[d]>1000&&cnt(d)>0)o.push(i);if(k=='atk'&&n=='Parry and Counter'&&P.gy.some(w4))o.push(i)});return o}
+function use(d,i,k,L){var P=S[d],x=P.st[i];P.st[i]=null;P.gy.push(x.c);lg((d=='p'?'Kamu':'Lawan')+' mengaktifkan '+x.c.n+'!');
+ if(k=='fx'){S.lp[d]-=1000;L.push({s:d,n:x.c.n,fn:function(){L[0].neg=1;lg('Efek '+L[0].n+' di-negate.')}})}
+ else L.push({s:d,n:x.c.n,fn:function(){L[0].neg=1;ssp(d,w4,'gy',0)}})}
+function resolve(L){for(var i=L.length-1;i>=0;i--)if(!L[i].neg)L[i].fn()}
+function resp(d,k,L){var o=opts(d,k);if(!o.length)return resolve(L);if(d=='o'){use(d,o[0],k,L);return resolve(L)}S.rq={o:o,kind:k,L:L,d:d}}
+function chain(s,n,fn){resp(opp(s),'fx',[{s:s,n:n,fn:fn}])}
+function hit(s,i,t,x){var d=opp(s),A=S[s],D=S[d];if(A.mz[i]!=x)return;var a=pw(s,x,'p');
+ if(t<0){dmg(d,a);lg((s=='p'?'Kamu':'Lawan')+' serang langsung: '+a+' damage.');return}
+ var y=D.mz[t];if(!y)return;y.fd=false;var v=pw(d,y,y.pos=='atk'?'p':'d'),df=a-v;lg(x.c.n+' menyerang '+y.c.n+'.');
+ if(y.pos=='atk'){if(df>0){toGy(d,t);dmg(d,df)}else if(df<0){toGy(s,i);dmg(s,-df)}else{toGy(d,t);toGy(s,i)}}else{if(df>0)toGy(d,t);else if(df<0)dmg(s,-df)}}
+function attack(s,i,t){var x=S[s].mz[i];x.at=(x.at||0)+1;resp(opp(s),'atk',[{s:s,n:'Serangan',fn:function(){hit(s,i,t,x)}}])}
+function aiBat(){if(S.n<2)return;var O=S.o;for(var i=0;i<5;i++){var x=O.mz[i];if(!x||x.fd||x.pos!='atk'||(x.at||0)>=lim(x))continue;
+ if(!cnt('p')){attack('o',i,-1);return 1}var t=-1,w=1e9,a=pw('o',x,'p');S.p.mz.forEach(function(y,j){if(!y)return;var v=pw('p',y,y.pos=='atk'?'p':'d');if(a>v&&v<w){w=v;t=j}});
+ if(t>=0){attack('o',i,t);return 1}x.at=9}}
+function spell(s,hi,tg){var P=S[s],c=P.hand[hi],x=tg!=null?P.mz[tg]:null,f;
+ if(c.n=='Bushido Training'){if(S.bt)return lg('Hanya 1 per giliran.');S.bt=1;f=function(){addHand(s,w4,'deck')}}
+ else if(c.n=='Sudden Charge')f=function(){if(x)x.bo=(x.bo||0)+800};
+ else{if(P.st.indexOf(null)<0)return lg('Zona Spell/Trap penuh.');f=function(){if(x)x.eq=(x.eq||0)+1}}
+ P.hand.splice(hi,1);if(c.s=='Equip')P.st[P.st.indexOf(null)]={c:c,fd:false,sm:0};else P.gy.push(c);lg((s=='p'?'Kamu':'Lawan')+' mengaktifkan '+c.n+'.');chain(s,c.n,f)}
+function sqok(){return !S.f.sq&&S.p.mz.indexOf(null)>=0&&cnt('p')>0}
+function ssh(s,hi){var P=S[s],c=P.hand[hi];if(!sqok())return;S.f.sq=1;chain(s,c.n,function(){var j=P.hand.indexOf(c),z=P.mz.indexOf(null);if(j>=0&&z>=0){P.hand.splice(j,1);P.mz[z]=inst(c,'atk',false)}})}
+function mats(s,c){var P=S[s],f=[],r=null,g=function(i){return P.mz[i].c};P.mz.forEach(function(x,i){if(x&&!x.fd&&x.c.k=='m')f.push(i)});
+ if(c.s=='Xyz'){var u=f.filter(function(i){return g(i).s!='Xyz'&&g(i).s!='Link'&&g(i).l==c.l});if(u.length>1)r=u.slice(0,2)}
+ else if(c.s=='Synchro'){f.forEach(function(t){f.forEach(function(n){if(!r&&g(t).tu&&!g(n).tu&&g(t).l+g(n).l==c.l)r=[t,n]})})}
+ else if(c.s=='Fusion'){var a=f.filter(function(i){return g(i).n==c.fm[0]})[0],b=f.filter(function(i){return g(i).n==c.fm[1]})[0];if(a!=null&&b!=null)r=[a,b]}
+ else if(c.s=='Link'){var u2=f.filter(function(i){return g(i).s!='Link'});if(u2.length>1)r=u2.slice(0,2)}
+ return r}
+function exs(s,ei){var P=S[s],c=P.ex[ei],m=mats(s,c);if(!m)return false;var mt=m.map(function(i){return P.mz[i].c});
+ m.forEach(function(i){if(c.s=='Xyz')P.mz[i]=null;else toGy(s,i)});P.ex.splice(ei,1);var x=inst(c,'atk',false);if(c.s=='Xyz')x.m=mt;P.mz[P.mz.indexOf(null)]=x;lg((s=='p'?'Kamu ':'Lawan ')+c.s+' Summon '+c.n+'!');if(c.s=='Synchro')trig(s,c,'sy');return true}
+function rite(s,hi){var P=S[s],rm=-1;P.hand.forEach(function(c,i){if(i!=hi&&c.k=='m'&&c.s=='Ritual'&&rm<0)rm=i});
+ if(rm<0)return lg('Tidak ada Ritual Monster di tangan.');
+ var c=P.hand[rm],f=[],t=0,u=[];P.mz.forEach(function(x,i){if(x&&!x.fd)f.push(i)});f.sort(function(a,b){return P.mz[b].c.l-P.mz[a].c.l});
+ f.forEach(function(i){if(t<c.l){t+=P.mz[i].c.l;u.push(i)}});
+ if(t<c.l)return lg('Level Tribute kurang untuk '+c.n+'.');
+ u.forEach(function(i){toGy(s,i)});P.gy.push(P.hand[hi]);[hi,rm].sort(function(a,b){return b-a}).forEach(function(i){P.hand.splice(i,1)});
+ P.mz[P.mz.indexOf(null)]=inst(c,'atk',false);lg('Ritual Summon '+c.n+'!')}
+function begin(s){S.t=s;S.n++;S.ns=0;S.f={};S.bt=0;[S.p,S.o].forEach(function(P){P.st.forEach(function(x){if(x)x.sm=0})});S.sel=null;S.pend=null;S.ph='Main 1';S[s].mz.forEach(function(x){if(x){x.at=x.mv=x.sm=x.ef=0}});if(S.n>1)draw(s);lg(s=='p'?'Giliranmu dimulai.':'Giliran lawan.')}
+function endTurn(s){var P=S[s];S.p.mz.concat(S.o.mz).forEach(function(x){if(x){x.neg=0;x.bo=0;x.dbl=0}});while(P.hand.length>6)P.gy.push(P.hand.pop());begin(s=='p'?'o':'p');if(S.t=='o'&&!S.over)setTimeout(aiTurn,600)}
+function aiTurn(){var st=[function(){var O=S.o,i=-1,b=-1;O.hand.forEach(function(c,k){if(c.k=='m'&&lv(c)<=cnt('o')&&c.p>b&&(O.mz.indexOf(null)>=0||lv(c)>0)){b=c.p;i=k}});
+ if(i<0)return;var n=lv(O.hand[i]),tr=[];O.mz.forEach(function(x,k){if(x&&tr.length<n)tr.push(k)});normal('o',i,false,tr)},
+ function(){var O=S.o;for(var k=O.hand.length-1;k>=0&&O.st.indexOf(null)>=0;k--){var c=O.hand[k];if(c.n=='Bushido Training')spell('o',k);else if(c.k=='t')putST('o',k,true);else if(c.k=='s'&&(c.s=='Continuous'||c.s=='Field'))putST('o',k,false)}},
+ function(){var O=S.o;for(var k=0;k<O.ex.length;k++){if(exs('o',k))break}},
+ function(){return aiBat()},function(){if(1)return;S.o.mz.forEach(function(x,i){if(!x||x.fd||x.pos!='atk'||x.at||S.over)return;
+ if(!cnt('p')){attack('o',i,-1);return}var t=-1,w=1e9;S.p.mz.forEach(function(y,j){if(!y)return;var v=y.pos=='atk'?y.c.p:y.c.d;if(x.c.p>v&&v<w){w=v;t=j}});if(t>=0)attack('o',i,t)})},
+ function(){endTurn('o')}],k=0;
+ (function nx(){if(S.over||k>=st.length)return render();if(S.rq)return setTimeout(nx,400);if(st[k++]()===1)k--;render();setTimeout(nx,900)})()}
+function mini(x,own){if(!x)return'';var f=FR[DM.fk(x.c)],d=x.pos=='def'?' df':'';
+ if(x.fd&&!own)return'<div class="mc bk'+d+'"></div>';
+ return'<div class="mc'+d+(x.fd?' fd':'')+'" style="background:'+f[0]+';color:'+f[1]+'"><span>'+x.c.g+'</span>'+(x.c.k=='m'?'<b>'+pw(own?'p':'o',x,x.pos=='def'?'d':'p')+'</b>':'')+(x.m&&x.m.length?'<u>'+x.m.length+'</u>':'')+'</div>'}
+function cell(s,k,i,h,tg){var a=S.sel&&S.sel.s==s&&S.sel.k==k&&S.sel.i==i;return'<button class="z'+(a?' sel':'')+(tg?' tg':'')+'" data-s="'+s+'" data-k="'+k+'" data-i="'+i+'">'+h+'</button>'}
+function side(s){var P=S[s],pd=S.pend,own=s=='p';
+ var r1=cell(s,'f',0,P.fz?mini(P.fz,1):'<i>Field</i>')+P.st.map(function(x,i){return cell(s,'s',i,mini(x,own))}).join('')+cell(s,'x',0,'<i>Extra</i><em>'+P.ex.length+'</em>');
+ var r2=cell(s,'g',0,'<i>GY</i><em>'+P.gy.length+'</em>')+P.mz.map(function(x,i){var tg=pd&&x&&((pd.t=='trib'&&own&&pd.pk.indexOf(i)<0)||((pd.t=='atk'||pd.t=='eff')&&!own));return cell(s,'m',i,mini(x,own),tg)}).join('')+cell(s,'d',0,'<i>Deck</i><em>'+P.deck.length+'</em>');
+ return[r1,r2]}
+function info(c){var t=c.k=='m'?'['+c.at+' / '+c.r+' / '+c.s+']  Lv/Rank '+c.l+'  ATK '+c.p+(c.d!=null?'  DEF '+c.d:''):(c.k=='s'?'Spell':'Trap')+' ('+c.s+')';return'<b>'+c.n+'</b><br><small>'+t+'</small><p style="margin:6px 0 0">'+c.t+'</p>'}
+function panel(){var h='Ketuk kartu untuk melihat dan memakainya.',sl=S.sel,pd=S.pend,
+ b=function(a,t,v,g,d){return'<button class="btn'+(g?' g':'')+'" data-act="'+a+'"'+(v!=null?' data-v="'+v+'"':'')+(d?' disabled':'')+'>'+t+'</button>'};
+ if(S.over)return'<b>'+S.over+'</b><br>'+b('new','Duel baru');
+ if(S.rq){var rq=S.rq;return'Lawan memicu '+(rq.kind=='atk'?'serangan':rq.L[0].n)+'. Respon?<br>'+rq.o.map(function(i){return b('rq','Aktifkan '+S.p.st[i].c.n,i)}).join('')+b('rq','Lewati',-1,1)}
+ if(pd)return(pd.t=='trib'?'Pilih '+(pd.need-pd.pk.length)+' monstermu sebagai Tribute.':pd.t=='atk'?'Pilih monster lawan yang diserang.':'Pilih monster lawan untuk dihancurkan.')+'<br>'+b('can','Batal',null,1);
+ if(sl){var s=sl.s,P=S[s],c=null,x=null;h='';
+  if(sl.k=='m'){x=P.mz[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Monster Set (tertutup).'}
+  else if(sl.k=='s'){x=P.st[sl.i];if(!x)h='Zona kosong.';else if(!x.fd||s=='p')c=x.c;else h='Kartu Set (tertutup).'}
+  else if(sl.k=='f'){x=P.fz;if(x)c=x.c;else h='Field Zone kosong.'}
+  else if(sl.k=='h')c=P.hand[sl.i];
+  else if(sl.k=='g')h='<b>Graveyard ('+P.gy.length+')</b><br><small>'+(P.gy.map(function(g){return g.n}).join(', ')||'kosong')+'</small>';
+  else if(sl.k=='d')h='Deck: '+P.deck.length+' kartu.';
+  else if(sl.k=='x'){h='<b>Extra Deck ('+P.ex.length+')</b>';if(s=='p')P.ex.forEach(function(e,k){h+='<br><small>'+e.n+' ('+e.s+')</small>';if(e.s!='Fusion'||e.fm)h+=b('xyz',e.s+' Summon',k,0,!cm()||!mats('p',e))})}
+  if(c){h=info(c);
+   if(sl.k=='h'&&cm()){if(c.k=='m'){var nd=lv(c),ok=!S.ns&&cnt('p')>=nd&&(P.mz.indexOf(null)>=0||nd>0);h+=b('ns','Normal Summon'+(nd?' (Tribute '+nd+')':''),null,0,!ok)+b('sm','Set',null,0,!ok)+(c.n=='Katana Squire'?b('ss','Special Summon (efek)',null,0,!sqok()):'')}else{h+=b('sst','Set',null,0,P.st.indexOf(null)<0);if(c.k=='s')h+=b('sp','Aktifkan')}}
+   if(sl.k=='m'&&s=='p'){if(S.ph=='Battle'&&S.n>1&&(x.at||0)<lim(x)&&x.pos=='atk'&&!x.fd)h+=b('atk','Serang');
+    if(cm()){h+=x.fd?b('flip','Flip Summon',null,0,!!x.sm):b('pos','Ganti posisi',null,0,!!(x.mv||x.sm));var u=x.m.length&&!x.ef&&!x.fd,ui=x.c.n.indexOf('Ujimasa')>=0;if(u&&x.c.s=='Xyz')h+=b(ui?'uji':'eff',x.c.b?'Efek: detach 1, hancurkan 1 monster lawan':ui?'Efek: detach 1, +1000 ATK dan serang 2 kali':'Efek: detach 1, negate 1 monster lawan');if(x.c.n=='Dojo Bell Monk'&&!x.ef&&!x.fd)h+=b('mon','Efek: Special Summon dari GY',null,0,!S.p.gy.some(w4))}}}}
+ return h}
+function render(){var o=side('o'),p=side('p'),ps=['Draw','Standby','Main 1','Battle','Main 2','End'],
+ nn=S.ph=='Main 1'?(S.n>1?'Battle':'Main 2'):S.ph=='Battle'?'Main 2':'End',
+ ctl=S.t=='p'&&!S.over&&!S.pend?'<button class="btn g" data-act="nx">Lanjut ke '+nn+'</button><button class="btn g" data-act="end">Akhiri giliran</button><button class="btn g" data-act="new">Duel baru</button>':'';
+ $('bd').innerHTML='<div class="lp"><span>Lawan  '+S.lp.o+'</span><span>Tangan '+S.o.hand.length+'</span></div><div class="oh">'+S.o.hand.map(function(){return'<i class="hb"></i>'}).join('')+'</div>'+
+ '<div class="rw">'+o[0]+'</div><div class="rw">'+o[1]+'</div>'+
+ '<div class="ph">'+ps.map(function(x){return'<span'+(x==S.ph&&S.t=='p'?' class="on"':'')+'>'+x+'</span>'}).join('')+'</div>'+
+ '<div class="rw">'+p[1]+'</div><div class="rw">'+p[0]+'</div>'+
+ '<div class="lp"><span>Kamu  '+S.lp.p+'</span><span>Giliran '+S.n+(S.t=='o'?' (lawan)':'')+'</span></div>'+
+ '<div class="hand">'+S.p.hand.map(function(c,i){var f=FR[DM.fk(c)],a=S.sel&&S.sel.k=='h'&&S.sel.i==i;return'<button class="hc'+(a?' sel':'')+'" data-s="p" data-k="h" data-i="'+i+'" style="background:'+f[0]+';color:'+f[1]+'"><small>'+c.n+'</small><span>'+c.g+'</span><b>'+(c.k=='m'?c.p:'')+'</b></button>'}).join('')+'</div>'+
+ ctl+'<div class="pn">'+panel()+'</div><div class="lgx">'+S.log.join('<br>')+'</div>'}
+function zc(s,k,i){var pd=S.pend;if(pd&&pd.t=='tg'){if(s=='p'&&k=='m'&&S.p.mz[i]){spell('p',pd.hi,i);S.pend=null;S.sel=null}return render()}
+ if(pd&&pd.t=='trib'){if(s=='p'&&k=='m'&&S.p.mz[i]&&pd.pk.indexOf(i)<0){pd.pk.push(i);if(pd.pk.length>=pd.need){normal('p',pd.hi,pd.set,pd.pk);S.pend=null;S.sel=null}}return render()}
+ if(pd&&s=='o'&&k=='m'&&S.o.mz[i]){if(pd.t=='atk')attack('p',pd.i,i);else{var x=S.p.mz[pd.i];x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){if(x.c.n=='Hanzo, Phantom Shinobi'){var y=S.o.mz[i];if(y)y.neg=1}else kill('o',i,1)})}S.pend=null;S.sel=null;return render()}
+ S.pend=null;S.sel={s:s,k:k,i:i};render()}
+function act(a,v){var P=S.p,sl=S.sel,x=sl&&sl.k=='m'?P.mz[sl.i]:null;
+ if(a=='new')return start();
+ if(a=='can'){S.pend=null;return render()}
+ if(a=='end'){endTurn('p');return render()}
+ if(a=='nx'){if(S.ph=='Main 1')S.ph=S.n>1?'Battle':'Main 2';else if(S.ph=='Battle')S.ph='Main 2';else{endTurn('p');return render()}S.sel=null;return render()}
+ if(a=='rq'){var q=S.rq;S.rq=null;if(+v>=0)use(q.d,+v,q.kind,q.L);resolve(q.L);return render()}if(a=='ss'){ssh('p',sl.i);S.sel=null;return render()}if(a=='mon'){x.ef=1;chain('p',x.c.n,function(){ssp('p',w4,'gy',1)});return render()}if(a=='uji'){x.ef=1;S.p.gy.push(x.m.pop());chain('p',x.c.n,function(){x.bo=(x.bo||0)+1000;x.dbl=1});return render()}if(a=='ns'||a=='sm'){var c=P.hand[sl.i],nd=lv(c);if(nd)S.pend={t:'trib',need:nd,pk:[],hi:sl.i,set:a=='sm'};else{normal('p',sl.i,a=='sm',[]);S.sel=null}return render()}
+ if(a=='sst'||a=='sp'){var hc=P.hand[sl.i];if(a=='sp'&&hc.s=='Ritual')rite('p',sl.i);else if(a=='sp'&&(hc.n=='Sudden Charge'||hc.n=='Bushido Blade Oath')){S.pend={t:'tg',hi:sl.i};return render()}else if(a=='sp'&&hc.n=='Bushido Training')spell('p',sl.i);else putST('p',sl.i,a=='sst');S.sel=null}
+ else if(a=='atk'){if(!cnt('o')){attack('p',sl.i,-1);S.sel=null}else S.pend={t:'atk',i:sl.i}}
+ else if(a=='pos'){x.pos=x.pos=='atk'?'def':'atk';x.mv=1}
+ else if(a=='flip'){x.fd=false;x.pos='atk';x.mv=1}
+ else if(a=='eff')S.pend={t:'eff',i:sl.i};
+ else if(a=='xyz'){exs('p',+v);S.sel=null}
+ render()}
+function start(){S={t:'p',n:0,ph:'',lp:{p:8000,o:8000},p:mk('p'),o:mk(),ns:0,sel:null,pend:null,log:[],over:null};for(var i=0;i<5;i++){draw('p');draw('o')}begin('p');render()}
+$('duel').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ if(b.dataset.act)return act(b.dataset.act,b.dataset.v);
+ if(b.dataset.s&&!S.over&&!(S.t=='o'&&S.pend))zc(b.dataset.s,b.dataset.k,+b.dataset.i)});
+start();
+})();
+</script>
+</body>
+</html>
