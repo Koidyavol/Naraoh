@@ -502,6 +502,7 @@ function lim(x){return x.dbl||x.c.s=='Fusion'?2:1}
 function pw(s,x,k){var P=S[s],v=x.c[k];if(v==null)return 0;
  if(k=='p')v+=(x.eq||0)*500+(x.bo||0)+(x.c.l==4&&P.st.some(function(t){return t&&!t.fd&&t.c.n=='Dojo Banner'})?300:0);
  else v+=P.mz.some(function(m){return m&&m!=x&&!m.fd&&!m.neg&&m.c.n=='Hatamoto Guard'})?300:0;
+ if(k=='p'&&x.c.r=='Fiend'&&(x.c.n.indexOf('Goblin')===0||x.c.n=='King Goblin')&&P.mz.some(function(m){return m&&!m.fd&&m.c.n=='King Goblin'}))v+=300;
  if([S.p.fz,S.o.fz].some(function(f){return f&&f.c.n=='Castle of Edo'}))v+=200;return v}
 function ssp(s,f,from,neg){var P=S[s],z=P.mz.indexOf(null),i=-1;P[from].forEach(function(c,j){if(i<0&&f(c))i=j});if(z<0||i<0)return false;
  var c=P[from].splice(i,1)[0],x=inst(c,'atk',false);x.neg=neg;P.mz[z]=x;lg(c.n+' di-Special Summon.');if(!neg)trig(s,c,'ss');return true}
