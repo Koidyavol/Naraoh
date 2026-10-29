@@ -119,6 +119,53 @@ classSpecs.forEach(([name,tier,role,parent,bonus,skills])=>{
   skillData[skill]={cost:costs,power:powers,type,desc:classDescriptions[name]+' Skill '+skill+'.'};
  });
 });
+/* Skill dasar unik untuk setiap class. Efek memakai tipe yang sudah didukung sistem combat. */
+const basicSkillProfiles={
+ Warrior:{type:'phys',cost:4,power:1.65,desc:'Heavy Strike: menghantam target dengan damage fisik kuat.'},
+ Mage:{type:'magic',cost:5,power:1.55,desc:'Fire Bolt: meluncurkan proyektil api berbasis MAG.'},
+ Archer:{type:'pierce',cost:4,power:1.45,desc:'Precision Shot: tembakan akurat yang menembus sebagian DEF.'},
+ Assassin:{type:'phys',cost:4,power:1.7,desc:'Shadow Strike: serangan cepat dari bayangan.'},
+ Knight:{type:'phys',cost:4,power:1.3,desc:'Shield Bash: menghantam lawan dengan perisai.'},
+ Berserker:{type:'phys',cost:5,power:1.9,desc:'Rage Strike: serangan brutal dengan damage tinggi.'},
+ Lancer:{type:'pierce',cost:4,power:1.55,desc:'Spear Thrust: tusukan tombak yang menembus pertahanan.'},
+ Samurai:{type:'phys',cost:4,power:1.65,desc:'Iaijutsu: tebasan cepat dengan peluang critical dari stat CRIT.'},
+ Monk:{type:'phys',cost:3,power:1.35,desc:'Palm Strike: pukulan telapak yang efisien dan hemat MP.'},
+ Elementalist:{type:'magic',cost:6,power:1.65,desc:'Flame Wave: gelombang elemen api berbasis MAG.'},
+ Summoner:{type:'magic',cost:6,power:1.4,desc:'Spirit Bolt: memanggil energi roh untuk menyerang.'},
+ Necromancer:{type:'magic',cost:6,power:1.6,desc:'Grave Bolt: proyektil energi kematian.'},
+ Spellblade:{type:'phys',cost:5,power:1.45,desc:'Arcane Edge: tebasan senjata yang diperkuat sihir.'},
+ Enchanter:{type:'buff',cost:4,power:0,desc:'Weapon Enchant: meningkatkan ATK sementara untuk serangan berikutnya.'},
+ Rogue:{type:'phys',cost:4,power:1.5,desc:'Cheap Shot: serangan licik dengan biaya rendah.'},
+ Ranger:{type:'pierce',cost:4,power:1.5,desc:'Mark Target: serangan terarah yang mengabaikan sebagian DEF.'},
+ Cleric:{type:'barrier',cost:5,power:0,desc:'Mend Wounds: memulihkan sebagian HP dan memberi perlindungan melalui efek barrier.'},
+ Bard:{type:'buff',cost:5,power:0,desc:'Battle Hymn: meningkatkan ATK sementara lewat nyanyian.'},
+ Oracle:{type:'evasion',cost:4,power:0,desc:'Foresight: membaca gerakan lawan dan menghindari serangan berikutnya.'},
+ Alchemist:{type:'poison',cost:5,power:1.05,desc:'Acid Flask: melempar ramuan korosif yang memberi efek racun.'},
+ Blacksmith:{type:'buff',cost:4,power:0,desc:'Forge Strike: memperkuat tenaga untuk serangan berikutnya.'},
+ Merchant:{type:'phys',cost:3,power:1.15,desc:'Coin Shot: serangan sederhana dengan biaya rendah.'},
+ Herbalist:{type:'barrier',cost:4,power:0,desc:'Herbal Poultice: memulihkan HP melalui ramuan herbal.'},
+ Scholar:{type:'magic',cost:5,power:1.4,desc:'Arcane Analysis: serangan sihir yang memanfaatkan pengetahuan.'},
+ Paladin:{type:'phys',cost:5,power:1.65,desc:'Radiant Smite: serangan suci yang kuat.'},
+ 'Saint Knight':{type:'barrier',cost:6,power:0,desc:'Sanctified Aegis: memulihkan HP dan menyiapkan pertahanan.'},
+ Kensei:{type:'phys',cost:5,power:1.9,desc:'Perfect Draw: tebasan presisi dengan damage tinggi.'},
+ 'Dread Berserker':{type:'phys',cost:6,power:2.05,desc:'Dread Cleave: tebasan brutal berdaya besar.'},
+ Archmage:{type:'magic',cost:8,power:2.0,desc:'Prismatic Burst: ledakan sihir berbasis MAG.'},
+ 'Abyss Summoner':{type:'magic',cost:8,power:1.95,desc:'Abyssal Bolt: energi abyss menyerang target.'},
+ 'Lich Lord':{type:'poison',cost:7,power:1.5,desc:'Soul Rot: serangan energi jiwa yang meninggalkan racun.'},
+ Chronomancer:{type:'evasion',cost:6,power:0,desc:'Time Slip: menghindari serangan dengan melangkah sesaat ke luar waktu.'},
+ 'Shadow Stalker':{type:'phys',cost:5,power:1.95,desc:'Umbral Execution: serangan bayangan yang sangat kuat.'},
+ 'Master Ranger':{type:'pierce',cost:5,power:1.8,desc:'Deadeye Volley: tembakan elit yang menembus sebagian DEF.'},
+ 'High Priest':{type:'barrier',cost:7,power:0,desc:'Greater Benediction: memulihkan HP dan memberi perlindungan.'},
+ 'Fate Weaver':{type:'buff',cost:6,power:0,desc:'Rewrite Fate: meningkatkan ATK sementara dengan mengubah peluang.'},
+ 'Master Smith':{type:'buff',cost:5,power:0,desc:'Mythril Forge: menyiapkan peningkatan ATK sementara.'},
+ 'Grand Alchemist':{type:'barrier',cost:6,power:0,desc:'Philosopher Elixir: ramuan pemulihan untuk bertahan lebih lama.'},
+ 'Trade Magnate':{type:'buff',cost:4,power:0,desc:'Golden Contract: meningkatkan ATK sementara lewat persiapan dan taktik.'},
+ 'Grand Arcanist Researcher':{type:'magic',cost:7,power:1.75,desc:'Forbidden Thesis: melepaskan sihir hasil riset terlarang.'}
+};
+Object.entries(basicSkillProfiles).forEach(([className,profile])=>{
+ const skill=classes[className]?.skills?.[0];
+ if(skill)skillData[skill]={...profile,basic:true};
+});
 Object.assign(classes.Warrior,{tier:'Dasar',role:'Petarung',description:classDescriptions.Warrior});
 Object.assign(classes.Mage,{tier:'Dasar',role:'Sihir',description:classDescriptions.Mage});
 Object.assign(classes.Archer,{tier:'Dasar',role:'Kelincahan',description:classDescriptions.Archer});
