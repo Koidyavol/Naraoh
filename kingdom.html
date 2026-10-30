@@ -329,7 +329,8 @@ function annualEconomy(k){
 function aiAction(k){
  let others=state.kingdoms.filter(o=>o.id!==k.id),weak=others.filter(o=>{const pair=[k.id,o.id].sort().join("|");const allied=(state.treaties||[]).some(t=>t.pair===pair&&t.type==="alliance");const alreadyAtWar=(state.conflicts||[]).some(x=>x.pair===pair);const siegeActive=state.wars.some(w=>w.attacker===k.id&&w.defender===o.id);return !allied&&!alreadyAtWar&&!siegeActive}).sort((a,b)=>power(a)-power(b))[0];
  if(k.treasury>1800&&Math.random()<.6){let t=Math.random()<.12?"eliteUnit":Math.random()<.34?"raceUnit":pick(["infantry","archer","cavalry","catapult"]),spec=raceUnitData(k,t),n=t==="eliteUnit"?rand(4,14):t==="raceUnit"?rand(8,24):rand(25,100),cost=(spec?.cost??TYPES[t].cost)*n;if(k.treasury>cost){k.treasury-=cost;k.army[t]=(k.army[t]||0)+n;}}
- if(raceBuildingLevel(k)<3&&k.treasury>6500&&k.wood>350&&k.stone>300&&Math.random()<.24)buildRaceHall(k);\n if(Math.random()<.72)aiDevelopCity(k);
+ if(raceBuildingLevel(k)<3&&k.treasury>6500&&k.wood>350&&k.stone>300&&Math.random()<.24)buildRaceHall(k);
+ if(Math.random()<.72)aiDevelopCity(k);
  if(weak&&k.cities.length>weak.cities.length+1&&power(k)>power(weak)*1.35&&Math.random()<.12){let target=city(pick(weak.cities));if(target&&k.treasury>500){let count=Math.floor((k.army.infantry+k.army.cavalry+k.army.archer)*.18);if(count>100){startAiSiege(k,target,count)}}}
  if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp(k.relations[other.id]+rand(-8,10),-100,100)}
 }
