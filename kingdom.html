@@ -34,7 +34,7 @@ footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
 @media(max-width:390px){.app{padding:10px 9px 35px}.map{gap:5px}.citytile{min-height:75px;padding:5px}.citytile b{font-size:11px}.brand p{font-size:9px}}
 /* SPECTATOR MODE */
 .btn,.controls,#policyControls,#modalBack{display:none!important}
-.citytile{pointer-events:none;cursor:default}
+.citytile{pointer-events:auto;cursor:pointer;touch-action:manipulation}.kcard{cursor:pointer}.kcard:active{transform:scale(.99)}.race-card{border:1px solid var(--line);background:#0e1723;border-radius:10px;padding:10px;margin-top:8px}.race-card b{color:var(--gold)}.city-link{display:inline-block;margin:4px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#172638;color:var(--text);font-size:11px}
 .spectator-note{border:1px solid var(--gold2);background:#2b261c;color:var(--gold);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:12px}
 #economy .grid2{grid-template-columns:1fr}
 </style>
@@ -58,7 +58,7 @@ footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
    <div class="panel"><h2>Peristiwa Terbaru</h2><div class="log" id="recentLog"></div></div>
   </div>
  </div>
- <div class="panel"><h2>Keseimbangan Kekuatan</h2><div id="powerChart"></div></div>
+ <div class="panel" id="kingdomDetail"><div class="empty">Pilih kerajaan untuk melihat profilnya.</div></div><div class="panel"><h2>Keseimbangan Kekuatan</h2><div id="powerChart"></div></div>
 </section>
 <section class="view" id="mapview">
  <div class="panel"><div class="row"><div><h2>Peta Wilayah</h2><div class="tiny">Amati perubahan pemilik, ekonomi, dan pertahanan kota seiring waktu.</div></div><span class="pill">25 Kota</span></div><div class="map" id="cityMap"></div></div>
@@ -95,6 +95,8 @@ const TYPES={
 const NAMES=["Kerajaan Valoria","Kerajaan Draken","Kerajaan Eldoria","Kerajaan Norhaven","Kerajaan Solmere"];
 const COLORS=["#c99b55","#bd6868","#70a7a0","#8b83c5","#c4a6a0"];
 const CRESTS=["🦁","🐉","🦌","🐺","☀️"];
+const RACES={Human:{name:"Manusia",icon:"🧑",strength:"Ekonomi dan administrasi fleksibel.",weakness:"Tidak punya spesialisasi produksi ekstrem.",effect:"Pemasukan pajak +8%."},Elf:{name:"Elf",icon:"🧝",strength:"Pertanian dan pertumbuhan penduduk unggul.",weakness:"Kebutuhan pangan lebih tinggi.",effect:"Produksi pangan +18%, konsumsi pangan +10%, pertumbuhan penduduk +0,2%."},Dwarf:{name:"Dwarf",icon:"⛏️",strength:"Ahli tambang dan konstruksi batu.",weakness:"Pertumbuhan penduduk lebih lambat.",effect:"Produksi batu +25%, pertumbuhan penduduk -0,2%."},Orc:{name:"Orc",icon:"👹",strength:"Pasukan murah dipelihara.",weakness:"Pemasukan pajak lebih rendah.",effect:"Upkeep pasukan -15%, pajak -5%."},Beastkin:{name:"Beastkin",icon:"🐾",strength:"Pengumpul kayu dan penjelajah hutan.",weakness:"Konsumsi pangan lebih tinggi.",effect:"Produksi kayu +20%, konsumsi pangan +5%."}};
+const RACE_ORDER=["Human","Elf","Dwarf","Orc","Beastkin"];
 const FIRST=["Aldric","Edmund","Cedric","Rowan","Alaric","Theodric","Gareth","Lucien","Darian","Bastian","Isolde","Elara","Mira","Seraphine","Anwen","Lyra","Maelis","Celia","Evelyn","Freya"];
 const LAST=["Ironvale","Ashford","Stormborn","Dawnmere","Blackthorn","Silverkeep","Ravencrest","Goldwyn","Wintermere","Oakheart","Brightshield","Redwyne"];
 const CITYNAMES=["Asterfall","Dunwall","Highgarden","Ravenport","Stonewatch","Westreach","Ironford","Goldhaven","Mistwood","Kingsrest","Frostholm","Brightwater","Ashenford","Stormgate","Eaglecrest","Moonvale","Thornfield","Redcliff","Sunspire","Greyhaven","Oakenshield","Dragonfall","Whitebridge","Seabreak","Northpass"];
@@ -106,12 +108,12 @@ const fmt=n=>Math.round(n).toLocaleString("id-ID");
 const person=()=>({name:pick(FIRST)+" "+pick(LAST),age:rand(18,35),health:100});
 let state;
 function fresh(){
- let kingdoms=NAMES.map((name,i)=>{let ruler=person();ruler.age=rand(38, sixty());return {id:"k"+i,name,color:COLORS[i],crest:CRESTS[i],ruler:ruler,heir:{...person(),age:rand(14,25)},commander:{...person(),age:rand(30,54),skill:rand(45,90)},cities:[],army:{infantry:rand(450,850),cavalry:rand(160,330),archer:rand(260,520),catapult:rand(12,35)},treasury:rand(9000,14500),food:rand(3000,5200),wood:rand(1200,2200),stone:rand(1000,1800),population:rand(55000,95000),happiness:rand(62,86),tax:12,stability:rand(70,92),relations:{},policy:"balanced",history:[]};});
- let cities=CITYNAMES.map((name,i)=>({id:"c"+i,name,owner:"k"+(i%5),population:rand(6500,19000),level:rand(1,4),wall:rand(25,90),prosperity:rand(45,90),production:pick(["grain","wood","stone","trade"]),buildings:{farm:0,lumber:0,quarry:0,market:0,housing:0,barracks:0},garrison:rand(100,450)}));
- cities.forEach(c=>{let k=kingdoms.find(x=>x.id===c.owner);k.cities.push(c.id);c.buildings=c.buildings||{farm:0,lumber:0,quarry:0,market:0,housing:0,barracks:0};if(c.production==="grain")c.buildings.farm=1;if(c.production==="wood")c.buildings.lumber=1;if(c.production==="stone")c.buildings.quarry=1;if(c.production==="trade")c.buildings.market=1;});
- kingdoms.forEach(k=>{k.population=k.cities.reduce((sum,id)=>sum+(cities.find(c=>c.id===id)?.population||0),0)});
- kingdoms.forEach(k=>{kingdoms.forEach(o=>{if(k.id!==o.id)k.relations[o.id]=rand(-25,35)});k.history.push({year:1,text:k.ruler.name+" naik takhta sebagai penguasa "+k.name+"."})});
- return {year:1,season:0,kingdoms,cities,wars:[],conflicts:[],treaties:[],logs:[],selectedCity:null,player:"k0",paused:false,settings:{},lastUpdate:Date.now()};
+ const raceCities=["grain","wood","stone","trade","grain"];
+ let kingdoms=NAMES.map((name,i)=>{let ruler=person();ruler.age=45;return {id:"k"+i,name,color:COLORS[i],crest:CRESTS[i],race:RACE_ORDER[i],ruler:ruler,heir:{...person(),age:20},commander:{...person(),age:40,skill:65},cities:[],army:{infantry:650,cavalry:220,archer:400,catapult:20},treasury:12000,food:3000,wood:1500,stone:1200,population:60000,happiness:70,tax:12,stability:80,relations:{},policy:"balanced",history:[]};});
+ let cities=CITYNAMES.map((name,i)=>{let owner=i%5,slot=Math.floor(i/5),prod=raceCities[slot];return {id:"c"+i,name,owner:"k"+owner,population:12000,level:2,wall:50,prosperity:60,production:prod,buildings:{farm:prod==="grain"?1:0,lumber:prod==="wood"?1:0,quarry:prod==="stone"?1:0,market:prod==="trade"?1:0,housing:0,barracks:0},garrison:250};});
+ cities.forEach(c=>kingdoms.find(k=>k.id===c.owner).cities.push(c.id));
+ kingdoms.forEach(k=>{k.population=k.cities.reduce((sum,id)=>sum+(cities.find(c=>c.id===id)?.population||0),0);kingdoms.forEach(o=>{if(k.id!==o.id)k.relations[o.id]=0});k.history.push({year:1,text:k.ruler.name+" naik takhta sebagai penguasa "+k.name+"."})});
+ return {year:1,season:0,kingdoms,cities,wars:[],conflicts:[],treaties:[],logs:[],selectedCity:null,selectedKingdom:"k0",player:"k0",paused:false,settings:{},lastUpdate:Date.now()};
 }
 function sixty(){return 60}
 function log(msg){state.logs.unshift({year:state.year,text:msg});if(state.logs.length>250)state.logs.length=250}
@@ -131,7 +133,7 @@ function ensureCity(c){if(!c.buildings)c.buildings={};Object.keys(BUILDINGS).for
 function buildCity(k,c,type){ensureCity(c);let b=BUILDINGS[type];if(!b||c.buildings[type]>=5)return false;if(k.treasury<b.gold||k.wood<b.wood||k.stone<b.stone)return false;k.treasury-=b.gold;k.wood-=b.wood;k.stone-=b.stone;c.buildings[type]++;c.level=clamp(1+Math.floor((Object.values(c.buildings).reduce((a,v)=>a+v,0)+c.population/18000)/2),1,10);log(k.name+" membangun "+b.name+" di "+c.name+" (tingkat "+c.buildings[type]+"). Biaya: "+fmt(b.gold)+" emas, "+b.wood+" kayu, "+b.stone+" batu.");return true;}
 function aiDevelopCity(k){let foodYears=k.food/Math.max(1,k.population*.018),type=null;if(foodYears<1.8)type="farm";else if(k.wood<180)type="lumber";else if(k.stone<140)type="quarry";else if(k.cities.some(id=>(city(id)?.buildings?.market||0)<2)&&Math.random()<.35)type="market";else if(Math.random()<.3)type="housing";else if(Math.random()<.18)type="barracks";if(!type)return;let candidates=k.cities.map(id=>city(id)).filter(c=>c&&((c.buildings?.[type]||0)<5)).sort((a,b)=>(a.buildings?.[type]||0)-(b.buildings?.[type]||0));if(candidates.length)buildCity(k,candidates[0],type);}
 function totalPop(k){return k.cities.reduce((a,id)=>a+(city(id)?.population||0),0)}
-function power(k){return totalArmy(k)*.55+k.cities.length*120+k.treasury*.025+k.commander.skill*8}
+function power(k){let bonus=k.race==="Orc"?1.05:k.race==="Beastkin"?1.04:1;return totalArmy(k)*.55*bonus+k.cities.length*120+k.treasury*.025+k.commander.skill*8}
 function seasonName(){return ["Musim Semi","Musim Panas","Musim Gugur","Musim Dingin"][state.season]}
 function nav(view){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));render()}
 document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.view)));
