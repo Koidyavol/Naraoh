@@ -31,14 +31,20 @@ nav{display:flex;gap:7px;overflow:auto;padding:13px 0;scrollbar-width:thin}.navb
 footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
 @media(max-width:720px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.kingdom-grid{grid-template-columns:1fr}.map{grid-template-columns:repeat(3,minmax(0,1fr))}.head-right .datebox{font-size:11px}.split{grid-template-columns:1fr}}
 @media(max-width:390px){.app{padding:10px 9px 35px}.map{gap:5px}.citytile{min-height:75px;padding:5px}.citytile b{font-size:11px}.brand p{font-size:9px}}
+/* SPECTATOR MODE */
+.btn,.controls,#policyControls,#modalBack{display:none!important}
+.citytile{pointer-events:none;cursor:default}
+.spectator-note{border:1px solid var(--gold2);background:#2b261c;color:var(--gold);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:12px}
+#economy .grid2{grid-template-columns:1fr}
 </style>
 </head>
 <body>
 <div class="app">
 <header>
  <div class="brand"><h1>KINGDOMS</h1><p>Chronicle of Crowns · Realm Simulator</p></div>
- <div class="head-right"><div class="datebox" id="dateBox">Tahun 1 · Musim Semi</div><button class="btn small" onclick="advance(1)">⏭ 1 Tahun</button><button class="btn secondary small" onclick="saveGame()">Simpan</button></div>
+ <div class="head-right"><div class="datebox" id="dateBox">Tahun 1 · Musim Semi</div><span class="pill good">● SIMULASI OTOMATIS</span></div>
 </header>
+<div class="spectator-note">Mode penonton aktif — dunia berjalan sendiri. Semua kerajaan dikendalikan AI; Tuan hanya mengamati.</div>
 <nav id="nav">
  <button class="navbtn active" data-view="overview">👑 Ikhtisar</button><button class="navbtn" data-view="mapview">🗺️ Peta & Kota</button><button class="navbtn" data-view="army">⚔️ Militer</button><button class="navbtn" data-view="economy">🌾 Ekonomi</button><button class="navbtn" data-view="diplomacy">🤝 Diplomasi</button><button class="navbtn" data-view="chronicle">📜 Kronik</button>
 </nav>
@@ -54,24 +60,23 @@ footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
  <div class="panel"><h2>Keseimbangan Kekuatan</h2><div id="powerChart"></div></div>
 </section>
 <section class="view" id="mapview">
- <div class="panel"><div class="row"><div><h2>Peta Wilayah</h2><div class="tiny">Pilih kota untuk melihat detail, pemilik, ekonomi, dan pertahanannya.</div></div><span class="pill">25 Kota</span></div><div class="map" id="cityMap"></div></div>
+ <div class="panel"><div class="row"><div><h2>Peta Wilayah</h2><div class="tiny">Amati perubahan pemilik, ekonomi, dan pertahanan kota seiring waktu.</div></div><span class="pill">25 Kota</span></div><div class="map" id="cityMap"></div></div>
  <div class="panel" id="cityDetail"><div class="empty">Pilih sebuah kota pada peta.</div></div>
 </section>
 <section class="view" id="army">
- <div class="panel"><div class="row"><div><h2>Komando Militer</h2><div class="tiny">Rekrut pasukan, tunjuk komandan, dan kirim ekspedisi.</div></div><button class="btn small" onclick="openRecruit()">＋ Rekrut</button></div><div id="armyOverview"></div></div>
+ <div class="panel"><div class="row"><div><h2>Komando Militer</h2><div class="tiny">Seluruh perekrutan dan ekspedisi diputuskan oleh AI kerajaan.</div></div></div><div id="armyOverview"></div></div>
  <div class="grid2"><div class="panel"><h2>Hubungan Antar-Tipe</h2><div id="counterChart"></div></div><div class="panel"><h2>Komandan Pasukan</h2><div id="commanderList"></div></div></div>
  <div class="panel"><h2>Ekspedisi & Pengepungan</h2><div id="warList"></div></div>
 </section>
 <section class="view" id="economy">
  <div class="panel"><h2>Perekonomian Kerajaan</h2><div class="tiny">Pajak, produksi, perdagangan, dan kesejahteraan rakyat berubah setiap tahun.</div><div id="economyTable"></div></div>
- <div class="grid2"><div class="panel"><h2>Kelola Kebijakan</h2><div id="policyControls"></div></div><div class="panel"><h2>Indikator Rakyat</h2><div id="peoplePanel"></div></div></div>
+ <div class="grid2"><div class="panel"><h2>Indikator Rakyat</h2><div id="peoplePanel"></div></div></div>
 </section>
 <section class="view" id="diplomacy">
- <div class="panel"><h2>Hubungan Diplomatik</h2><div class="tiny">Perjanjian dapat berubah karena perang, perdagangan, dan perebutan wilayah.</div><div id="diplomacyTable"></div></div>
- <div class="panel"><h2>Aksi Diplomasi</h2><div class="controls"><select id="dipFrom"></select><select id="dipTo"></select><select id="dipAction"><option value="trade">Tawarkan perjanjian dagang</option><option value="alliance">Ajukan aliansi</option><option value="peace">Tawarkan perdamaian</option><option value="war">Nyatakan perang</option></select><button class="btn" onclick="diplomaticAction()">Kirim</button></div></div>
-</section>
+ <div class="panel"><h2>Hubungan Diplomatik</h2><div class="tiny">Hubungan diplomatik dan perjanjian dikelola otomatis oleh kerajaan.</div><div id="diplomacyTable"></div></div>
+ </section>
 <section class="view" id="chronicle">
- <div class="panel"><div class="row"><h2>Kronik Dinasti</h2><button class="btn secondary small" onclick="renderChronicle()">Perbarui</button></div><div id="dynastyList"></div></div>
+ <div class="panel"><div class="row"><h2>Kronik Dinasti</h2><span class="pill">Diperbarui otomatis</span></div><div id="dynastyList"></div></div>
  <div class="panel"><h2>Catatan Sejarah Benua</h2><div class="log" id="fullLog"></div></div>
 </section>
 <footer> KINGDOMS · A living world of dynasties, armies, cities and people</footer>
@@ -232,7 +237,7 @@ function resolveWars(){
 function returnArmy(k,w,ratio){Object.keys(w.units).forEach(t=>k.army[t]+=Math.floor(w.units[t]*ratio));k.army.catapult+=Math.floor(w.catapults*ratio)}
 function advance(years){
  for(let y=0;y<years;y++){state.year++;state.season=(state.season+1)%4;state.kingdoms.forEach(k=>{annualEconomy(k);k.ruler.age++;k.heir.age++;k.commander.age++;if(k.ruler.age>rand(68,88)||k.ruler.health<1){succession(k,"usia tua")}else if(k.ruler.age>65&&Math.random()<.09){succession(k,"usia tua")}if(k.heir.age>=40){k.heir={...person(),age:rand(14,22)};log(k.name+" menunjuk ahli waris baru: "+k.heir.name+".")}if(k.commander.age>70||Math.random()<.025){let old=k.commander.name;k.commander={...person(),age:rand(30,50),skill:rand(40,95)};log(k.name+" menunjuk komandan baru, menggantikan "+old+".")}aiAction(k)});resolveWars();if(state.year%5===0)log("Tahun "+state.year+": sensus benua mencatat perubahan populasi dan kekuatan kerajaan.");}
- render();saveGame();
+ render();saveSilent();
 }
 window.advance=advance;
 window.saveGame=()=>{try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state));alert("Permainan berhasil disimpan di perangkat ini.")}catch(e){alert("Penyimpanan tidak tersedia di browser ini.")}};
@@ -243,6 +248,8 @@ window.startNew=startNew;
 state=load()||fresh();
 if(!state.logs.length)log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
 render();
+// Simulasi maju satu tahun setiap 8 detik secara otomatis.
+setInterval(()=>advance(1),8000);
 })();
 </script>
 </body>
