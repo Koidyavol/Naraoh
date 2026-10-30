@@ -138,7 +138,7 @@ const CITY_SUFFIXES=["","keep","haven","vale","reach"];
 const CITYNAMES=CITY_ROOTS.flatMap(root=>CITY_SUFFIXES.map(suffix=>root+(suffix?(suffix[0].toUpperCase()+suffix.slice(1)):"")));
 const FIRST=["Aldric","Edmund","Cedric","Rowan","Alaric","Theodric","Gareth","Lucien","Darian","Bastian","Isolde","Elara","Mira","Seraphine","Anwen","Lyra","Maelis","Celia","Evelyn","Freya"];
 const LAST=["Ironvale","Ashford","Stormborn","Dawnmere","Blackthorn","Silverkeep","Ravencrest","Goldwyn","Wintermere","Oakheart","Brightshield","Redwyne"];
-const CITYNAMES=["Asterfall","Dunwall","Highgarden","Ravenport","Stonewatch","Westreach","Ironford","Goldhaven","Mistwood","Kingsrest","Frostholm","Brightwater","Ashenford","Stormgate","Eaglecrest","Moonvale","Thornfield","Redcliff","Sunspire","Greyhaven","Oakenshield","Dragonfall","Whitebridge","Seabreak","Northpass"];
+
 const $=id=>document.getElementById(id);
 const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[rand(0,a.length-1)];
