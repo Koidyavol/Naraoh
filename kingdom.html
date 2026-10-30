@@ -293,7 +293,7 @@ function ensureKingdomEconomy(k){
  if(!Array.isArray(k.projects.completed))k.projects.completed=[];
  if(!k.projects.active)k.projects.active=null;
  k.equipment=k.equipment&&typeof k.equipment==="object"?k.equipment:{condition:100};
- k.equipment.condition=clamp(Number(k.equipment.condition)||100,0,100);
+ k.equipment.condition=clamp(Number.isFinite(k.equipment.condition)?k.equipment.condition:100,0,100);
 }
 function projectLevel(k,type){return (k.projects?.completed||[]).filter(x=>x===type).length}
 function projectBonus(k,type){return projectLevel(k,type)>0}
@@ -303,7 +303,7 @@ function updateMarketPrices(){
  const avg={food:0,wood:0,stone:0};
  state.kingdoms.forEach(k=>{avg.food+=Math.max(0,k.food||0);avg.wood+=Math.max(0,k.wood||0);avg.stone+=Math.max(0,k.stone||0)});
  const count=Math.max(1,state.kingdoms.length),targets={food:count*18000,wood:count*5000,stone:count*4200},base={food:.18,wood:.9,stone:1.2};
- Object.keys(base).forEach(key=>{const ratio=avg[key]/Math.max(1,targets[key]);const desired=base[key]*clamp(1.35-ratio*.35,.62,1.8);state.marketPrices[key]=Math.round((Number(state.marketPrices[key])||base[key])*.65+desired*.35*100)/100});
+ Object.keys(base).forEach(key=>{const ratio=avg[key]/Math.max(1,targets[key]);const desired=base[key]*clamp(1.35-ratio*.35,.62,1.8);state.marketPrices[key]=Math.round(((Number(state.marketPrices[key])||base[key])*.65+desired*.35)*100)/100});
 }
 function runMarketTrade(k){
  const hasMarket=k.cities.some(id=>{const c=city(id);return c&&((c.buildings?.market||0)>0||c.production==="trade")})||state.treaties.some(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id));
@@ -488,7 +488,7 @@ function annualEconomy(k){
  k.treasury+=goldDelta;k.food+=foodDelta;k.wood+=woodDelta;k.stone+=stoneDelta;
  const activeWars=state.wars.filter(w=>w.attacker===k.id||w.defender===k.id).length;
  const equipmentBill=maintainArmyEquipment(k,totalArmy(k)+garrisonCount,activeWars);
- const marketResult=runMarketTrade(k);k.treasury+=marketResult.gold;
+ runMarketTrade(k);
  advanceKingdomProject(k);
  // Kebutuhan tempat tinggal dan layanan kota memengaruhi kesejahteraan secara bertahap.
  let crowded=0;k.cities.forEach(id=>{const c=city(id);if(!c)return;const ratio=c.population/cityPopulationCapacity(c);if(ratio>.88)crowded++;});
