@@ -35,7 +35,7 @@ footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
 /* SPECTATOR MODE */
 .btn,.controls,#policyControls,#modalBack{display:none!important}
 .citytile{pointer-events:auto;cursor:pointer;touch-action:manipulation}.kcard{cursor:pointer}.kcard:active{transform:scale(.99)}.race-card{border:1px solid var(--line);background:#0e1723;border-radius:10px;padding:10px;margin-top:8px}.race-card b{color:var(--gold)}.city-link{display:inline-block;margin:4px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#172638;color:var(--text);font-size:11px}
-.spectator-note{border:1px solid var(--gold2);background:#2b261c;color:var(--gold);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:12px}
+.spectator-note{border:1px solid var(--gold2);background:#2b261c;color:var(--gold);border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:12px}\n.pause-toggle{border:1px solid #7d91aa;background:#1a293b;color:#e9edf2;border-radius:9px;padding:7px 11px;font-weight:800;cursor:pointer}.pause-toggle.paused{border-color:#d6a84e;background:#3a2d19;color:#f2d18b}
 #economy .grid2{grid-template-columns:1fr}
 </style>
 </head>
@@ -43,7 +43,7 @@ footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
 <div class="app">
 <header>
  <div class="brand"><h1>KINGDOMS</h1><p>Chronicle of Crowns · Realm Simulator</p></div>
- <div class="head-right"><div class="datebox" id="dateBox">Tahun 1 · Musim Semi</div><span class="pill good">● SIMULASI OTOMATIS</span></div>
+ <div class="head-right"><button id="pauseBtn" class="pause-toggle" type="button" aria-pressed="false">Ⅱ Jeda</button><div class="datebox" id="dateBox">Tahun 1 · Musim Semi</div><span class="pill good" id="runStatus">● SIMULASI BERJALAN</span></div>
 </header>
 <div class="spectator-note">Mode penonton aktif — dunia berjalan sendiri. Semua kerajaan dikendalikan AI; Tuan hanya mengamati.</div>
 <nav id="nav">
