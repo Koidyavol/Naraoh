@@ -29,6 +29,7 @@ nav{display:flex;gap:7px;overflow:auto;padding:13px 0;scrollbar-width:thin}.navb
 .empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
 .modalback{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:14px;z-index:20}.modalback.show{display:flex}.modal{width:min(570px,100%);max-height:90vh;overflow:auto;background:#152131;border:1px solid var(--gold2);border-radius:15px;padding:16px;box-shadow:0 20px 80px #0009}.modal h2{font:700 20px Cinzel;color:var(--gold);margin:0 0 12px}.modalfoot{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}.field{display:grid;gap:4px;margin:9px 0}.field label{font-size:11px;color:var(--muted)}.field select,.field input{width:100%;background:#0c1521;color:var(--text);border:1px solid var(--line);padding:9px;border-radius:8px}
 footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
+.city-buildings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.building-card{background:#0e1723;border:1px solid #293b50;border-radius:8px;padding:8px}.building-card b{display:block;font-size:12px}.building-card small{font-size:10px;color:var(--muted)}.resource-strip{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.resource-chip{background:#0e1723;border:1px solid #30435a;border-radius:8px;padding:6px 8px;font-size:11px}.resource-chip b{color:var(--gold)}
 @media(max-width:720px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.kingdom-grid{grid-template-columns:1fr}.map{grid-template-columns:repeat(3,minmax(0,1fr))}.head-right .datebox{font-size:11px}.split{grid-template-columns:1fr}}
 @media(max-width:390px){.app{padding:10px 9px 35px}.map{gap:5px}.citytile{min-height:75px;padding:5px}.citytile b{font-size:11px}.brand p{font-size:9px}}
 /* SPECTATOR MODE */
@@ -106,8 +107,8 @@ const person=()=>({name:pick(FIRST)+" "+pick(LAST),age:rand(18,35),health:100});
 let state;
 function fresh(){
  let kingdoms=NAMES.map((name,i)=>{let ruler=person();ruler.age=rand(38, sixty());return {id:"k"+i,name,color:COLORS[i],crest:CRESTS[i],ruler:ruler,heir:{...person(),age:rand(14,25)},commander:{...person(),age:rand(30,54),skill:rand(45,90)},cities:[],army:{infantry:rand(450,850),cavalry:rand(160,330),archer:rand(260,520),catapult:rand(12,35)},treasury:rand(9000,14500),food:rand(3000,5200),wood:rand(1200,2200),stone:rand(1000,1800),population:rand(55000,95000),happiness:rand(62,86),tax:12,stability:rand(70,92),relations:{},policy:"balanced",history:[]};});
- let cities=CITYNAMES.map((name,i)=>({id:"c"+i,name,owner:"k"+(i%5),population:rand(6500,19000),level:rand(1,4),wall:rand(25,90),prosperity:rand(45,90),production:pick(["grain","wood","stone","trade"]),garrison:rand(100,450)}));
- cities.forEach(c=>{kingdoms.find(k=>k.id===c.owner).cities.push(c.id)});
+ let cities=CITYNAMES.map((name,i)=>({id:"c"+i,name,owner:"k"+(i%5),population:rand(6500,19000),level:rand(1,4),wall:rand(25,90),prosperity:rand(45,90),production:pick(["grain","wood","stone","trade"]),buildings:{farm:0,lumber:0,quarry:0,market:0,housing:0,barracks:0},garrison:rand(100,450)}));
+ cities.forEach(c=>{let k=kingdoms.find(x=>x.id===c.owner);k.cities.push(c.id);c.buildings=c.buildings||{farm:0,lumber:0,quarry:0,market:0,housing:0,barracks:0};if(c.production==="grain")c.buildings.farm=1;if(c.production==="wood")c.buildings.lumber=1;if(c.production==="stone")c.buildings.quarry=1;if(c.production==="trade")c.buildings.market=1;});
  kingdoms.forEach(k=>{k.population=k.cities.reduce((sum,id)=>sum+(cities.find(c=>c.id===id)?.population||0),0)});
  kingdoms.forEach(k=>{kingdoms.forEach(o=>{if(k.id!==o.id)k.relations[o.id]=rand(-25,35)});k.history.push({year:1,text:k.ruler.name+" naik takhta sebagai penguasa "+k.name+"."})});
  return {year:1,season:0,kingdoms,cities,wars:[],conflicts:[],treaties:[],logs:[],selectedCity:null,player:"k0",paused:false,settings:{},lastUpdate:Date.now()};
@@ -118,12 +119,23 @@ function kingdom(id){return state.kingdoms.find(k=>k.id===id)}
 function city(id){return state.cities.find(c=>c.id===id)}
 function ownerName(id){return kingdom(id)?.name||"Wilayah bebas"}
 function totalArmy(k){return Object.values(k.army).reduce((a,b)=>a+b,0)}
+const BUILDINGS={
+ farm:{name:"Ladang",icon:"🌾",gold:1100,wood:45,stone:15,desc:"Menghasilkan pangan untuk konsumsi rakyat.",food:1450},
+ lumber:{name:"Penggergajian",icon:"🪵",gold:950,wood:25,stone:15,desc:"Menghasilkan kayu untuk konstruksi.",wood:520},
+ quarry:{name:"Tambang Batu",icon:"⛏️",gold:1050,wood:20,stone:25,desc:"Menghasilkan batu untuk bangunan dan benteng.",stone:430},
+ market:{name:"Pasar",icon:"🏪",gold:1450,wood:55,stone:35,desc:"Meningkatkan pemasukan kerajaan.",goldIncome:420},
+ housing:{name:"Permukiman",icon:"🏘️",gold:1250,wood:50,stone:30,desc:"Meningkatkan pertumbuhan penduduk.",growth:.003},
+ barracks:{name:"Barak",icon:"🏰",gold:1700,wood:65,stone:65,desc:"Memperkuat garnisun kota.",garrison:90}
+};
+function ensureCity(c){if(!c.buildings)c.buildings={};Object.keys(BUILDINGS).forEach(b=>{if(!Number.isFinite(c.buildings[b]))c.buildings[b]=0});}
+function buildCity(k,c,type){ensureCity(c);let b=BUILDINGS[type];if(!b||c.buildings[type]>=5)return false;if(k.treasury<b.gold||k.wood<b.wood||k.stone<b.stone)return false;k.treasury-=b.gold;k.wood-=b.wood;k.stone-=b.stone;c.buildings[type]++;c.level=clamp(1+Math.floor((Object.values(c.buildings).reduce((a,v)=>a+v,0)+c.population/18000)/2),1,10);log(k.name+" membangun "+b.name+" di "+c.name+" (tingkat "+c.buildings[type]+"). Biaya: "+fmt(b.gold)+" emas, "+b.wood+" kayu, "+b.stone+" batu.");return true;}
+function aiDevelopCity(k){let foodYears=k.food/Math.max(1,k.population*.018),type=null;if(foodYears<1.8)type="farm";else if(k.wood<180)type="lumber";else if(k.stone<140)type="quarry";else if(k.cities.some(id=>(city(id)?.buildings?.market||0)<2)&&Math.random()<.35)type="market";else if(Math.random()<.3)type="housing";else if(Math.random()<.18)type="barracks";if(!type)return;let candidates=k.cities.map(id=>city(id)).filter(c=>c&&((c.buildings?.[type]||0)<5)).sort((a,b)=>(a.buildings?.[type]||0)-(b.buildings?.[type]||0));if(candidates.length)buildCity(k,candidates[0],type);}
 function totalPop(k){return k.cities.reduce((a,id)=>a+(city(id)?.population||0),0)}
 function power(k){return totalArmy(k)*.55+k.cities.length*120+k.treasury*.025+k.commander.skill*8}
 function seasonName(){return ["Musim Semi","Musim Panas","Musim Gugur","Musim Dingin"][state.season]}
 function nav(view){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));render()}
 document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.view)));
-$("dipFrom").addEventListener("change",()=>renderDiplomacy());
+
 function render(){ $("dateBox").textContent="Tahun "+state.year+" · "+seasonName();renderOverview();renderMap();renderArmy();renderEconomy();renderDiplomacy();renderChronicle();saveSilent()}
 function renderOverview(){
  let totalPeople=state.cities.reduce((a,c)=>a+c.population,0), totalCities=state.cities.length, wars=state.conflicts.length;
@@ -135,7 +147,7 @@ function renderOverview(){
 }
 function renderMap(){
  $("cityMap").innerHTML=state.cities.map(c=>{let k=kingdom(c.owner);return '<button class="citytile '+(state.selectedCity===c.id?'selected':'')+'" style="--owner:'+(k?.color||"#777")+'" onclick="selectCity(\''+c.id+'\')"><span class="cityico">'+({grain:"🌾",wood:"🌲",stone:"⛰️",trade:"⚓"}[c.production])+'</span><b>'+c.name+'</b><small>'+((k?.name||"Bebas").replace("Kerajaan ",""))+' · Lv.'+c.level+'</small></button>'}).join("");
- if(state.selectedCity){let c=city(state.selectedCity);if(c){let k=kingdom(c.owner);$("cityDetail").innerHTML='<h2>'+c.name+'</h2><div class="row"><span class="pill">'+ownerName(c.owner)+'</span><span class="pill">Kota level '+c.level+'</span></div><div class="kmeta"><div><small>Penduduk</small><b>'+fmt(c.population)+'</b></div><div><small>Kemakmuran</small><b>'+c.prosperity+'%</b></div><div><small>Garnisun</small><b>'+fmt(c.garrison)+'</b></div></div><div class="row tiny"><span>Kekuatan tembok</span><b>'+c.wall+'/100</b></div><div class="bar"><span style="width:'+c.wall+'%;background:var(--blue)"></span></div><div class="notice">Komoditas utama: '+c.production+'. Kota menghasilkan pajak dan sumber daya untuk pemiliknya.</div>'+(k?'<div class="controls"><button class="btn small" onclick="openSiege(\''+c.id+'\')">⚔️ Serang kota ini</button><button class="btn secondary small" onclick="investCity(\''+c.id+'\')">🏗️ Bangun kota (500 emas)</button></div>':'')}}
+ if(state.selectedCity){let c=city(state.selectedCity);if(c){let k=kingdom(c.owner);ensureCity(c);let buildings=Object.keys(BUILDINGS).map(type=>{let b=BUILDINGS[type];return '<div class="building-card"><b>'+b.icon+' '+b.name+' · Lv.'+c.buildings[type]+'</b><small>'+b.desc+'</small><small>Biaya berikutnya: '+fmt(b.gold)+' emas · '+b.wood+' kayu · '+b.stone+' batu</small></div>'}).join("");$("cityDetail").innerHTML='<h2>'+c.name+'</h2><div class="row"><span class="pill">'+ownerName(c.owner)+'</span><span class="pill">Kota level '+c.level+'</span></div><div class="kmeta"><div><small>Penduduk</small><b>'+fmt(c.population)+'</b></div><div><small>Kemakmuran</small><b>'+c.prosperity+'%</b></div><div><small>Garnisun</small><b>'+fmt(c.garrison)+'</b></div></div><div class="row tiny"><span>Kekuatan tembok</span><b>'+c.wall+'/100</b></div><div class="bar"><span style="width:'+c.wall+'%;background:var(--blue)"></span></div><div class="notice">Spesialisasi: '+c.production+'. Bangunan dibangun otomatis oleh AI menggunakan kas kerajaan, kayu, dan batu.</div><h3>Bangunan Kota</h3><div class="city-buildings">'+buildings+'</div><div class="resource-strip"><span class="resource-chip">💰 Kas: <b>'+fmt(k?.treasury||0)+'</b></span><span class="resource-chip">🌲 Kayu: <b>'+fmt(k?.wood||0)+'</b></span><span class="resource-chip">⛰️ Batu: <b>'+fmt(k?.stone||0)+'</b></span><span class="resource-chip">🌾 Pangan: <b>'+fmt(k?.food||0)+'</b></span></div>}}
 }
 window.selectCity=id=>{state.selectedCity=id;renderMap()};
 function renderArmy(){
@@ -145,16 +157,12 @@ function renderArmy(){
  $("warList").innerHTML=state.wars.length?state.wars.map(w=>'<div class="item"><div><strong>⚔️ '+ownerName(w.attacker)+' → '+city(w.city).name+'</strong><small>Target: '+ownerName(w.defender)+' · '+w.years+' tahun pengepungan · '+fmt(w.troops)+' penyerang</small><div class="bar" style="margin-top:6px"><span style="width:'+w.progress+'%;background:var(--red)"></span></div></div><button class="btn danger small" onclick="retreat(\''+w.id+'\')">Mundur</button></div>').join(""):'<div class="empty">Belum ada pengepungan aktif.</div>';
 }
 function renderEconomy(){
- $("economyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th><th>Kas</th><th>Pangan</th><th>Penduduk</th><th>Pajak</th><th>Kebahagiaan</th><th>Neraca/tahun</th></tr></thead><tbody>'+state.kingdoms.map(k=>{let income=k.cities.length*230+k.population*(k.tax/100)*.45+k.cities.filter(id=>city(id)?.production==="trade").length*180,cost=Object.keys(TYPES).reduce((sum,t)=>sum+k.army[t]*TYPES[t].upkeep,0)+k.population*.004;return '<tr><td>'+k.crest+' '+k.name+'</td><td>'+fmt(k.treasury)+'</td><td>'+fmt(k.food)+'</td><td>'+fmt(k.population)+'</td><td>'+k.tax+'%</td><td>'+k.happiness+'%</td><td style="color:'+(income-cost>0?'var(--green)':'var(--red)')+'">'+(income-cost>0?"+":"")+fmt(income-cost)+'</td></tr>'}).join("")+'</tbody></table></div>';
- $("policyControls").innerHTML=state.kingdoms.map(k=>'<div class="item"><div><strong>'+k.name+'</strong><small>Pajak saat ini: '+k.tax+'%</small></div><div class="controls"><button class="btn secondary small" onclick="changeTax(\''+k.id+'\',-2)">−</button><b>'+k.tax+'%</b><button class="btn secondary small" onclick="changeTax(\''+k.id+'\',2)">＋</button></div></div>').join("");
+ $("economyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th><th>Kas emas</th><th>Pangan</th><th>Kayu</th><th>Batu</th><th>Penduduk</th><th>Kebahagiaan</th></tr></thead><tbody>'+state.kingdoms.map(k=>'<tr><td>'+k.crest+' '+k.name+'</td><td>'+fmt(k.treasury)+'</td><td>'+fmt(k.food)+'</td><td>'+fmt(k.wood)+'</td><td>'+fmt(k.stone)+'</td><td>'+fmt(k.population)+'</td><td>'+k.happiness+'%</td></tr>').join("")+'</tbody></table></div><div class="notice">Emas membayar pembangunan, administrasi, dan upah tentara. Kayu serta batu adalah bahan bangunan. Pangan dikonsumsi penduduk setiap tahun; kekurangan pangan menurunkan kebahagiaan dan populasi.</div>';
  $("peoplePanel").innerHTML=state.kingdoms.map(k=>'<div style="margin:9px 0"><div class="row tiny"><b>'+k.name+'</b><span>'+k.happiness+'% bahagia</span></div><div class="bar"><span style="width:'+k.happiness+'%;background:'+(k.happiness<40?'var(--red)':'var(--green)')+'"></span></div><div class="tiny">Stabilitas '+k.stability+'% · Populasi '+fmt(k.population)+'</div></div>').join("");
 }
 function renderDiplomacy(){
  $("diplomacyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th>'+state.kingdoms.map(k=>'<th>'+k.name.replace("Kerajaan ","")+'</th>').join("")+'</tr></thead><tbody>'+state.kingdoms.map(k=>'<tr><td><b>'+k.name+'</b></td>'+state.kingdoms.map(o=>{if(k.id===o.id)return '<td>—</td>';let pair=[k.id,o.id].sort().join("|"),war=(state.conflicts||[]).some(x=>x.pair===pair),r=k.relations[o.id]??0;return '<td style="color:'+(war?'var(--red)':r>30?'var(--green)':r< -20?'var(--red)':'var(--muted)')+'">'+(war?'⚔ Perang':r)+'</td>'}).join("")+'</tr>').join("")+'</tbody></table></div><div class="tiny" style="margin-top:8px">Perang aktif: '+(state.conflicts||[]).length+' · Perjanjian: '+(state.treaties||[]).length+'</div>';
- const from=$("dipFrom").value,previous=$("dipTo").value;
- $("dipFrom").innerHTML=state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
- $("dipTo").innerHTML=state.kingdoms.filter(k=>k.id!==from).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
- if(previous&&previous!==from&&kingdom(previous))$("dipTo").value=previous;
+
 }
 function renderChronicle(){
  $("dynastyList").innerHTML=state.kingdoms.map(k=>'<div class="panel" style="margin:8px 0;background:#101a28"><h3>'+k.crest+' '+k.name+'</h3><div class="row"><div><b>'+k.ruler.name+'</b><div class="tiny">Raja · '+k.ruler.age+' tahun</div></div><div><b>'+k.heir.name+'</b><div class="tiny">Ahli waris · '+k.heir.age+' tahun</div></div></div><div class="tiny" style="margin-top:8px">'+k.history.slice(-5).reverse().map(h=>'• Tahun '+h.year+': '+h.text).join("<br>")+'</div></div>').join("");
@@ -204,18 +212,20 @@ window.diplomaticAction=()=>{
 };
 function succession(k,reason){let old=k.ruler.name;k.ruler={...k.heir,age:Math.max(18,k.heir.age),health:100};k.heir={...person(),age:rand(12,20)};k.history.push({year:state.year,text:"Raja "+old+" wafat ("+reason+"). "+k.ruler.name+" naik takhta sebagai penerus dinasti."});log("Pergantian takhta di "+k.name+": Raja "+old+" wafat. "+k.ruler.name+" menjadi raja baru.");k.stability=clamp(k.stability-8,20,100)}
 function annualEconomy(k){
- let pop=totalPop(k);k.population=pop;let taxIncome=pop*(k.tax/100)*.45,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id).production==="trade").length*180+(state.treaties||[]).filter(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id)).length*350;
- let wages=Object.keys(TYPES).reduce((s,t)=>s+k.army[t]*TYPES[t].upkeep,0),admin=pop*.004,foodNeed=pop*.035,foodProd=k.cities.reduce((s,id)=>s+city(id).population*(city(id).production==="grain"?.20:.025),0);
- k.treasury+=taxIncome+cityIncome+tradeIncome-wages-admin;k.food+=foodProd-foodNeed;
- if(k.food<0){k.happiness=clamp(k.happiness-12,0,100);k.population*=.985;log("Krisis pangan melanda "+k.name+". Rakyat mengalami kekurangan makanan.");k.food=0}else{k.happiness=clamp(k.happiness+(k.food>1000?2:0)+(k.tax<=12?1:0)-(k.tax>18?4:0),10,100);k.population*=1.012}
+ let pop=totalPop(k);k.population=pop;k.wood=k.wood||0;k.stone=k.stone||0;
+ let taxIncome=pop*(k.tax/100)*.45,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id)?.production==="trade").length*180+(state.treaties||[]).filter(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id)).length*350;
+ let wages=Object.keys(TYPES).reduce((sum,t)=>sum+k.army[t]*TYPES[t].upkeep,0),admin=pop*.004,foodNeed=pop*.018,foodProd=0,woodProd=0,stoneProd=0,buildingIncome=0;
+ k.cities.forEach(id=>{let c=city(id);if(!c)return;ensureCity(c);let b=c.buildings;foodProd+=(c.production==="grain"?650:120)+b.farm*BUILDINGS.farm.food;woodProd+=(c.production==="wood"?360:35)+b.lumber*BUILDINGS.lumber.wood;stoneProd+=(c.production==="stone"?300:25)+b.quarry*BUILDINGS.quarry.stone;buildingIncome+=b.market*BUILDINGS.market.goldIncome;c.garrison+=b.barracks*2;c.population=Math.round(c.population*(1.009+b.housing*BUILDINGS.housing.growth));c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100);c.level=clamp(1+Math.floor((Object.values(b).reduce((a,v)=>a+v,0)+c.population/18000)/2),1,10)});
+ k.treasury+=taxIncome+cityIncome+tradeIncome+buildingIncome-wages-admin;k.food+=foodProd-foodNeed;k.wood+=woodProd;k.stone+=stoneProd;
+ if(k.food<0){k.happiness=clamp(k.happiness-14,0,100);k.population*=.985;log("Krisis pangan melanda "+k.name+". Stok pangan habis; rakyat kelaparan dan populasi menurun.");k.food=0}else{k.happiness=clamp(k.happiness+(k.food>foodNeed*1.5?2:0)+(k.tax<=12?1:0)-(k.tax>18?4:0),10,100);k.population*=1.006}
  if(k.treasury<0){k.happiness=clamp(k.happiness-5,0,100);k.stability=clamp(k.stability-6,10,100);k.treasury=0}
- k.population=Math.round(k.population);k.food=Math.round(k.food);k.treasury=Math.round(k.treasury);
- k.cities.forEach(id=>{let c=city(id);c.population=Math.round(c.population*(c.production==="trade"?1.018:1.012));c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100)});k.population=totalPop(k);
+ k.population=Math.round(k.population);k.food=Math.round(k.food);k.treasury=Math.round(k.treasury);k.wood=Math.round(k.wood);k.stone=Math.round(k.stone);k.population=totalPop(k);
  if(k.happiness<25&&Math.random()<.3){k.stability=clamp(k.stability-10,5,100);log("Kerusuhan rakyat terjadi di "+k.name+" akibat pajak dan krisis ekonomi.")}
 }
 function aiAction(k){
  let others=state.kingdoms.filter(o=>o.id!==k.id),weak=others.filter(o=>{const pair=[k.id,o.id].sort().join("|");const allied=(state.treaties||[]).some(t=>t.pair===pair&&t.type==="alliance");const alreadyAtWar=(state.conflicts||[]).some(x=>x.pair===pair);const siegeActive=state.wars.some(w=>w.attacker===k.id&&w.defender===o.id);return !allied&&!alreadyAtWar&&!siegeActive}).sort((a,b)=>power(a)-power(b))[0];
  if(k.treasury>1800&&Math.random()<.6){let t=pick(["infantry","archer","cavalry","catapult"]),n=rand(25,100),cost=TYPES[t].cost*n;if(k.treasury>cost){k.treasury-=cost;k.army[t]+=n;}}
+ if(Math.random()<.72)aiDevelopCity(k);
  if(weak&&k.cities.length>weak.cities.length+1&&power(k)>power(weak)*1.35&&Math.random()<.12){let target=city(pick(weak.cities));if(target&&k.treasury>500){let count=Math.floor((k.army.infantry+k.army.cavalry+k.army.archer)*.18);if(count>100){startAiSiege(k,target,count)}}}
  if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp(k.relations[other.id]+rand(-8,10),-100,100)}
 }
@@ -241,7 +251,7 @@ function advance(years){
 }
 window.advance=advance;
 window.saveGame=()=>{try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state));alert("Permainan berhasil disimpan di perangkat ini.")}catch(e){alert("Penyimpanan tidak tersedia di browser ini.")}};
-function load(){try{let s=JSON.parse(localStorage.getItem("kingdoms_chronicle_save"));if(s&&Array.isArray(s.kingdoms)&&Array.isArray(s.cities)&&Number.isFinite(s.year)){s.wars=Array.isArray(s.wars)?s.wars:[];s.conflicts=Array.isArray(s.conflicts)?s.conflicts:[];s.treaties=Array.isArray(s.treaties)?s.treaties:[];s.logs=Array.isArray(s.logs)?s.logs:[];s.kingdoms.forEach(k=>{k.relations=k.relations||{};k.history=k.history||[];k.army=k.army||{infantry:0,cavalry:0,archer:0,catapult:0};k.cities=Array.isArray(k.cities)?k.cities:[]});return s}}catch(e){}return null}
+function load(){try{let s=JSON.parse(localStorage.getItem("kingdoms_chronicle_save"));if(s&&Array.isArray(s.kingdoms)&&Array.isArray(s.cities)&&Number.isFinite(s.year)){s.wars=Array.isArray(s.wars)?s.wars:[];s.conflicts=Array.isArray(s.conflicts)?s.conflicts:[];s.treaties=Array.isArray(s.treaties)?s.treaties:[];s.logs=Array.isArray(s.logs)?s.logs:[];s.kingdoms.forEach(k=>{k.relations=k.relations||{};k.history=k.history||[];k.army=k.army||{infantry:0,cavalry:0,archer:0,catapult:0};k.cities=Array.isArray(k.cities)?k.cities:[];k.wood=Number.isFinite(k.wood)?k.wood:500;k.stone=Number.isFinite(k.stone)?k.stone:400;k.food=Number.isFinite(k.food)?k.food:2500});s.cities.forEach(c=>ensureCity(c));return s}}catch(e){}return null}
 function startNew(){if(!confirm("Mulai dunia kerajaan baru? Simpanan sebelumnya akan diganti."))return;state=fresh();log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");render();saveSilent()}
 function saveSilent(){try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state))}catch(e){}}
 window.startNew=startNew;
