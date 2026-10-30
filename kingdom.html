@@ -313,11 +313,11 @@ function advance(years){
 window.advance=advance;
 window.saveGame=()=>{try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state));alert("Permainan berhasil disimpan di perangkat ini.")}catch(e){alert("Penyimpanan tidak tersedia di browser ini.")}};
 function load(){try{let s=JSON.parse(localStorage.getItem("kingdoms_chronicle_save"));if(s&&Array.isArray(s.kingdoms)&&Array.isArray(s.cities)&&Number.isFinite(s.year)){s.wars=Array.isArray(s.wars)?s.wars:[];s.conflicts=Array.isArray(s.conflicts)?s.conflicts:[];s.treaties=Array.isArray(s.treaties)?s.treaties:[];s.logs=Array.isArray(s.logs)?s.logs:[];s.kingdoms.forEach(k=>{k.relations=k.relations||{};k.history=k.history||[];k.army=k.army||{infantry:0,cavalry:0,archer:0,catapult:0};k.army.raceUnit=Number.isFinite(k.army.raceUnit)?k.army.raceUnit:0;k.army.eliteUnit=Number.isFinite(k.army.eliteUnit)?k.army.eliteUnit:0;k.cities=Array.isArray(k.cities)?k.cities:[];k.wood=Number.isFinite(k.wood)?k.wood:500;k.stone=Number.isFinite(k.stone)?k.stone:400;k.food=Number.isFinite(k.food)?k.food:2500});s.cities.forEach(c=>ensureCity(c));return s}}catch(e){}return null}
-function startNew(){if(!confirm("Mulai dunia kerajaan baru? Simpanan sebelumnya akan diganti."))return;state=fresh();log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");render();saveSilent()}
+function startNew(){if(!confirm("Mulai dunia kerajaan baru? Simpanan sebelumnya akan diganti."))return;state=fresh();log("Tiga puluh lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");render();saveSilent()}
 function saveSilent(){try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state))}catch(e){}}
 window.startNew=startNew;
 const worldVersion="35-races-175-cities-military-v1";state=localStorage.getItem("kingdoms_world_version")===worldVersion?(load()||fresh()):fresh();localStorage.setItem("kingdoms_world_version",worldVersion);
-if(!state.logs.length)log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
+if(!state.logs.length)log("Tiga puluh lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
 render();
 // Simulasi maju satu tahun setiap 8 detik secara otomatis.
 setInterval(()=>advance(1),8000);
