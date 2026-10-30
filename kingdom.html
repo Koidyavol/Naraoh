@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101522">
+<title>Kingdoms — Chronicle of Crowns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0b1019;--panel:#141d2b;--panel2:#192638;--line:#2b3b50;--gold:#e8c477;--gold2:#a77c3d;--text:#e9edf2;--muted:#94a3b8;--green:#71c99a;--red:#e47777;--blue:#78aee8;--purple:#b69ae8;--radius:13px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 50% -180px,#34445b 0%,transparent 70%),var(--bg);color:var(--text);font:14px/1.5 Manrope,system-ui,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}.app{max-width:1250px;margin:auto;padding:15px 14px 55px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 3px 18px;border-bottom:1px solid var(--line)}
+.brand h1{font:800 clamp(23px,5vw,36px) Cinzel,serif;letter-spacing:.08em;color:var(--gold);margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.head-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.datebox{border:1px solid var(--line);background:#101927;padding:7px 11px;border-radius:9px;color:var(--gold);font-weight:800}
+.btn{border:1px solid var(--gold2);background:linear-gradient(145deg,#e8c477,#b88b49);color:#1c1a17;font-weight:800;padding:8px 12px;border-radius:9px}.btn.secondary{background:#182437;color:var(--text);border-color:#3a4d66}.btn.danger{background:#39202a;color:#ffc0c0;border-color:#81434b}.btn.small{padding:6px 9px;font-size:12px}.btn:disabled{opacity:.35;cursor:not-allowed}
+nav{display:flex;gap:7px;overflow:auto;padding:13px 0;scrollbar-width:thin}.navbtn{white-space:nowrap;background:#131d2b;border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:9px 13px;font-weight:800}.navbtn.active{background:#342c21;border-color:var(--gold2);color:var(--gold)}
+.view{display:none}.view.active{display:block}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:5px 0 13px}.stat{background:linear-gradient(145deg,#182536,#111a27);border:1px solid var(--line);border-radius:11px;padding:11px}.stat small{color:var(--muted);display:block;font-size:11px}.stat b{display:block;font:700 21px Cinzel,serif;margin-top:3px;color:var(--gold)}
+.panel{background:linear-gradient(145deg,#172333,#111a27);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;min-width:0}.panel h2,.panel h3{font-family:Cinzel,serif;color:var(--gold);margin:0 0 10px}.panel h2{font-size:19px}.panel h3{font-size:15px}.muted{color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}.kingdom-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.kcard{border:1px solid var(--line);background:#111b29;border-radius:12px;padding:12px;position:relative;overflow:hidden}.kcard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc)}.khead{display:flex;align-items:center;gap:9px}.sigil{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#ffffff0c;border:1px solid var(--kc);font-size:20px;flex:none}.khead h3{font:700 15px Cinzel,serif;margin:0;color:var(--text)}.khead small{color:var(--muted)}.kmeta{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.kmeta div{background:#ffffff08;border-radius:7px;padding:6px}.kmeta small{display:block;color:var(--muted);font-size:10px}.kmeta b{font-size:13px}.bar{height:7px;background:#29374a;border-radius:9px;overflow:hidden}.bar span{display:block;height:100%;border-radius:9px;background:var(--green)}.pill{display:inline-block;padding:3px 7px;border:1px solid var(--line);border-radius:20px;font-size:10px;color:var(--muted);margin:2px}.pill.good{color:var(--green);border-color:#376a55}.pill.bad{color:#ffaaaa;border-color:#74434b}
+.map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.citytile{border:1px solid var(--line);border-radius:9px;min-height:84px;background:#1b2b3b;padding:7px;text-align:left;color:var(--text);position:relative;overflow:hidden}.citytile:after{content:"";position:absolute;inset:auto 0 0;height:4px;background:var(--owner,#777)}.citytile b{display:block;font-size:12px}.citytile small{display:block;color:var(--muted);font-size:10px}.citytile .cityico{font-size:19px;display:block;margin-bottom:3px}.citytile.selected{outline:2px solid var(--gold);border-color:var(--gold)}
+.list{display:grid;gap:7px}.item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0e1723;border:1px solid #26384d;border-radius:9px;padding:9px}.item strong{font-size:13px}.item small{display:block;color:var(--muted);font-size:11px}.item-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid #2a394d;font-size:12px}th{color:var(--gold);font-family:Cinzel,serif;font-size:11px}td{color:#d8e0e9}
+.notice{border-left:3px solid var(--gold);padding:8px 10px;background:#ffffff08;border-radius:0 8px 8px 0;margin:7px 0;font-size:12px}.log{max-height:280px;overflow:auto;display:grid;gap:6px}.logline{padding:7px 9px;background:#0e1723;border-radius:7px;color:#c5d0dc;font-size:11px}.logline time{color:var(--gold);font-weight:800;margin-right:6px}
+.controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.controls select,.controls input{background:#0e1723;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;max-width:100%}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.unit{background:#101a28;border:1px solid var(--line);border-radius:9px;padding:10px}.unit h4{margin:0 0 5px}.unit .emoji{font-size:22px}
+.battlefield{display:grid;grid-template-columns:1fr 1fr;gap:10px}.armybox{padding:12px;border-radius:10px;background:#0e1723;border:1px solid var(--line)}.armybox h3{font:700 15px Cinzel;color:var(--gold);margin:0 0 7px}
+.empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.modalback{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:14px;z-index:20}.modalback.show{display:flex}.modal{width:min(570px,100%);max-height:90vh;overflow:auto;background:#152131;border:1px solid var(--gold2);border-radius:15px;padding:16px;box-shadow:0 20px 80px #0009}.modal h2{font:700 20px Cinzel;color:var(--gold);margin:0 0 12px}.modalfoot{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}.field{display:grid;gap:4px;margin:9px 0}.field label{font-size:11px;color:var(--muted)}.field select,.field input{width:100%;background:#0c1521;color:var(--text);border:1px solid var(--line);padding:9px;border-radius:8px}
+footer{text-align:center;color:#718096;font-size:10px;padding:20px 0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.kingdom-grid{grid-template-columns:1fr}.map{grid-template-columns:repeat(3,minmax(0,1fr))}.head-right .datebox{font-size:11px}.split{grid-template-columns:1fr}}
+@media(max-width:390px){.app{padding:10px 9px 35px}.map{gap:5px}.citytile{min-height:75px;padding:5px}.citytile b{font-size:11px}.brand p{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="brand"><h1>KINGDOMS</h1><p>Chronicle of Crowns · Realm Simulator</p></div>
+ <div class="head-right"><div class="datebox" id="dateBox">Tahun 1 · Musim Semi</div><button class="btn small" onclick="advance(1)">⏭ 1 Tahun</button><button class="btn secondary small" onclick="saveGame()">Simpan</button></div>
+</header>
+<nav id="nav">
+ <button class="navbtn active" data-view="overview">👑 Ikhtisar</button><button class="navbtn" data-view="mapview">🗺️ Peta & Kota</button><button class="navbtn" data-view="army">⚔️ Militer</button><button class="navbtn" data-view="economy">🌾 Ekonomi</button><button class="navbtn" data-view="diplomacy">🤝 Diplomasi</button><button class="navbtn" data-view="chronicle">📜 Kronik</button>
+</nav>
+<section class="view active" id="overview">
+ <div class="stats" id="worldStats"></div>
+ <div class="grid2">
+  <div class="panel"><div class="row"><h2>Kerajaan di Benua</h2><span class="pill">5 Dinasti</span></div><div class="kingdom-grid" id="kingdomCards"></div></div>
+  <div>
+   <div class="panel"><h2>Situasi Benua</h2><div id="worldSituation"></div></div>
+   <div class="panel"><h2>Peristiwa Terbaru</h2><div class="log" id="recentLog"></div></div>
+  </div>
+ </div>
+ <div class="panel"><h2>Keseimbangan Kekuatan</h2><div id="powerChart"></div></div>
+</section>
+<section class="view" id="mapview">
+ <div class="panel"><div class="row"><div><h2>Peta Wilayah</h2><div class="tiny">Pilih kota untuk melihat detail, pemilik, ekonomi, dan pertahanannya.</div></div><span class="pill">25 Kota</span></div><div class="map" id="cityMap"></div></div>
+ <div class="panel" id="cityDetail"><div class="empty">Pilih sebuah kota pada peta.</div></div>
+</section>
+<section class="view" id="army">
+ <div class="panel"><div class="row"><div><h2>Komando Militer</h2><div class="tiny">Rekrut pasukan, tunjuk komandan, dan kirim ekspedisi.</div></div><button class="btn small" onclick="openRecruit()">＋ Rekrut</button></div><div id="armyOverview"></div></div>
+ <div class="grid2"><div class="panel"><h2>Hubungan Antar-Tipe</h2><div id="counterChart"></div></div><div class="panel"><h2>Komandan Pasukan</h2><div id="commanderList"></div></div></div>
+ <div class="panel"><h2>Ekspedisi & Pengepungan</h2><div id="warList"></div></div>
+</section>
+<section class="view" id="economy">
+ <div class="panel"><h2>Perekonomian Kerajaan</h2><div class="tiny">Pajak, produksi, perdagangan, dan kesejahteraan rakyat berubah setiap tahun.</div><div id="economyTable"></div></div>
+ <div class="grid2"><div class="panel"><h2>Kelola Kebijakan</h2><div id="policyControls"></div></div><div class="panel"><h2>Indikator Rakyat</h2><div id="peoplePanel"></div></div></div>
+</section>
+<section class="view" id="diplomacy">
+ <div class="panel"><h2>Hubungan Diplomatik</h2><div class="tiny">Perjanjian dapat berubah karena perang, perdagangan, dan perebutan wilayah.</div><div id="diplomacyTable"></div></div>
+ <div class="panel"><h2>Aksi Diplomasi</h2><div class="controls"><select id="dipFrom"></select><select id="dipTo"></select><select id="dipAction"><option value="trade">Tawarkan perjanjian dagang</option><option value="alliance">Ajukan aliansi</option><option value="peace">Tawarkan perdamaian</option><option value="war">Nyatakan perang</option></select><button class="btn" onclick="diplomaticAction()">Kirim</button></div></div>
+</section>
+<section class="view" id="chronicle">
+ <div class="panel"><div class="row"><h2>Kronik Dinasti</h2><button class="btn secondary small" onclick="renderChronicle()">Perbarui</button></div><div id="dynastyList"></div></div>
+ <div class="panel"><h2>Catatan Sejarah Benua</h2><div class="log" id="fullLog"></div></div>
+</section>
+<footer> KINGDOMS · A living world of dynasties, armies, cities and people</footer>
+</div>
+<div class="modalback" id="modalBack" onclick="if(event.target===this)closeModal()"><div class="modal"><div id="modalContent"></div></div></div>
+<script>
+(function(){
+"use strict";
+const TYPES={
+ infantry:{name:"Infanteri",icon:"🛡️",cost:90,upkeep:12,attack:34,defense:48,beats:"archer",weak:"cavalry",desc:"Garis depan tangguh. Unggul melawan pemanah, rentan terhadap kavaleri."},
+ cavalry:{name:"Kavaleri",icon:"🐎",cost:145,upkeep:19,attack:55,defense:28,beats:"infantry",weak:"archer",desc:"Serangan cepat dan daya dobrak tinggi. Mengalahkan infanteri, tetapi rentan terhadap pemanah."},
+ archer:{name:"Pemanah",icon:"🏹",cost:110,upkeep:14,attack:43,defense:20,beats:"cavalry",weak:"infantry",desc:"Serangan jarak jauh efektif menghentikan kavaleri, tetapi mudah diterobos infanteri."},
+ catapult:{name:"Pelontar",icon:"🪨",cost:230,upkeep:27,attack:25,defense:8,beats:"wall",weak:"all",desc:"Lemah terhadap semua pasukan dalam pertempuran terbuka. Sangat efektif meruntuhkan benteng."}
+};
+const NAMES=["Kerajaan Valoria","Kerajaan Draken","Kerajaan Eldoria","Kerajaan Norhaven","Kerajaan Solmere"];
+const COLORS=["#c99b55","#bd6868","#70a7a0","#8b83c5","#c4a6a0"];
+const CRESTS=["🦁","🐉","🦌","🐺","☀️"];
+const FIRST=["Aldric","Edmund","Cedric","Rowan","Alaric","Theodric","Gareth","Lucien","Darian","Bastian","Isolde","Elara","Mira","Seraphine","Anwen","Lyra","Maelis","Celia","Evelyn","Freya"];
+const LAST=["Ironvale","Ashford","Stormborn","Dawnmere","Blackthorn","Silverkeep","Ravencrest","Goldwyn","Wintermere","Oakheart","Brightshield","Redwyne"];
+const CITYNAMES=["Asterfall","Dunwall","Highgarden","Ravenport","Stonewatch","Westreach","Ironford","Goldhaven","Mistwood","Kingsrest","Frostholm","Brightwater","Ashenford","Stormgate","Eaglecrest","Moonvale","Thornfield","Redcliff","Sunspire","Greyhaven","Oakenshield","Dragonfall","Whitebridge","Seabreak","Northpass"];
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rand(0,a.length-1)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>Math.round(n).toLocaleString("id-ID");
+const person=()=>({name:pick(FIRST)+" "+pick(LAST),age:rand(18,35),health:100});
+let state;
+function fresh(){
+ let kingdoms=NAMES.map((name,i)=>{let ruler=person();ruler.age=rand(38, sixty());return {id:"k"+i,name,color:COLORS[i],crest:CRESTS[i],ruler:ruler,heir:{...person(),age:rand(14,25)},commander:{...person(),age:rand(30,54),skill:rand(45,90)},cities:[],army:{infantry:rand(450,850),cavalry:rand(160,330),archer:rand(260,520),catapult:rand(12,35)},treasury:rand(9000,14500),food:rand(3000,5200),wood:rand(1200,2200),stone:rand(1000,1800),population:rand(55000,95000),happiness:rand(62,86),tax:12,stability:rand(70,92),relations:{},policy:"balanced",history:[]};});
+ let cities=CITYNAMES.map((name,i)=>({id:"c"+i,name,owner:"k"+(i%5),population:rand(6500,19000),level:rand(1,4),wall:rand(25,90),prosperity:rand(45,90),production:pick(["grain","wood","stone","trade"]),garrison:rand(100,450)}));
+ cities.forEach(c=>{kingdoms.find(k=>k.id===c.owner).cities.push(c.id)});
+ kingdoms.forEach(k=>{kingdoms.forEach(o=>{if(k.id!==o.id)k.relations[o.id]=rand(-25,35)});k.history.push({year:1,text:k.ruler.name+" naik takhta sebagai penguasa "+k.name+"."})});
+ return {year:1,season:0,kingdoms,cities,wars:[],logs:[],selectedCity:null,player:"k0",paused:false,settings:{},lastUpdate:Date.now()};
+}
+function sixty(){return 60}
+function log(msg){state.logs.unshift({year:state.year,text:msg});if(state.logs.length>250)state.logs.length=250}
+function kingdom(id){return state.kingdoms.find(k=>k.id===id)}
+function city(id){return state.cities.find(c=>c.id===id)}
+function ownerName(id){return kingdom(id)?.name||"Wilayah bebas"}
+function totalArmy(k){return Object.values(k.army).reduce((a,b)=>a+b,0)}
+function totalPop(k){return k.cities.reduce((a,id)=>a+(city(id)?.population||0),0)}
+function power(k){return totalArmy(k)*.55+k.cities.length*120+k.treasury*.025+k.commander.skill*8}
+function seasonName(){return ["Musim Semi","Musim Panas","Musim Gugur","Musim Dingin"][state.season]}
+function nav(view){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));render()}
+document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.view)));
+function render(){ $("dateBox").textContent="Tahun "+state.year+" · "+seasonName();renderOverview();renderMap();renderArmy();renderEconomy();renderDiplomacy();renderChronicle()}
+function renderOverview(){
+ let totalPeople=state.cities.reduce((a,c)=>a+c.population,0), totalCities=state.cities.length, wars=state.wars.length;
+ $("worldStats").innerHTML=[["Kerajaan",""+state.kingdoms.length],["Kota Dikuasai",totalCities],["Populasi Benua",fmt(totalPeople)],["Perang Aktif",wars]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join("");
+ $("kingdomCards").innerHTML=state.kingdoms.map(k=>'<div class="kcard" style="--kc:'+k.color+'"><div class="khead"><div class="sigil">'+k.crest+'</div><div><h3>'+k.name+'</h3><small>'+k.ruler.name+' · '+k.ruler.age+' tahun</small></div></div><div class="kmeta"><div><small>Kota</small><b>'+k.cities.length+'</b></div><div><small>Pasukan</small><b>'+fmt(totalArmy(k))+'</b></div><div><small>Kas</small><b>'+fmt(k.treasury)+'</b></div></div><div class="row tiny"><span>Kebahagiaan rakyat</span><b>'+k.happiness+'%</b></div><div class="bar"><span style="width:'+k.happiness+'%;background:'+(k.happiness<40?"var(--red)":"var(--green)")+'"></span></div><div style="margin-top:8px"><span class="pill">'+k.commander.name+'</span><span class="pill">Komandan · '+k.commander.skill+'</span></div></div>').join("");
+ $("worldSituation").innerHTML='<div class="notice">Tahun '+state.year+' · '+seasonName()+'. Benua memiliki '+totalCities+' kota dan '+fmt(totalPeople)+' penduduk.</div><div class="list">'+state.kingdoms.slice().sort((a,b)=>power(b)-power(a)).map((k,i)=>'<div class="item"><div><strong>#'+(i+1)+' '+k.crest+' '+k.name+'</strong><small>Kekuatan militer & ekonomi</small></div><b>'+fmt(power(k))+'</b></div>').join("")+'</div>';
+ $("recentLog").innerHTML=state.logs.slice(0,6).map(l=>'<div class="logline"><time>Thn '+l.year+'</time>'+l.text+'</div>').join("")||'<div class="empty">Belum ada peristiwa.</div>';
+ $("powerChart").innerHTML=state.kingdoms.map(k=>'<div style="margin:10px 0"><div class="row tiny"><b>'+k.crest+' '+k.name+'</b><span>'+fmt(power(k))+'</span></div><div class="bar"><span style="width:'+clamp(power(k)/Math.max(...state.kingdoms.map(power))*100,2,100)+'%;background:'+k.color+'"></span></div></div>').join("");
+}
+function renderMap(){
+ $("cityMap").innerHTML=state.cities.map(c=>{let k=kingdom(c.owner);return '<button class="citytile '+(state.selectedCity===c.id?'selected':'')+'" style="--owner:'+(k?.color||"#777")+'" onclick="selectCity(\''+c.id+'\')"><span class="cityico">'+({grain:"🌾",wood:"🌲",stone:"⛰️",trade:"⚓"}[c.production])+'</span><b>'+c.name+'</b><small>'+((k?.name||"Bebas").replace("Kerajaan ",""))+' · Lv.'+c.level+'</small></button>'}).join("");
+ if(state.selectedCity){let c=city(state.selectedCity);if(c){let k=kingdom(c.owner);$("cityDetail").innerHTML='<h2>'+c.name+'</h2><div class="row"><span class="pill">'+ownerName(c.owner)+'</span><span class="pill">Kota level '+c.level+'</span></div><div class="kmeta"><div><small>Penduduk</small><b>'+fmt(c.population)+'</b></div><div><small>Kemakmuran</small><b>'+c.prosperity+'%</b></div><div><small>Garnisun</small><b>'+fmt(c.garrison)+'</b></div></div><div class="row tiny"><span>Kekuatan tembok</span><b>'+c.wall+'/100</b></div><div class="bar"><span style="width:'+c.wall+'%;background:var(--blue)"></span></div><div class="notice">Komoditas utama: '+c.production+'. Kota menghasilkan pajak dan sumber daya untuk pemiliknya.</div>'+(k?'<div class="controls"><button class="btn small" onclick="openSiege(\''+c.id+'\')">⚔️ Serang kota ini</button><button class="btn secondary small" onclick="investCity(\''+c.id+'\')">🏗️ Bangun kota (500 emas)</button></div>':'')}}
+}
+window.selectCity=id=>{state.selectedCity=id;renderMap()};
+function renderArmy(){
+ $("armyOverview").innerHTML=state.kingdoms.map(k=>'<div class="item"><div><strong>'+k.crest+' '+k.name+'</strong><small>Komandan: '+k.commander.name+' · Taktik '+k.commander.skill+'/100</small></div><div><b>'+fmt(totalArmy(k))+' tentara</b><small>'+k.cities.length+' kota</small></div></div>').join("");
+ $("counterChart").innerHTML=Object.keys(TYPES).map(key=>{let t=TYPES[key];return '<div class="unit"><div class="row"><h4>'+t.icon+' '+t.name+'</h4><span class="pill">Biaya '+t.cost+' emas</span></div><div class="tiny">'+t.desc+'</div><div class="tiny" style="margin-top:5px"><b>Kuat:</b> '+(t.beats==="wall"?"Benteng":TYPES[t.beats].name)+' · <b>Lemah:</b> '+(t.weak==="all"?"Semua unit":TYPES[t.weak].name)+'</div></div>'}).join("");
+ $("commanderList").innerHTML=state.kingdoms.map(k=>'<div class="item"><div><strong>'+k.commander.name+'</strong><small>'+k.name+' · Usia '+k.commander.age+' tahun</small></div><b>'+k.commander.skill+'/100</b></div>').join("");
+ $("warList").innerHTML=state.wars.length?state.wars.map(w=>'<div class="item"><div><strong>⚔️ '+ownerName(w.attacker)+' → '+city(w.city).name+'</strong><small>Target: '+ownerName(w.defender)+' · '+w.years+' tahun pengepungan · '+fmt(w.troops)+' penyerang</small><div class="bar" style="margin-top:6px"><span style="width:'+w.progress+'%;background:var(--red)"></span></div></div><button class="btn danger small" onclick="retreat(\''+w.id+'\')">Mundur</button></div>').join(""):'<div class="empty">Belum ada pengepungan aktif.</div>';
+}
+function renderEconomy(){
+ $("economyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th><th>Kas</th><th>Pangan</th><th>Penduduk</th><th>Pajak</th><th>Kebahagiaan</th><th>Neraca/tahun</th></tr></thead><tbody>'+state.kingdoms.map(k=>{let income=k.cities.length*340+k.population*.012*(k.tax/10),cost=totalArmy(k)*.12+k.population*.004;return '<tr><td>'+k.crest+' '+k.name+'</td><td>'+fmt(k.treasury)+'</td><td>'+fmt(k.food)+'</td><td>'+fmt(k.population)+'</td><td>'+k.tax+'%</td><td>'+k.happiness+'%</td><td style="color:'+(income-cost>0?'var(--green)':'var(--red)')+'">'+(income-cost>0?"+":"")+fmt(income-cost)+'</td></tr>'}).join("")+'</tbody></table></div>';
+ $("policyControls").innerHTML=state.kingdoms.map(k=>'<div class="item"><div><strong>'+k.name+'</strong><small>Pajak saat ini: '+k.tax+'%</small></div><div class="controls"><button class="btn secondary small" onclick="changeTax(\''+k.id+'\',-2)">−</button><b>'+k.tax+'%</b><button class="btn secondary small" onclick="changeTax(\''+k.id+'\',2)">＋</button></div></div>').join("");
+ $("peoplePanel").innerHTML=state.kingdoms.map(k=>'<div style="margin:9px 0"><div class="row tiny"><b>'+k.name+'</b><span>'+k.happiness+'% bahagia</span></div><div class="bar"><span style="width:'+k.happiness+'%;background:'+(k.happiness<40?'var(--red)':'var(--green)')+'"></span></div><div class="tiny">Stabilitas '+k.stability+'% · Populasi '+fmt(k.population)+'</div></div>').join("");
+}
+function renderDiplomacy(){
+ $("diplomacyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th>'+state.kingdoms.map(k=>'<th>'+k.name.replace("Kerajaan ","")+'</th>').join("")+'</tr></thead><tbody>'+state.kingdoms.map(k=>'<tr><td><b>'+k.name+'</b></td>'+state.kingdoms.map(o=>{if(k.id===o.id)return '<td>—</td>';let r=k.relations[o.id];return '<td style="color:'+(r>30?'var(--green)':r< -20?'var(--red)':'var(--muted)')+'">'+r+'</td>'}).join("")+'</tr>').join("")+'</tbody></table></div>';
+ $("dipFrom").innerHTML=state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");$("dipTo").innerHTML=state.kingdoms.filter(k=>k.id!==$("dipFrom").value).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
+}
+function renderChronicle(){
+ $("dynastyList").innerHTML=state.kingdoms.map(k=>'<div class="panel" style="margin:8px 0;background:#101a28"><h3>'+k.crest+' '+k.name+'</h3><div class="row"><div><b>'+k.ruler.name+'</b><div class="tiny">Raja · '+k.ruler.age+' tahun</div></div><div><b>'+k.heir.name+'</b><div class="tiny">Ahli waris · '+k.heir.age+' tahun</div></div></div><div class="tiny" style="margin-top:8px">'+k.history.slice(-5).reverse().map(h=>'• Tahun '+h.year+': '+h.text).join("<br>")+'</div></div>').join("");
+ $("fullLog").innerHTML=state.logs.map(l=>'<div class="logline"><time>Tahun '+l.year+'</time>'+l.text+'</div>').join("")||'<div class="empty">Sejarah baru akan tercatat seiring waktu.</div>';
+}
+window.renderChronicle=renderChronicle;
+window.changeTax=(id,delta)=>{let k=kingdom(id);k.tax=clamp(k.tax+delta,4,25);log(k.name+" mengubah tarif pajak menjadi "+k.tax+"%.");render()};
+window.investCity=id=>{let c=city(id),k=kingdom(c.owner);if(k.treasury<500){alert("Kas kerajaan tidak cukup.");return}k.treasury-=500;c.level=clamp(c.level+1,1,10);c.prosperity=clamp(c.prosperity+8,0,100);c.population+=500;log(k.name+" mendanai pembangunan di "+c.name+".");render()};
+window.openRecruit=()=>{let html='<h2>Rekrut Pasukan</h2><div class="field"><label>Kerajaan</label><select id="rKing">'+state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("")+'</select></div><div class="field"><label>Tipe pasukan</label><select id="rType">'+Object.keys(TYPES).map(t=>'<option value="'+t+'">'+TYPES[t].icon+' '+TYPES[t].name+' · '+TYPES[t].cost+' emas/unit</option>').join("")+'</select></div><div class="field"><label>Jumlah unit</label><input id="rCount" type="number" min="10" max="3000" value="100"></div><div class="tiny">Pasukan membutuhkan biaya perekrutan dan upah pemeliharaan setiap tahun.</div><div class="modalfoot"><button class="btn secondary" onclick="closeModal()">Batal</button><button class="btn" onclick="recruit()">Rekrut</button></div>';$("modalContent").innerHTML=html;showModal()};
+window.recruit=()=>{let k=kingdom($("rKing").value),t=$("rType").value,n=clamp(parseInt($("rCount").value)||0,10,3000),cost=TYPES[t].cost*n;if(k.treasury<cost){alert("Kas tidak cukup. Dibutuhkan "+fmt(cost)+" emas.");return}k.treasury-=cost;k.army[t]+=n;log(k.name+" merekrut "+fmt(n)+" "+TYPES[t].name+".");closeModal();render()};
+window.openSiege=id=>{let c=city(id);let html='<h2>Rencanakan Pengepungan</h2><div class="notice">Target: '+c.name+' · '+ownerName(c.owner)+' · Tembok '+c.wall+'/100</div><div class="field"><label>Kerajaan penyerang</label><select id="sKing">'+state.kingdoms.filter(k=>k.id!==c.owner).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("")+'</select></div><div class="field"><label>Jumlah pasukan yang dikirim</label><input id="sCount" type="number" min="100" max="5000" value="500"></div><div class="tiny">Pengepungan berlangsung tahunan. Pelontar mempercepat penghancuran tembok, sedangkan garnisun dan pasukan bertahan memperlambat serangan.</div><div class="modalfoot"><button class="btn secondary" onclick="closeModal()">Batal</button><button class="btn danger" onclick="startSiege(\''+id+'\')">Mulai Pengepungan</button></div>';$("modalContent").innerHTML=html;showModal()};
+window.startSiege=id=>{let c=city(id),k=kingdom($("sKing").value),n=clamp(parseInt($("sCount").value)||0,100,5000);if(k.army.infantry+k.army.cavalry+k.army.archer<n){alert("Jumlah tentara aktif tidak cukup (pelontar dihitung terpisah).");return}if(k.treasury<250){alert("Butuh 250 emas untuk logistik ekspedisi.");return}let sent={};let remaining=n;["infantry","cavalry","archer"].forEach(t=>{let take=Math.min(k.army[t],Math.floor(remaining*(t==="infantry"?.45:t==="archer"?.35:.2)));sent[t]=take;remaining-=take;k.army[t]-=take});if(remaining>0){let t=["infantry","archer","cavalry"].find(t=>k.army[t]>0);if(t){sent[t]=(sent[t]||0)+Math.min(remaining,k.army[t]);k.army[t]-=Math.min(remaining,k.army[t])}}let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/150)));k.army.catapult-=cat;k.treasury-=250;state.wars.push({id:"w"+Date.now(),attacker:k.id,defender:c.owner,city:id,troops:Object.values(sent).reduce((a,b)=>a+b,0),units:sent,catapults:cat,years:0,progress:0});log(k.name+" mengirim ekspedisi untuk mengepung "+c.name+".");closeModal();render()};
+window.retreat=id=>{let w=state.wars.find(x=>x.id===id);if(!w)return;let k=kingdom(w.attacker);Object.keys(w.units).forEach(t=>k.army[t]+=Math.floor(w.units[t]*.8));k.army.catapult+=Math.floor(w.catapults*.8);state.wars=state.wars.filter(x=>x.id!==id);log(k.name+" menarik pasukan dari pengepungan.");render()};
+function showModal(){$("modalBack").classList.add("show")}window.closeModal=()=>$("modalBack").classList.remove("show");
+window.diplomaticAction=()=>{let a=kingdom($("dipFrom").value),b=kingdom($("dipTo").value),act=$("dipAction").value;if(!b||a.id===b.id)return;let rel=a.relations[b.id];if(act==="war"){if(rel>45){alert("Hubungan terlalu baik untuk menyatakan perang tanpa alasan.");return}if(state.wars.some(w=>w.attacker===a.id&&w.defender===b.id)){alert("Kerajaan ini sudah berperang.");return}a.relations[b.id]-=35;b.relations[a.id]-=35;log(a.name+" menyatakan perang terhadap "+b.name+".");}else if(act==="peace"){if(rel< -80){alert("Hubungan terlalu buruk. Perlu upaya diplomasi lebih lanjut.");return}a.relations[b.id]+=20;b.relations[a.id]+=20;log(a.name+" mengirim utusan perdamaian kepada "+b.name+".");}else if(act==="trade"){a.relations[b.id]+=10;b.relations[a.id]+=10;a.treasury+=250;b.treasury+=250;log(a.name+" dan "+b.name+" menandatangani perjanjian dagang.");}else{if(rel<5){alert("Hubungan belum cukup baik untuk aliansi.");return}a.relations[b.id]+=25;b.relations[a.id]+=25;log(a.name+" dan "+b.name+" membentuk aliansi.");}render()};
+function succession(k,reason){let old=k.ruler.name;k.ruler={...k.heir,age:Math.max(18,k.heir.age),health:100};k.heir={...person(),age:rand(12,20)};k.history.push({year:state.year,text:"Raja "+old+" wafat ("+reason+"). "+k.ruler.name+" naik takhta sebagai penerus dinasti."});log("Pergantian takhta di "+k.name+": Raja "+old+" wafat. "+k.ruler.name+" menjadi raja baru.");k.stability=clamp(k.stability-8,20,100)}
+function annualEconomy(k){
+ let pop=totalPop(k),taxIncome=pop*(k.tax/100)*.16,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id).production==="trade").length*180;
+ let wages=Object.keys(TYPES).reduce((s,t)=>s+k.army[t]*TYPES[t].upkeep,0),admin=pop*.025,foodNeed=pop*.045,foodProd=k.cities.reduce((s,id)=>s+city(id).population*(city(id).production==="grain"?.105:.025),0);
+ k.treasury+=taxIncome+cityIncome+tradeIncome-wages-admin;k.food+=foodProd-foodNeed;
+ if(k.food<0){k.happiness=clamp(k.happiness-12,0,100);k.population*=.985;log("Krisis pangan melanda "+k.name+". Rakyat mengalami kekurangan makanan.");k.food=0}else{k.happiness=clamp(k.happiness+(k.food>1000?2:0)+(k.tax<=12?1:0)-(k.tax>18?4:0),10,100);k.population*=1.012}
+ if(k.treasury<0){k.happiness=clamp(k.happiness-5,0,100);k.stability=clamp(k.stability-6,10,100);k.treasury=0}
+ k.population=Math.round(k.population);k.food=Math.round(k.food);k.treasury=Math.round(k.treasury);
+ k.cities.forEach(id=>{let c=city(id);c.population=Math.round(c.population*(c.production==="trade"?1.018:1.012));c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100)});
+ if(k.happiness<25&&Math.random()<.3){k.stability=clamp(k.stability-10,5,100);log("Kerusuhan rakyat terjadi di "+k.name+" akibat pajak dan krisis ekonomi.")}
+}
+function aiAction(k){
+ let others=state.kingdoms.filter(o=>o.id!==k.id),weak=others.filter(o=>!state.wars.some(w=>w.attacker===k.id&&w.city&&city(w.city)?.owner===o.id)).sort((a,b)=>power(a)-power(b))[0];
+ if(k.treasury>1800&&Math.random()<.6){let t=pick(["infantry","archer","cavalry","catapult"]),n=rand(25,100),cost=TYPES[t].cost*n;if(k.treasury>cost){k.treasury-=cost;k.army[t]+=n;}}
+ if(weak&&k.cities.length>weak.cities.length+1&&power(k)>power(weak)*1.35&&Math.random()<.12){let target=city(pick(weak.cities));if(target&&k.treasury>500){let count=Math.floor((k.army.infantry+k.army.cavalry+k.army.archer)*.18);if(count>100){startAiSiege(k,target,count)}}}
+ if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp(k.relations[other.id]+rand(-8,10),-100,100)}
+}
+function startAiSiege(k,c,n){let units={};["infantry","cavalry","archer"].forEach(t=>{let take=Math.floor(k.army[t]*n/(k.army.infantry+k.army.cavalry+k.army.archer));units[t]=take;k.army[t]-=take});let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/180)));k.army.catapult-=cat;state.wars.push({id:"w"+Date.now()+rand(1,99),attacker:k.id,defender:c.owner,city:c.id,troops:Object.values(units).reduce((a,b)=>a+b,0),units,catapults:cat,years:0,progress:0});log(k.name+" mengirim pasukan untuk mengepung "+c.name+".")}
+function resolveWars(){
+ state.wars.slice().forEach(w=>{let c=city(w.city),a=kingdom(w.attacker),d=kingdom(w.defender);if(!c||!a||!d){state.wars=state.wars.filter(x=>x.id!==w.id);return}
+ w.years++;let attack=w.troops*(.75+a.commander.skill/100*.5),defense=(c.garrison+totalArmy(d)*.08)*(1+c.wall/100*.9);
+ let siegeDamage=w.catapults*2.6+Math.max(0,attack-defense)*.012; c.wall=clamp(c.wall-siegeDamage,0,100);w.progress=clamp(w.progress+Math.max(4,attack/(defense+1)*22)+w.catapults*1.5,0,100);
+ let lossRate=clamp(.12+defense/(attack+defense)*.18,.12,.34),loss=Math.floor(w.troops*lossRate);w.troops-=loss;w.troops=Math.max(0,w.troops);
+ if(c.wall<=0||w.progress>=100){let remainingDef=c.garrison+Math.floor(totalArmy(d)*.025),score=w.troops*(1+a.commander.skill/150),defScore=remainingDef*(1+d.commander.skill/160);
+ if(score>defScore*.8&&w.troops>80){let old=d.id;d.cities=d.cities.filter(id=>id!==c.id);a.cities.push(c.id);c.owner=a.id;c.garrison=Math.max(90,Math.floor(w.troops*.25));c.wall=rand(5,25);c.prosperity=clamp(c.prosperity-18,5,100);a.relations[old]=clamp(a.relations[old]-35,-100,100);log(a.name+" merebut "+c.name+" dari "+d.name+" setelah "+w.years+" tahun pengepungan!");a.history.push({year:state.year,text:"Pasukan merebut kota "+c.name+" dari "+d.name+"."});}
+ else{c.garrison=Math.max(70,Math.floor(remainingDef*.65));c.wall=clamp(c.wall+12,0,100);log(d.name+" berhasil mempertahankan "+c.name+" dari serangan "+a.name+".")}
+ returnArmy(a,w,.65);state.wars=state.wars.filter(x=>x.id!==w.id);
+ }else if(w.troops<=60||w.years>=6){returnArmy(a,w,.7);state.wars=state.wars.filter(x=>x.id!==w.id);log("Pengepungan "+c.name+" berakhir tanpa pemenang. Pasukan "+a.name+" mundur.");}
+ else{c.garrison=Math.max(30,c.garrison-Math.floor(w.troops*.025));}
+ });
+}
+function returnArmy(k,w,ratio){Object.keys(w.units).forEach(t=>k.army[t]+=Math.floor(w.units[t]*ratio));k.army.catapult+=Math.floor(w.catapults*ratio)}
+function advance(years){
+ for(let y=0;y<years;y++){state.year++;state.season=(state.season+1)%4;state.kingdoms.forEach(k=>{annualEconomy(k);k.ruler.age++;k.heir.age++;k.commander.age++;if(k.ruler.age>rand(68,88)||k.ruler.health<1){succession(k,"usia tua")}else if(k.ruler.age>65&&Math.random()<.09){succession(k,"usia tua")}if(k.heir.age>=40){k.heir={...person(),age:rand(14,22)};log(k.name+" menunjuk ahli waris baru: "+k.heir.name+".")}if(k.commander.age>70||Math.random()<.025){let old=k.commander.name;k.commander={...person(),age:rand(30,50),skill:rand(40,95)};log(k.name+" menunjuk komandan baru, menggantikan "+old+".")}aiAction(k)});resolveWars();if(state.year%5===0)log("Tahun "+state.year+": sensus benua mencatat perubahan populasi dan kekuatan kerajaan.");}
+ render();saveGame();
+}
+window.advance=advance;
+window.saveGame=()=>{try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state));alert("Permainan berhasil disimpan di perangkat ini.")}catch(e){alert("Penyimpanan tidak tersedia di browser ini.")}};
+function load(){try{let s=JSON.parse(localStorage.getItem("kingdoms_chronicle_save"));if(s&&s.kingdoms&&s.cities&&s.year) return s}catch(e){}return null}
+function startNew(){if(!confirm("Mulai dunia kerajaan baru? Simpanan sebelumnya akan diganti."))return;state=fresh();log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");render();saveSilent()}
+function saveSilent(){try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state))}catch(e){}}
+window.startNew=startNew;
+state=load()||fresh();
+if(!state.logs.length)log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
+render();
+})();
+</script>
+</body>
+</html>
