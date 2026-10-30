@@ -389,16 +389,19 @@ function annualEconomy(k){
 }
 function aiAction(k){
  ensureKingdomAI(k,state.kingdoms.indexOf(k));const p=personality(k),others=state.kingdoms.filter(o=>o.id!==k.id);
+ // Peristiwa istana memberi dampak nyata pada stabilitas, kas, dan dukungan rakyat.
+ if(k.stability<38&&Math.random()<.12){const cost=Math.min(k.treasury,350+Math.floor(k.population*.002));k.treasury-=cost;k.stability=clamp(k.stability+rand(2,7),5,100);k.happiness=clamp(k.happiness-2,0,100);log("Krisis dewan mengguncang "+k.name+": para bangsawan menuntut konsesi politik. Kas kerajaan kehilangan "+fmt(cost)+" emas.");}
+ else if(k.stability>78&&k.happiness>62&&Math.random()<.035){k.stability=clamp(k.stability+3,0,100);k.treasury+=220;log("Reformasi istana di "+k.name+" memperkuat legitimasi raja dan memperbaiki administrasi.");}
  if(k.treasury>1500&&Math.random()<.58*p.recruit){let t=p.id==="defensive"&&Math.random()<.35?"infantry":p.id==="aggressive"&&Math.random()<.28?"cavalry":Math.random()<.13?"eliteUnit":Math.random()<.36?"raceUnit":pick(["infantry","archer","cavalry","catapult"]),spec=raceUnitData(k,t),n=t==="eliteUnit"?rand(4,14):t==="raceUnit"?rand(8,24):rand(25,100),cost=(spec?.cost??TYPES[t].cost)*n;if(k.treasury>cost){k.treasury-=cost;k.army[t]=(k.army[t]||0)+n}}
  if(raceBuildingLevel(k)<3&&k.treasury>6500&&k.wood>350&&k.stone>300&&Math.random()<.24*p.develop)buildRaceHall(k);
  if(Math.random()<Math.min(.95,.62*p.develop))aiDevelopCity(k);
- const candidates=others.filter(o=>{const pair=warPair(k.id,o.id);return !state.treaties.some(t=>t.pair===pair&&t.type==="alliance")&&!state.conflicts.some(x=>x.pair===pair)&&!activeWarBetween(k.id,o.id)&&o.cities.length>0}).sort((a,b)=>power(a)-power(b));
+ const candidates=others.filter(o=>{const pair=warPair(k.id,o.id);return !state.treaties.some(t=>t.pair===pair&&t.type==="alliance")&&!activeWarBetween(k.id,o.id)&&o.cities.length>0}).sort((a,b)=>power(a)-power(b));
  if(candidates.length){const target=candidates[0],council=warCouncil(k,target),chance=p.id==="aggressive"?.115:p.id==="expansionist"?.095:.045;if(council.approved&&Math.random()<chance){const targetCity=target.cities.map(id=>city(id)).filter(Boolean).sort((a,b)=>a.garrison-b.garrison)[0],available=(k.army.infantry||0)+(k.army.cavalry||0)+(k.army.archer||0),count=Math.floor(available*(p.id==="aggressive"?.25:.19));if(targetCity&&count>100)startAiSiege(k,targetCity,count)}}
  if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp((k.relations[other.id]??0)+rand(-8,10),-100,100)}
  if(p.id==="diplomatic"||p.id==="economic"||Math.random()<.025){let partner=others.filter(o=>!activeWarBetween(k.id,o.id)&&!state.conflicts.some(x=>x.pair===warPair(k.id,o.id))).sort((a,b)=>(k.relations[b.id]??0)-(k.relations[a.id]??0))[0];if(partner){const pair=warPair(k.id,partner.id),rel=Number(k.relations[partner.id]??0);if(rel>58&&!state.treaties.some(t=>t.pair===pair)&&Math.random()<.035*p.diplomacy){state.treaties.push({pair,a:k.id,b:partner.id,type:"trade",year:state.year});k.relations[partner.id]=clamp(rel+8,-100,100);partner.relations[k.id]=clamp((partner.relations[k.id]??0)+8,-100,100);log(k.name+" dan "+partner.name+" membuka jalur perdagangan diplomatik.")}else if(rel>78&&!state.treaties.some(t=>t.pair===pair&&t.type==="alliance")&&Math.random()<.018*p.diplomacy){state.treaties=state.treaties.filter(t=>t.pair!==pair);state.treaties.push({pair,a:k.id,b:partner.id,type:"alliance",year:state.year});log(k.name+" dan "+partner.name+" membentuk pakta pertahanan.")}}}
 }
 function startAiSiege(k,c,n){
- const pair=warPair(k.id,c.owner);if(!c||c.owner===k.id||activeWarBetween(k.id,c.owner))return;
+ if(!c||c.owner===k.id||activeWarBetween(k.id,c.owner))return;const pair=warPair(k.id,c.owner);
  if(!state.conflicts.some(x=>x.pair===pair))state.conflicts.push({pair,a:k.id,b:c.owner,year:state.year});
  const available=(k.army.infantry||0)+(k.army.cavalry||0)+(k.army.archer||0);if(available<=0)return;n=Math.min(n,available);let units={};
  ["infantry","cavalry","archer"].forEach(t=>{let take=Math.floor((k.army[t]||0)*n/available);units[t]=take;k.army[t]-=take});
