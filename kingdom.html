@@ -267,7 +267,7 @@ function load(){try{let s=JSON.parse(localStorage.getItem("kingdoms_chronicle_sa
 function startNew(){if(!confirm("Mulai dunia kerajaan baru? Simpanan sebelumnya akan diganti."))return;state=fresh();log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");render();saveSilent()}
 function saveSilent(){try{localStorage.setItem("kingdoms_chronicle_save",JSON.stringify(state))}catch(e){}}
 window.startNew=startNew;
-state=load()||fresh();
+const worldVersion="equal-race-start-v1";state=localStorage.getItem("kingdoms_world_version")===worldVersion?(load()||fresh()):fresh();localStorage.setItem("kingdoms_world_version",worldVersion);
 if(!state.logs.length)log("Lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
 render();
 // Simulasi maju satu tahun setiap 8 detik secara otomatis.
