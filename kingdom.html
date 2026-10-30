@@ -119,7 +119,7 @@ function seasonName(){return ["Musim Semi","Musim Panas","Musim Gugur","Musim Di
 function nav(view){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));render()}
 document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.view)));
 $("dipFrom").addEventListener("change",()=>renderDiplomacy());
-function render(){ $("dateBox").textContent="Tahun "+state.year+" · "+seasonName();renderOverview();renderMap();renderArmy();renderEconomy();renderDiplomacy();renderChronicle()}
+function render(){ $("dateBox").textContent="Tahun "+state.year+" · "+seasonName();renderOverview();renderMap();renderArmy();renderEconomy();renderDiplomacy();renderChronicle();saveSilent()}
 function renderOverview(){
  let totalPeople=state.cities.reduce((a,c)=>a+c.population,0), totalCities=state.cities.length, wars=state.conflicts.length;
  $("worldStats").innerHTML=[["Kerajaan",""+state.kingdoms.length],["Kota Dikuasai",totalCities],["Populasi Benua",fmt(totalPeople)],["Perang Aktif",wars]].map(x=>'<div class="stat"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join("");
@@ -199,17 +199,17 @@ window.diplomaticAction=()=>{
 };
 function succession(k,reason){let old=k.ruler.name;k.ruler={...k.heir,age:Math.max(18,k.heir.age),health:100};k.heir={...person(),age:rand(12,20)};k.history.push({year:state.year,text:"Raja "+old+" wafat ("+reason+"). "+k.ruler.name+" naik takhta sebagai penerus dinasti."});log("Pergantian takhta di "+k.name+": Raja "+old+" wafat. "+k.ruler.name+" menjadi raja baru.");k.stability=clamp(k.stability-8,20,100)}
 function annualEconomy(k){
- let pop=totalPop(k);k.population=pop;let taxIncome=pop*(k.tax/100)*.45,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id).production==="trade").length*180;
+ let pop=totalPop(k);k.population=pop;let taxIncome=pop*(k.tax/100)*.45,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id).production==="trade").length*180+(state.treaties||[]).filter(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id)).length*350;
  let wages=Object.keys(TYPES).reduce((s,t)=>s+k.army[t]*TYPES[t].upkeep,0),admin=pop*.004,foodNeed=pop*.035,foodProd=k.cities.reduce((s,id)=>s+city(id).population*(city(id).production==="grain"?.20:.025),0);
  k.treasury+=taxIncome+cityIncome+tradeIncome-wages-admin;k.food+=foodProd-foodNeed;
  if(k.food<0){k.happiness=clamp(k.happiness-12,0,100);k.population*=.985;log("Krisis pangan melanda "+k.name+". Rakyat mengalami kekurangan makanan.");k.food=0}else{k.happiness=clamp(k.happiness+(k.food>1000?2:0)+(k.tax<=12?1:0)-(k.tax>18?4:0),10,100);k.population*=1.012}
  if(k.treasury<0){k.happiness=clamp(k.happiness-5,0,100);k.stability=clamp(k.stability-6,10,100);k.treasury=0}
  k.population=Math.round(k.population);k.food=Math.round(k.food);k.treasury=Math.round(k.treasury);
- k.cities.forEach(id=>{let c=city(id);c.population=Math.round(c.population*(c.production==="trade"?1.018:1.012));c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100)});
+ k.cities.forEach(id=>{let c=city(id);c.population=Math.round(c.population*(c.production==="trade"?1.018:1.012));c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100)});k.population=totalPop(k);
  if(k.happiness<25&&Math.random()<.3){k.stability=clamp(k.stability-10,5,100);log("Kerusuhan rakyat terjadi di "+k.name+" akibat pajak dan krisis ekonomi.")}
 }
 function aiAction(k){
- let others=state.kingdoms.filter(o=>o.id!==k.id),weak=others.filter(o=>!state.wars.some(w=>w.attacker===k.id&&w.city&&city(w.city)?.owner===o.id)).sort((a,b)=>power(a)-power(b))[0];
+ let others=state.kingdoms.filter(o=>o.id!==k.id),weak=others.filter(o=>{const pair=[k.id,o.id].sort().join("|");const allied=(state.treaties||[]).some(t=>t.pair===pair&&t.type==="alliance");const alreadyAtWar=(state.conflicts||[]).some(x=>x.pair===pair);const siegeActive=state.wars.some(w=>w.attacker===k.id&&w.defender===o.id);return !allied&&!alreadyAtWar&&!siegeActive}).sort((a,b)=>power(a)-power(b))[0];
  if(k.treasury>1800&&Math.random()<.6){let t=pick(["infantry","archer","cavalry","catapult"]),n=rand(25,100),cost=TYPES[t].cost*n;if(k.treasury>cost){k.treasury-=cost;k.army[t]+=n;}}
  if(weak&&k.cities.length>weak.cities.length+1&&power(k)>power(weak)*1.35&&Math.random()<.12){let target=city(pick(weak.cities));if(target&&k.treasury>500){let count=Math.floor((k.army.infantry+k.army.cavalry+k.army.archer)*.18);if(count>100){startAiSiege(k,target,count)}}}
  if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp(k.relations[other.id]+rand(-8,10),-100,100)}
