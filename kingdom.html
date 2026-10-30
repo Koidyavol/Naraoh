@@ -276,10 +276,31 @@ const BUILDINGS={
  housing:{name:"Permukiman",icon:"🏘️",gold:1250,wood:50,stone:30,desc:"Meningkatkan pertumbuhan penduduk.",growth:.003},
  barracks:{name:"Barak",icon:"🏰",gold:1700,wood:65,stone:65,desc:"Memperkuat garnisun kota.",garrison:90}
 };
-function ensureCity(c){if(!TERRAINS.some(t=>t.id===c.terrain))c.terrain=terrainFor(parseInt(String(c.id||"c0").replace(/\D/g,""),10)||0);if(!c.buildings)c.buildings={};Object.keys(BUILDINGS).forEach(b=>{if(!Number.isFinite(c.buildings[b]))c.buildings[b]=0});if(!Number.isFinite(c.buildings.raceHall))c.buildings.raceHall=0;}
+function ensureCity(c){if(!TERRAINS.some(t=>t.id===c.terrain))c.terrain=terrainFor(parseInt(String(c.id||"c0").replace(/\D/g,""),10)||0);if(!c.buildings)c.buildings={};Object.keys(BUILDINGS).forEach(b=>{if(!Number.isFinite(c.buildings[b]))c.buildings[b]=0});if(!Number.isFinite(c.buildings.raceHall))c.buildings.raceHall=0;c.damage=clamp(Number.isFinite(c.damage)?c.damage:0,0,100);}
 function buildCity(k,c,type){ensureCity(c);let b=BUILDINGS[type];if(!b||c.buildings[type]>=5)return false;if(k.treasury<b.gold||k.wood<b.wood||k.stone<b.stone)return false;k.treasury-=b.gold;k.wood-=b.wood;k.stone-=b.stone;c.buildings[type]++;if(type==="barracks")c.garrison+=b.garrison||0;c.level=clamp(1+Math.floor((Object.values(c.buildings).reduce((a,v)=>a+v,0)+c.population/18000)/2),1,10);log(k.name+" membangun "+b.name+" di "+c.name+" (tingkat "+c.buildings[type]+"). Biaya: "+fmt(b.gold)+" emas, "+b.wood+" kayu, "+b.stone+" batu.");return true;}
 function aiDevelopCity(k){let foodYears=k.food/Math.max(1,k.population*.018),type=null;if(foodYears<1.8)type="farm";else if(k.wood<180)type="lumber";else if(k.stone<140)type="quarry";else if(k.cities.some(id=>(city(id)?.buildings?.market||0)<2)&&Math.random()<.35)type="market";else if(Math.random()<.3)type="housing";else if(Math.random()<.18)type="barracks";if(!type)return;let candidates=k.cities.map(id=>city(id)).filter(c=>c&&((c.buildings?.[type]||0)<5)).sort((a,b)=>(a.buildings?.[type]||0)-(b.buildings?.[type]||0));if(candidates.length)buildCity(k,candidates[0],type);}
 function totalPop(k){return k.cities.reduce((a,id)=>a+(city(id)?.population||0),0)}
+function cityDamageFactor(c){ensureCity(c);return 1-Math.min(.55,c.damage*.0055)}
+function damageCity(c,amount,reason){
+ ensureCity(c);const before=c.damage;c.damage=clamp(c.damage+Math.max(0,amount),0,100);const added=c.damage-before;
+ if(added>=.5){c.prosperity=clamp(c.prosperity-Math.ceil(added*.22),5,100);if(reason)log(c.name+" mengalami kerusakan "+reason+" ("+added.toFixed(1)+" poin).");}
+ return added;
+}
+function repairKingdomCities(k){
+ const damaged=k.cities.map(id=>city(id)).filter(c=>c&&c.damage>0).sort((a,b)=>b.damage-a.damage);
+ let repaired=0,spentGold=0,spentWood=0,spentStone=0;
+ damaged.forEach(c=>{
+  if(k.treasury<22||k.wood<2||k.stone<1.5)return;
+  const points=Math.min(5,c.damage,k.treasury/22,k.wood/2,k.stone/1.5);
+  if(points<=0)return;
+  const gold=Math.ceil(points*22),wood=Math.ceil(points*2),stone=Math.ceil(points*1.5);
+  if(k.treasury<gold||k.wood<wood||k.stone<stone)return;
+  k.treasury-=gold;k.wood-=wood;k.stone-=stone;c.damage=clamp(c.damage-points,0,100);
+  repaired+=points;spentGold+=gold;spentWood+=wood;spentStone+=stone;
+ });
+ if(repaired>=1)log(k.name+" merekonstruksi kota-kotanya: memulihkan "+repaired.toFixed(1)+" poin kerusakan dengan biaya "+fmt(spentGold)+" emas, "+fmt(spentWood)+" kayu, dan "+fmt(spentStone)+" batu.");
+ return {repaired,gold:spentGold,wood:spentWood,stone:spentStone};
+}
 function cityPopulationCapacity(c){return 50000+Math.max(0,Math.min(5,Number(c.buildings?.housing)||0))*14000}
 const PROJECTS={
  road:{name:"Jaringan Jalan Raya",gold:8500,wood:850,stone:350,years:3,desc:"Meningkatkan pemasukan kota dan perdagangan.",bonus:"trade"},
@@ -381,7 +402,7 @@ window.openCityFromKingdom=id=>{state.selectedCity=id;nav("mapview");};
 
 function renderMap(){
  $("cityMap").innerHTML=state.cities.map(c=>{let k=kingdom(c.owner);return '<button class="citytile '+(state.selectedCity===c.id?'selected':'')+'" style="--owner:'+(k?.color||"#777")+'" onclick="selectCity(\''+c.id+'\')"><span class="cityico">'+({grain:"🌾",wood:"🌲",stone:"⛰️",trade:"⚓"}[c.production])+'</span><b>'+c.name+'</b><small>'+((k?.name||"Bebas").replace("Kerajaan ",""))+' · Lv.'+c.level+'</small></button>'}).join("");
- if(state.selectedCity){let c=city(state.selectedCity);if(c){let k=kingdom(c.owner);ensureCity(c);let buildings=Object.keys(BUILDINGS).map(type=>{let b=BUILDINGS[type];return '<div class="building-card"><b>'+b.icon+' '+b.name+' · Lv.'+c.buildings[type]+'</b><small>'+b.desc+'</small><small>Biaya berikutnya: '+fmt(b.gold)+' emas · '+b.wood+' kayu · '+b.stone+' batu</small></div>'}).join("");let hall=RACE_BUILDINGS[k?.race],isCapital=k?.cities?.[0]===c.id;if(hall){let lv=c.buildings.raceHall||0;buildings+='<div class="building-card" style="border-color:var(--gold2)"><b>'+hall.icon+' '+hall.name+' · Lv.'+lv+'/3'+(isCapital?' · IBU KOTA':'')+'</b><small>'+hall.desc+'</small><small>'+(isCapital?'Biaya peningkatan: '+fmt(2600+lv*1700)+' emas · '+(110+lv*65)+' kayu · '+(100+lv*75)+' batu':'Bangunan ras hanya dapat didirikan di ibu kota kerajaan.')+'</small></div>'}$("cityDetail").innerHTML='<h2>'+c.name+'</h2><div class="row"><span class="pill">'+ownerName(c.owner)+'</span><span class="pill">Kota level '+c.level+'</span></div><div class="kmeta"><div><small>Penduduk</small><b>'+fmt(c.population)+'</b></div><div><small>Kemakmuran</small><b>'+c.prosperity+'%</b></div><div><small>Garnisun</small><b>'+fmt(c.garrison)+'</b></div></div><div class="row tiny"><span>Kekuatan tembok</span><b>'+c.wall+'/100</b></div><div class="bar"><span style="width:'+c.wall+'%;background:var(--blue)"></span></div><div class="notice">Spesialisasi: '+c.production+'. Medan: '+(TERRAINS.find(t=>t.id===c.terrain)?.name||"Dataran")+'. Medan dan cuaca memengaruhi efektivitas pasukan saat pengepungan. Bangunan dibangun otomatis oleh AI menggunakan kas kerajaan, kayu, dan batu.</div><h3>Bangunan Kota</h3><div class="city-buildings">'+buildings+'</div><div class="resource-strip"><span class="resource-chip">💰 Kas: <b>'+fmt(k?.treasury||0)+'</b></span><span class="resource-chip">🌲 Kayu: <b>'+fmt(k?.wood||0)+'</b></span><span class="resource-chip">⛰️ Batu: <b>'+fmt(k?.stone||0)+'</b></span><span class="resource-chip">🌾 Pangan: <b>'+fmt(k?.food||0)+'</b></span></div>'}}
+ if(state.selectedCity){let c=city(state.selectedCity);if(c){let k=kingdom(c.owner);ensureCity(c);let buildings=Object.keys(BUILDINGS).map(type=>{let b=BUILDINGS[type];return '<div class="building-card"><b>'+b.icon+' '+b.name+' · Lv.'+c.buildings[type]+'</b><small>'+b.desc+'</small><small>Biaya berikutnya: '+fmt(b.gold)+' emas · '+b.wood+' kayu · '+b.stone+' batu</small></div>'}).join("");let hall=RACE_BUILDINGS[k?.race],isCapital=k?.cities?.[0]===c.id;if(hall){let lv=c.buildings.raceHall||0;buildings+='<div class="building-card" style="border-color:var(--gold2)"><b>'+hall.icon+' '+hall.name+' · Lv.'+lv+'/3'+(isCapital?' · IBU KOTA':'')+'</b><small>'+hall.desc+'</small><small>'+(isCapital?'Biaya peningkatan: '+fmt(2600+lv*1700)+' emas · '+(110+lv*65)+' kayu · '+(100+lv*75)+' batu':'Bangunan ras hanya dapat didirikan di ibu kota kerajaan.')+'</small></div>'}$("cityDetail").innerHTML='<h2>'+c.name+'</h2><div class="row"><span class="pill">'+ownerName(c.owner)+'</span><span class="pill">Kota level '+c.level+'</span></div><div class="kmeta"><div><small>Penduduk</small><b>'+fmt(c.population)+'</b></div><div><small>Kemakmuran</small><b>'+c.prosperity+'%</b></div><div><small>Garnisun</small><b>'+fmt(c.garrison)+'</b></div></div><div class="row tiny"><span>Kekuatan tembok</span><b>'+c.wall+'/100</b></div><div class="bar"><span style="width:'+c.wall+'%;background:var(--blue)"></span></div><div class="row tiny"><span>Kerusakan kota</span><b>'+Math.round(c.damage)+'/100</b></div><div class="bar"><span style="width:'+c.damage+'%;background:var(--red)"></span></div><div class="notice">Kerusakan mengurangi pajak dan produksi. AI memperbaiki kota secara bertahap dengan biaya 22 emas, 2 kayu, dan 1,5 batu per poin kerusakan.</div><div class="notice">Spesialisasi: '+c.production+'. Medan: '+(TERRAINS.find(t=>t.id===c.terrain)?.name||"Dataran")+'. Medan dan cuaca memengaruhi efektivitas pasukan saat pengepungan. Bangunan dibangun otomatis oleh AI menggunakan kas kerajaan, kayu, dan batu.</div><h3>Bangunan Kota</h3><div class="city-buildings">'+buildings+'</div><div class="resource-strip"><span class="resource-chip">💰 Kas: <b>'+fmt(k?.treasury||0)+'</b></span><span class="resource-chip">🌲 Kayu: <b>'+fmt(k?.wood||0)+'</b></span><span class="resource-chip">⛰️ Batu: <b>'+fmt(k?.stone||0)+'</b></span><span class="resource-chip">🌾 Pangan: <b>'+fmt(k?.food||0)+'</b></span></div>'}}
 }
 window.selectCity=id=>{state.selectedCity=id;renderMap()};
 function renderArmy(){
@@ -461,23 +482,24 @@ function annualEconomy(k){
  let foodProd=0,woodProd=0,stoneProd=0,buildingIncome=0,buildingUpkeep=0,woodUse=0,stoneUse=0,totalBuildings=0;
  k.cities.forEach(id=>{
   let c=city(id);if(!c)return;ensureCity(c);let b=c.buildings;
-  foodProd+=(c.production==="grain"?650:120)+b.farm*BUILDINGS.farm.food;
-  woodProd+=(c.production==="wood"?360:35)+b.lumber*BUILDINGS.lumber.wood;
-  stoneProd+=(c.production==="stone"?300:25)+b.quarry*BUILDINGS.quarry.stone;
-  buildingIncome+=b.market*BUILDINGS.market.goldIncome;
+  const condition=cityDamageFactor(c);
+  foodProd+=((c.production==="grain"?650:120)+b.farm*BUILDINGS.farm.food)*condition;
+  woodProd+=((c.production==="wood"?360:35)+b.lumber*BUILDINGS.lumber.wood)*condition;
+  stoneProd+=((c.production==="stone"?300:25)+b.quarry*BUILDINGS.quarry.stone)*condition;
+  buildingIncome+=b.market*BUILDINGS.market.goldIncome*condition;
   buildingUpkeep+=b.farm*18+b.lumber*22+b.quarry*28+b.market*48+b.housing*16+b.barracks*58;
   woodUse+=b.farm*5+b.lumber*14+b.quarry*8+b.market*10+b.housing*7+b.barracks*16;
   stoneUse+=b.farm*3+b.lumber*4+b.quarry*13+b.market*12+b.housing*6+b.barracks*18;
   totalBuildings+=Object.values(b).reduce((a,v)=>a+(Number(v)||0),0);
   
   const cap=cityPopulationCapacity(c),baseGrowth=.009+b.housing*.0018+raceGrowth;
-  const growth=clamp(baseGrowth*(1-c.population/cap),0,.02);
+  const growth=clamp(baseGrowth*(1-c.population/cap)*cityDamageFactor(c),0,.02);
   c.population=Math.min(cap,Math.max(0,Math.round(c.population*(1+growth))));
   c.prosperity=clamp(c.prosperity+(k.happiness>60?1:-2),5,100);
   c.level=clamp(1+Math.floor((Object.values(b).reduce((a,v)=>a+v,0)+c.population/18000)/2),1,10);
  });
- const cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id)?.production==="trade").length*180+(state.treaties||[]).filter(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id)).length*180+projectLevel(k,"road")*420+projectLevel(k,"port")*620;
- const taxablePop=k.cities.reduce((sum,id)=>sum+Math.min(city(id)?.population||0,90000),0);
+ const cityIncome=k.cities.reduce((sum,id)=>sum+230*cityDamageFactor(city(id)),0),tradeIncome=k.cities.filter(id=>city(id)?.production==="trade").reduce((sum,id)=>sum+180*cityDamageFactor(city(id)),0)+(state.treaties||[]).filter(t=>t.type==="trade"&&(t.a===k.id||t.b===k.id)).length*180+projectLevel(k,"road")*420+projectLevel(k,"port")*620;
+ const taxablePop=k.cities.reduce((sum,id)=>sum+Math.min(city(id)?.population||0,90000)*cityDamageFactor(city(id)),0);
  const taxIncome=taxablePop*(k.tax/100)*.38*taxFactor;
  const armyWages=(Object.keys(TYPES).reduce((sum,t)=>sum+(k.army[t]||0)*TYPES[t].upkeep,0)+(k.army.raceUnit||0)*(raceUnitData(k,"raceUnit")?.upkeep||0)+(k.army.eliteUnit||0)*(raceUnitData(k,"eliteUnit")?.upkeep||0))*wageFactor;
  const garrisonCount=k.cities.reduce((sum,id)=>sum+(city(id)?.garrison||0),0),garrisonUpkeep=garrisonCount*.34;const hallUpkeep=raceBuildingLevel(k)*85,admin=pop*.016+k.cities.length*180+totalBuildings*12,publicServices=pop*.006+k.cities.length*55;
@@ -486,6 +508,7 @@ function annualEconomy(k){
  let goldDelta=taxIncome+cityIncome+tradeIncome+buildingIncome-armyWages-garrisonUpkeep-hallUpkeep-admin-publicServices-buildingUpkeep;
  let foodDelta=foodProd*(1+projectLevel(k,"irrigation")*.12)-foodNeed,woodDelta=woodProd-woodUse,stoneDelta=stoneProd-stoneUse;
  k.treasury+=goldDelta;k.food+=foodDelta;k.wood+=woodDelta;k.stone+=stoneDelta;
+ repairKingdomCities(k);
  const activeWars=state.wars.filter(w=>w.attacker===k.id||w.defender===k.id).length;
  const equipmentBill=maintainArmyEquipment(k,totalArmy(k)+garrisonCount,activeWars);
  runMarketTrade(k);
@@ -577,13 +600,13 @@ function resolveWars(){
  attack*=1+ambush+nightRaid;if(ambush)warEvent(w,ambush>0?"Pasukan "+a.name+" berhasil menyergap pertahanan lawan.":"Pasukan "+d.name+" berhasil menyergap ekspedisi penyerang.");if(nightRaid)warEvent(w,a.name+" melancarkan serangan malam.");
  let siegeTactic=a.commander.tactic==="siege"?.18:0,terrainSiege=terrain.siege||0,weatherSiege=weather.siege||0;
  let siegeDamage=w.catapults*2.6*(1+raceBuildingBonus(a).siege+siegeTactic+terrainSiege+weatherSiege+(attackerAbility?.siege||0))+Math.max(0,attack-defense)*.012;
- c.wall=clamp(c.wall-siegeDamage,0,100);warEvent(w,"Pengepungan merusak benteng sebesar "+siegeDamage.toFixed(1)+" poin.",{wallDamage:siegeDamage});
+ c.wall=clamp(c.wall-siegeDamage,0,100);const structuralDamage=damageCity(c,Math.max(.8,siegeDamage*.12+Math.min(2,w.catapults*.035)),"akibat bombardir pengepungan");warEvent(w,"Pengepungan merusak benteng sebesar "+siegeDamage.toFixed(1)+" poin dan infrastruktur kota sebesar "+structuralDamage.toFixed(1)+" poin.",{wallDamage:siegeDamage,cityDamage:structuralDamage});
  w.progress=clamp(w.progress+Math.max(4,attack/(defense+1)*22)+w.catapults*1.5+(attackerAbility?.momentum||0)*12,0,100);
  let tacticProtection=(a.commander.tactic==="logistics"?.12:0)+(d.commander.tactic==="defensive"?.08:0),aggressiveCost=a.commander.tactic==="aggressive"?.04:0;
  let supplyPenalty=w.supply<25?.09:w.supply<50?.045:0;let lossRate=clamp((.12+defense/(attack+defense)*.18)*(1-(attackerAbility?.protection||0))-tacticProtection+aggressiveCost+supplyPenalty,.06,.42),loss=Math.floor(w.troops*lossRate);
  w.troops=Math.max(0,w.troops-loss);if(loss>0)warEvent(w,"Korban penyerang tahun "+state.year+": "+fmt(loss)+" tentara.",{attackerLosses:loss});
  if(c.wall<=0||w.progress>=100){let remainingDef=c.garrison,score=w.troops*(1+a.commander.skill/150),defScore=remainingDef*(1+d.commander.skill/160);
- if(score>defScore*.8&&w.troops>80){let old=d.id;d.cities=d.cities.filter(id=>id!==c.id);if(!a.cities.includes(c.id))a.cities.push(c.id);c.owner=a.id;c.garrison=Math.max(90,Math.floor(w.troops*.25));c.wall=rand(5,25);c.prosperity=clamp(c.prosperity-18,5,100);d.lostCities=Array.isArray(d.lostCities)?d.lostCities:[];d.lostCities=d.lostCities.filter(x=>x.city!==c.id);d.lostCities.push({city:c.id,year:state.year,by:a.id});a.lostCities=Array.isArray(a.lostCities)?a.lostCities.filter(x=>x.city!==c.id):[];warEvent(w,d.name+" mencatat "+c.name+" sebagai wilayah yang harus direbut kembali.");a.relations[old]=clamp(a.relations[old]-35,-100,100);finishWar(w,"Kemenangan penyerang",a.name+" memenangkan perang dan menguasai "+c.name+".");log(a.name+" merebut "+c.name+" dari "+d.name+" setelah "+w.years+" tahun pengepungan!");a.history.push({year:state.year,text:"Pasukan merebut kota "+c.name+" dari "+d.name+"."})}
+ if(score>defScore*.8&&w.troops>80){let old=d.id;d.cities=d.cities.filter(id=>id!==c.id);if(!a.cities.includes(c.id))a.cities.push(c.id);c.owner=a.id;c.garrison=Math.max(90,Math.floor(w.troops*.25));c.wall=rand(5,25);damageCity(c,18,"akibat perebutan kota");c.prosperity=clamp(c.prosperity-18,5,100);d.lostCities=Array.isArray(d.lostCities)?d.lostCities:[];d.lostCities=d.lostCities.filter(x=>x.city!==c.id);d.lostCities.push({city:c.id,year:state.year,by:a.id});a.lostCities=Array.isArray(a.lostCities)?a.lostCities.filter(x=>x.city!==c.id):[];warEvent(w,d.name+" mencatat "+c.name+" sebagai wilayah yang harus direbut kembali.");a.relations[old]=clamp(a.relations[old]-35,-100,100);finishWar(w,"Kemenangan penyerang",a.name+" memenangkan perang dan menguasai "+c.name+".");log(a.name+" merebut "+c.name+" dari "+d.name+" setelah "+w.years+" tahun pengepungan!");a.history.push({year:state.year,text:"Pasukan merebut kota "+c.name+" dari "+d.name+"."})}
  else{c.garrison=Math.max(70,Math.floor(remainingDef*.65));c.wall=clamp(c.wall+12,0,100);finishWar(w,"Kemenangan bertahan",d.name+" berhasil mempertahankan "+c.name+" dari serangan "+a.name+".");log(d.name+" berhasil mempertahankan "+c.name+" dari serangan "+a.name+".")}
  returnArmy(a,w,.65);state.wars=state.wars.filter(x=>x.id!==w.id);
  }else if(w.troops<=60||w.years>=6||(w.years>=4&&w.supply<18&&w.progress<75)){finishWar(w,"Mundur / tanpa pemenang",a.name+" mundur setelah pengepungan berlarut-larut.");returnArmy(a,w,.7);state.wars=state.wars.filter(x=>x.id!==w.id);log("Pengepungan "+c.name+" berakhir tanpa pemenang. "+a.name+" mundur setelah pasokan ekspedisi menipis.");const pair=warPair(a.id,d.id);if(!activeWarBetween(a.id,d.id)){state.conflicts=state.conflicts.filter(x=>x.pair!==pair);a.relations[d.id]=clamp((a.relations[d.id]??0)+8,-100,100);d.relations[a.id]=clamp((d.relations[a.id]??0)+8,-100,100);log(a.name+" dan "+d.name+" menyepakati gencatan senjata.")}}
