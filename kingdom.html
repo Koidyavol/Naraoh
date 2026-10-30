@@ -118,6 +118,7 @@ function power(k){return totalArmy(k)*.55+k.cities.length*120+k.treasury*.025+k.
 function seasonName(){return ["Musim Semi","Musim Panas","Musim Gugur","Musim Dingin"][state.season]}
 function nav(view){document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===view));render()}
 document.querySelectorAll(".navbtn").forEach(b=>b.addEventListener("click",()=>nav(b.dataset.view)));
+$("dipFrom").addEventListener("change",()=>renderDiplomacy());
 function render(){ $("dateBox").textContent="Tahun "+state.year+" · "+seasonName();renderOverview();renderMap();renderArmy();renderEconomy();renderDiplomacy();renderChronicle()}
 function renderOverview(){
  let totalPeople=state.cities.reduce((a,c)=>a+c.population,0), totalCities=state.cities.length, wars=state.conflicts.length;
@@ -144,8 +145,11 @@ function renderEconomy(){
  $("peoplePanel").innerHTML=state.kingdoms.map(k=>'<div style="margin:9px 0"><div class="row tiny"><b>'+k.name+'</b><span>'+k.happiness+'% bahagia</span></div><div class="bar"><span style="width:'+k.happiness+'%;background:'+(k.happiness<40?'var(--red)':'var(--green)')+'"></span></div><div class="tiny">Stabilitas '+k.stability+'% · Populasi '+fmt(k.population)+'</div></div>').join("");
 }
 function renderDiplomacy(){
- $("diplomacyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th>'+state.kingdoms.map(k=>'<th>'+k.name.replace("Kerajaan ","")+'</th>').join("")+'</tr></thead><tbody>'+state.kingdoms.map(k=>'<tr><td><b>'+k.name+'</b></td>'+state.kingdoms.map(o=>{if(k.id===o.id)return '<td>—</td>';let r=k.relations[o.id];return '<td style="color:'+(r>30?'var(--green)':r< -20?'var(--red)':'var(--muted)')+'">'+r+'</td>'}).join("")+'</tr>').join("")+'</tbody></table></div>';
- $("dipFrom").innerHTML=state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");$("dipTo").innerHTML=state.kingdoms.filter(k=>k.id!==$("dipFrom").value).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
+ $("diplomacyTable").innerHTML='<div class="tablewrap"><table><thead><tr><th>Kerajaan</th>'+state.kingdoms.map(k=>'<th>'+k.name.replace("Kerajaan ","")+'</th>').join("")+'</tr></thead><tbody>'+state.kingdoms.map(k=>'<tr><td><b>'+k.name+'</b></td>'+state.kingdoms.map(o=>{if(k.id===o.id)return '<td>—</td>';let pair=[k.id,o.id].sort().join("|"),war=(state.conflicts||[]).some(x=>x.pair===pair),r=k.relations[o.id]??0;return '<td style="color:'+(war?'var(--red)':r>30?'var(--green)':r< -20?'var(--red)':'var(--muted)')+'">'+(war?'⚔ Perang':r)+'</td>'}).join("")+'</tr>').join("")+'</tbody></table></div><div class="tiny" style="margin-top:8px">Perang aktif: '+(state.conflicts||[]).length+' · Perjanjian: '+(state.treaties||[]).length+'</div>';
+ const from=$("dipFrom").value,previous=$("dipTo").value;
+ $("dipFrom").innerHTML=state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
+ $("dipTo").innerHTML=state.kingdoms.filter(k=>k.id!==from).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("");
+ if(previous&&previous!==from&&kingdom(previous))$("dipTo").value=previous;
 }
 function renderChronicle(){
  $("dynastyList").innerHTML=state.kingdoms.map(k=>'<div class="panel" style="margin:8px 0;background:#101a28"><h3>'+k.crest+' '+k.name+'</h3><div class="row"><div><b>'+k.ruler.name+'</b><div class="tiny">Raja · '+k.ruler.age+' tahun</div></div><div><b>'+k.heir.name+'</b><div class="tiny">Ahli waris · '+k.heir.age+' tahun</div></div></div><div class="tiny" style="margin-top:8px">'+k.history.slice(-5).reverse().map(h=>'• Tahun '+h.year+': '+h.text).join("<br>")+'</div></div>').join("");
@@ -157,10 +161,42 @@ window.investCity=id=>{let c=city(id),k=kingdom(c.owner);if(k.treasury<500){aler
 window.openRecruit=()=>{let html='<h2>Rekrut Pasukan</h2><div class="field"><label>Kerajaan</label><select id="rKing">'+state.kingdoms.map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("")+'</select></div><div class="field"><label>Tipe pasukan</label><select id="rType">'+Object.keys(TYPES).map(t=>'<option value="'+t+'">'+TYPES[t].icon+' '+TYPES[t].name+' · '+TYPES[t].cost+' emas/unit</option>').join("")+'</select></div><div class="field"><label>Jumlah unit</label><input id="rCount" type="number" min="10" max="3000" value="100"></div><div class="tiny">Pasukan membutuhkan biaya perekrutan dan upah pemeliharaan setiap tahun.</div><div class="modalfoot"><button class="btn secondary" onclick="closeModal()">Batal</button><button class="btn" onclick="recruit()">Rekrut</button></div>';$("modalContent").innerHTML=html;showModal()};
 window.recruit=()=>{let k=kingdom($("rKing").value),t=$("rType").value,n=clamp(parseInt($("rCount").value)||0,10,3000),cost=TYPES[t].cost*n;if(k.treasury<cost){alert("Kas tidak cukup. Dibutuhkan "+fmt(cost)+" emas.");return}k.treasury-=cost;k.army[t]+=n;log(k.name+" merekrut "+fmt(n)+" "+TYPES[t].name+".");closeModal();render()};
 window.openSiege=id=>{let c=city(id);let html='<h2>Rencanakan Pengepungan</h2><div class="notice">Target: '+c.name+' · '+ownerName(c.owner)+' · Tembok '+c.wall+'/100</div><div class="field"><label>Kerajaan penyerang</label><select id="sKing">'+state.kingdoms.filter(k=>k.id!==c.owner).map(k=>'<option value="'+k.id+'">'+k.name+'</option>').join("")+'</select></div><div class="field"><label>Jumlah pasukan yang dikirim</label><input id="sCount" type="number" min="100" max="5000" value="500"></div><div class="tiny">Pengepungan berlangsung tahunan. Pelontar mempercepat penghancuran tembok, sedangkan garnisun dan pasukan bertahan memperlambat serangan.</div><div class="modalfoot"><button class="btn secondary" onclick="closeModal()">Batal</button><button class="btn danger" onclick="startSiege(\''+id+'\')">Mulai Pengepungan</button></div>';$("modalContent").innerHTML=html;showModal()};
-window.startSiege=id=>{let c=city(id),k=kingdom($("sKing").value),n=clamp(parseInt($("sCount").value)||0,100,5000);if(k.army.infantry+k.army.cavalry+k.army.archer<n){alert("Jumlah tentara aktif tidak cukup (pelontar dihitung terpisah).");return}if(k.treasury<250){alert("Butuh 250 emas untuk logistik ekspedisi.");return}let sent={};let remaining=n;["infantry","cavalry","archer"].forEach(t=>{let take=Math.min(k.army[t],Math.floor(remaining*(t==="infantry"?.45:t==="archer"?.35:.2)));sent[t]=take;remaining-=take;k.army[t]-=take});if(remaining>0){let t=["infantry","archer","cavalry"].find(t=>k.army[t]>0);if(t){sent[t]=(sent[t]||0)+Math.min(remaining,k.army[t]);k.army[t]-=Math.min(remaining,k.army[t])}}let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/150)));k.army.catapult-=cat;k.treasury-=250;state.wars.push({id:"w"+Date.now(),attacker:k.id,defender:c.owner,city:id,troops:Object.values(sent).reduce((a,b)=>a+b,0),units:sent,catapults:cat,years:0,progress:0});log(k.name+" mengirim ekspedisi untuk mengepung "+c.name+".");closeModal();render()};
+window.startSiege=id=>{let c=city(id),k=kingdom($("sKing").value),n=clamp(parseInt($("sCount").value)||0,100,5000);if(k.army.infantry+k.army.cavalry+k.army.archer<n){alert("Jumlah tentara aktif tidak cukup (pelontar dihitung terpisah).");return}if(k.treasury<250){alert("Butuh 250 emas untuk logistik ekspedisi.");return}let sent={};let remaining=n;["infantry","cavalry","archer"].forEach(t=>{let take=Math.min(k.army[t],Math.floor(remaining*(t==="infantry"?.45:t==="archer"?.35:.2)));sent[t]=take;remaining-=take;k.army[t]-=take});if(remaining>0){let t=["infantry","archer","cavalry"].find(t=>k.army[t]>0);if(t){sent[t]=(sent[t]||0)+Math.min(remaining,k.army[t]);k.army[t]-=Math.min(remaining,k.army[t])}}let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/150)));k.army.catapult-=cat;k.treasury-=250;const pair=[k.id,c.owner].sort().join("|");if(!state.conflicts.some(x=>x.pair===pair))state.conflicts.push({pair,a:k.id,b:c.owner,year:state.year});state.wars.push({id:"w"+Date.now(),attacker:k.id,defender:c.owner,city:id,troops:Object.values(sent).reduce((a,b)=>a+b,0),units:sent,catapults:cat,years:0,progress:0});log(k.name+" mengirim ekspedisi untuk mengepung "+c.name+".");closeModal();render()};
 window.retreat=id=>{let w=state.wars.find(x=>x.id===id);if(!w)return;let k=kingdom(w.attacker);Object.keys(w.units).forEach(t=>k.army[t]+=Math.floor(w.units[t]*.8));k.army.catapult+=Math.floor(w.catapults*.8);state.wars=state.wars.filter(x=>x.id!==id);log(k.name+" menarik pasukan dari pengepungan.");render()};
 function showModal(){$("modalBack").classList.add("show")}window.closeModal=()=>$("modalBack").classList.remove("show");
-window.diplomaticAction=()=>{let a=kingdom($("dipFrom").value),b=kingdom($("dipTo").value),act=$("dipAction").value;if(!b||a.id===b.id)return;let rel=a.relations[b.id];if(act==="war"){if(rel>45){alert("Hubungan terlalu baik untuk menyatakan perang tanpa alasan.");return}if(state.wars.some(w=>w.attacker===a.id&&w.defender===b.id)){alert("Kerajaan ini sudah berperang.");return}a.relations[b.id]-=35;b.relations[a.id]-=35;log(a.name+" menyatakan perang terhadap "+b.name+".");}else if(act==="peace"){if(rel< -80){alert("Hubungan terlalu buruk. Perlu upaya diplomasi lebih lanjut.");return}a.relations[b.id]+=20;b.relations[a.id]+=20;log(a.name+" mengirim utusan perdamaian kepada "+b.name+".");}else if(act==="trade"){a.relations[b.id]+=10;b.relations[a.id]+=10;a.treasury+=250;b.treasury+=250;log(a.name+" dan "+b.name+" menandatangani perjanjian dagang.");}else{if(rel<5){alert("Hubungan belum cukup baik untuk aliansi.");return}a.relations[b.id]+=25;b.relations[a.id]+=25;log(a.name+" dan "+b.name+" membentuk aliansi.");}render()};
+window.diplomaticAction=()=>{
+ let a=kingdom($("dipFrom").value),b=kingdom($("dipTo").value),act=$("dipAction").value;
+ if(!a||!b||a.id===b.id)return;
+ const pair=[a.id,b.id].sort().join("|"),rel=a.relations[b.id]??0;
+ const atWar=(state.conflicts||[]).some(x=>x.pair===pair);
+ if(act==="war"){
+  if(atWar){alert("Kedua kerajaan sudah berperang.");return}
+  if(rel>45){alert("Hubungan terlalu baik untuk menyatakan perang.");return}
+  state.conflicts.push({pair,a:a.id,b:b.id,year:state.year});
+  state.treaties=state.treaties.filter(x=>x.pair!==pair);
+  a.relations[b.id]=clamp(rel-35,-100,100);b.relations[a.id]=clamp((b.relations[a.id]??0)-35,-100,100);
+  log(a.name+" secara resmi menyatakan perang terhadap "+b.name+".");
+ }else if(act==="peace"){
+  if(!atWar){alert("Kedua kerajaan tidak sedang berperang.");return}
+  state.conflicts=state.conflicts.filter(x=>x.pair!==pair);
+  a.relations[b.id]=clamp(rel+20,-100,100);b.relations[a.id]=clamp((b.relations[a.id]??0)+20,-100,100);
+  log(a.name+" dan "+b.name+" menyepakati perdamaian.");
+ }else if(act==="trade"){
+  if(atWar){alert("Perdagangan tidak dapat dilakukan saat perang.");return}
+  if(state.treaties.some(x=>x.pair===pair&&x.type==="trade")){alert("Perjanjian dagang sudah aktif.");return}
+  state.treaties.push({pair,a:a.id,b:b.id,type:"trade",year:state.year});
+  a.relations[b.id]=clamp(rel+10,-100,100);b.relations[a.id]=clamp((b.relations[a.id]??0)+10,-100,100);
+  log(a.name+" dan "+b.name+" menandatangani perjanjian dagang.");
+ }else{
+  if(atWar){alert("Aliansi tidak dapat dibuat saat perang.");return}
+  if(state.treaties.some(x=>x.pair===pair&&x.type==="alliance")){alert("Aliansi sudah aktif.");return}
+  if(rel<5){alert("Hubungan belum cukup baik untuk aliansi.");return}
+  state.treaties.push({pair,a:a.id,b:b.id,type:"alliance",year:state.year});
+  a.relations[b.id]=clamp(rel+25,-100,100);b.relations[a.id]=clamp((b.relations[a.id]??0)+25,-100,100);
+  log(a.name+" dan "+b.name+" membentuk aliansi.");
+ }
+ render();saveSilent();
+};
 function succession(k,reason){let old=k.ruler.name;k.ruler={...k.heir,age:Math.max(18,k.heir.age),health:100};k.heir={...person(),age:rand(12,20)};k.history.push({year:state.year,text:"Raja "+old+" wafat ("+reason+"). "+k.ruler.name+" naik takhta sebagai penerus dinasti."});log("Pergantian takhta di "+k.name+": Raja "+old+" wafat. "+k.ruler.name+" menjadi raja baru.");k.stability=clamp(k.stability-8,20,100)}
 function annualEconomy(k){
  let pop=totalPop(k);k.population=pop;let taxIncome=pop*(k.tax/100)*.45,cityIncome=k.cities.length*230,tradeIncome=k.cities.filter(id=>city(id).production==="trade").length*180;
@@ -178,7 +214,7 @@ function aiAction(k){
  if(weak&&k.cities.length>weak.cities.length+1&&power(k)>power(weak)*1.35&&Math.random()<.12){let target=city(pick(weak.cities));if(target&&k.treasury>500){let count=Math.floor((k.army.infantry+k.army.cavalry+k.army.archer)*.18);if(count>100){startAiSiege(k,target,count)}}}
  if(Math.random()<.08){let other=pick(others);k.relations[other.id]=clamp(k.relations[other.id]+rand(-8,10),-100,100)}
 }
-function startAiSiege(k,c,n){let units={};["infantry","cavalry","archer"].forEach(t=>{let take=Math.floor(k.army[t]*n/(k.army.infantry+k.army.cavalry+k.army.archer));units[t]=take;k.army[t]-=take});let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/180)));k.army.catapult-=cat;state.wars.push({id:"w"+Date.now()+rand(1,99),attacker:k.id,defender:c.owner,city:c.id,troops:Object.values(units).reduce((a,b)=>a+b,0),units,catapults:cat,years:0,progress:0});log(k.name+" mengirim pasukan untuk mengepung "+c.name+".")}
+function startAiSiege(k,c,n){const pair=[k.id,c.owner].sort().join("|");if(!state.conflicts.some(x=>x.pair===pair))state.conflicts.push({pair,a:k.id,b:c.owner,year:state.year});let units={};["infantry","cavalry","archer"].forEach(t=>{let take=Math.floor(k.army[t]*n/(k.army.infantry+k.army.cavalry+k.army.archer));units[t]=take;k.army[t]-=take});let cat=Math.min(k.army.catapult,Math.max(1,Math.floor(n/180)));k.army.catapult-=cat;state.wars.push({id:"w"+Date.now()+rand(1,99),attacker:k.id,defender:c.owner,city:c.id,troops:Object.values(units).reduce((a,b)=>a+b,0),units,catapults:cat,years:0,progress:0});log(k.name+" mengirim pasukan untuk mengepung "+c.name+".")}
 function counterFactor(units,enemy){let n=0,score=0;["infantry","cavalry","archer"].forEach(t=>{let count=units[t]||0;if(!count)return;let strong=0,weak=0;["infantry","cavalry","archer"].forEach(e=>{let ec=enemy[e]||0;if(!ec)return;if(TYPES[t].beats===e)strong+=ec;if(TYPES[t].weak===e)weak+=ec});let total=Math.max(1,(enemy.infantry||0)+(enemy.cavalry||0)+(enemy.archer||0));score+=count*(1+.28*(strong/total)-.24*(weak/total));n+=count});return n?score/n:1}
 function resolveWars(){
  state.wars.slice().forEach(w=>{let c=city(w.city),a=kingdom(w.attacker),d=kingdom(w.defender);if(!c||!a||!d){state.wars=state.wars.filter(x=>x.id!==w.id);return}
