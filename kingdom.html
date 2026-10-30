@@ -498,7 +498,7 @@ const worldVersion="35-races-175-cities-race-buildings-v2";state=localStorage.ge
 if(!state.logs.length)log("Tiga puluh lima kerajaan mendirikan dinasti mereka. Perebutan pengaruh dimulai.");
 render();
 // Simulasi maju satu tahun setiap 8 detik secara otomatis.
-setInterval(()=>advance(1),8000);
+let simulationPaused=false;const simulationTimer=setInterval(()=>{if(!simulationPaused)advance(1)},8000);const pauseBtn=document.getElementById("pauseBtn"),runStatus=document.getElementById("runStatus");pauseBtn.addEventListener("click",()=>{simulationPaused=!simulationPaused;pauseBtn.textContent=simulationPaused?"▶ Lanjut":"Ⅱ Jeda";pauseBtn.classList.toggle("paused",simulationPaused);pauseBtn.setAttribute("aria-pressed",String(simulationPaused));runStatus.textContent=simulationPaused?"Ⅱ SIMULASI DIJEDA":"● SIMULASI BERJALAN";runStatus.classList.toggle("bad",simulationPaused);runStatus.classList.toggle("good",!simulationPaused)});
 })();
 </script>
 </body>
